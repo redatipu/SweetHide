@@ -23,6 +23,11 @@
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
     <Description>SweetHide: hide encrypted text and files in images.</Description>
+    <!-- Ship the app, not developer files. -->
+    <PublishDocumentationFile>false</PublishDocumentationFile>
+    <PublishReferencesDocumentationFiles>false</PublishReferencesDocumentationFiles>
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <!-- SkiaSharp's Windows package ships a ~90 MB native .pdb; users don't need it. -->

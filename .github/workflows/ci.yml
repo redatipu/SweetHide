@@ -70,6 +70,33 @@ jobs:
       - name: Publish (self-contained, unpackaged)
         run: dotnet publish src/SweetHide.App -c Release -r win-${{ matrix.arch }} -p:Platform=${{ matrix.platform }} -o publish/SweetHide-win-${{ matrix.arch }}
 
+      - name: Smoke test (launch, drive every page, screenshots)
+        if: matrix.arch == 'x64'
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path "publish/SweetHide-win-x64/SweetHide.exe").Path
+          foreach ($run in @(@{ lang = 'th'; theme = 'light' }, @{ lang = 'en'; theme = 'dark' })) {
+            $out = Join-Path (Get-Location) "screenshots/$($run.lang)-$($run.theme)"
+            New-Item -ItemType Directory -Force $out | Out-Null
+            $p = Start-Process $exe -ArgumentList '--smoke-test', "`"$out`"", '--lang', $run.lang, '--theme', $run.theme -PassThru
+            $null = $p.Handle # keeps ExitCode available after exit
+            if (-not $p.WaitForExit(180000)) { Stop-Process -Id $p.Id -Force; throw "Smoke test ($($run.lang)/$($run.theme)) timed out" }
+            if ($p.ExitCode -ne 0) {
+              Get-Content (Join-Path $out 'error.txt') -ErrorAction SilentlyContinue
+              throw "Smoke test ($($run.lang)/$($run.theme)) failed with exit code $($p.ExitCode)"
+            }
+            Get-ChildItem $out -Filter *.png | Format-Table Name, Length
+          }
+
+      - name: Upload screenshots
+        if: always() && matrix.arch == 'x64'
+        uses: actions/upload-artifact@v5
+        with:
+          name: SweetHide-screenshots
+          path: screenshots
+          if-no-files-found: warn
+          retention-days: 14
+
       - uses: actions/upload-artifact@v5
         with:
           name: SweetHide-win-${{ matrix.arch }}

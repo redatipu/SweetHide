@@ -36,6 +36,12 @@ public sealed partial class MainWindow : Window
 
     public void ShowStartPage() => Navigation.SelectedItem = Navigation.MenuItems[0];
 
+    /// <summary>Selects the navigation item with the given tag ("hide", "reveal", "analyze" or "settings").</summary>
+    internal void NavigateTo(string tag) =>
+        Navigation.SelectedItem = Navigation.MenuItems.Concat(Navigation.FooterMenuItems)
+            .OfType<NavigationViewItem>()
+            .First(item => (item.Tag as string) == tag);
+
     private void OnPaneToggleRequested(TitleBar sender, object args) => Navigation.IsPaneOpen = !Navigation.IsPaneOpen;
 
     private void OnNavigationSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

@@ -6,11 +6,30 @@
 - เข้ารหัสด้วย **AES-256-GCM** และสร้างกุญแจจากรหัสผ่านด้วย **Argon2id**
 - ใช้ **LSB matching (±1)** และกระจายตำแหน่งบิตแบบสุ่มตามรหัสผ่าน ไม่มี signature หรือ magic bytes ให้สแกนหา
 - ใส่ข้อความหลายข้อความและไฟล์หลายไฟล์ไว้ในรูปเดียวกันได้ บีบอัดด้วย Brotli อัตโนมัติ
-- CLI ใช้ได้ทั้ง Windows และ Linux (x64/arm64) ส่วน GUI สำหรับ Windows 11 จะทำใน Phase 2
+- **แอป Windows 11 (WinUI 3)** มีหน้าซ่อน ถอด และวิเคราะห์ รองรับลากไฟล์มาวางหรือกด Ctrl+V และสลับภาษาไทย/อังกฤษได้
+- **CLI** ใช้ได้ทั้ง Windows และ Linux (x64/arm64)
 
 > ⚠️ **ต้องส่งรูปแบบ "ไฟล์" เสมอ** แอปแชต (LINE, Messenger, Facebook) จะบีบอัดรูปใหม่ และข้อมูลที่ซ่อนไว้จะหายหมด
 
-## เริ่มใช้งาน
+## แอป Windows (GUI)
+
+ดาวน์โหลด `SweetHide-win-x64` (หรือ `SweetHide-win-arm64`) จาก artifact ของ GitHub Actions แล้วแตกไฟล์ไว้ที่ไหนก็ได้ จากนั้นเปิด `SweetHide.exe` ได้ทันที ไม่ต้องติดตั้ง .NET หรือ Windows App SDK เพิ่ม
+ไฟล์ยังไม่ได้เซ็นด้วย code signing ครั้งแรกที่เปิด SmartScreen จะเตือน ให้กด **More info → Run anyway**
+
+| หน้า | ใช้ทำอะไร |
+|---|---|
+| ซ่อน | เลือกหรือลากรูปปกมาวาง พิมพ์ข้อความ แนบไฟล์ ดูแถบความจุ ใส่รหัสผ่าน 2 ครั้ง แล้วกด **ซ่อนและบันทึก…** |
+| ถอด | เลือกรูป ใส่รหัสผ่าน แล้วกด Enter จะเห็นข้อความ (มีปุ่มคัดลอก) และไฟล์ (บันทึกทีละไฟล์หรือทั้งหมดก็ได้) |
+| วิเคราะห์ | ดูสถิติ LSB, chi-square และภาพ bit plane ของรูปใดก็ได้ |
+| ตั้งค่า | เลือกภาษา (ไทย/อังกฤษ/ตาม Windows) และธีม (สว่าง/มืด/ตาม Windows) |
+
+build เองบน Windows (ต้องมี .NET 10 SDK):
+
+```bash
+dotnet publish src/SweetHide.App -c Release -r win-x64 -p:Platform=x64 -o publish/app
+```
+
+## CLI
 
 ดาวน์โหลด `sweethide` / `sweethide.exe` ได้จาก artifact ของ GitHub Actions หรือ build เองด้วยคำสั่งนี้ (ต้องมี .NET 10 SDK):
 
@@ -74,22 +93,32 @@ sweethide analyze -i suspect.png --bit-plane plane.png
 
 ## พัฒนา
 
+`SweetHide.slnx` รวมทุกโปรเจกต์ (เปิดด้วย Visual Studio บน Windows) ส่วน `SweetHide.Portable.slnf` รวมทุกอย่างยกเว้นแอป WinUI ใช้ได้ทั้ง Linux และ macOS
+
 ```bash
-dotnet build
+dotnet build SweetHide.Portable.slnf
 ```
 
 ```bash
-dotnet test
+dotnet test --solution SweetHide.Portable.slnf
 ```
 
 ```bash
-dotnet format --verify-no-changes
+dotnet format SweetHide.Portable.slnf --verify-no-changes
 ```
+
+```bash
+dotnet build src/SweetHide.App -p:Platform=x64
+```
+
+คำสั่งสุดท้ายใช้ได้บน Windows เท่านั้น
 
 | Path | หน้าที่ |
 |---|---|
 | `src/SweetHide.Core` | Engine: ซ่อนและถอดข้อมูล, crypto, payload format, codec ภาพ (SkiaSharp), steganalysis |
 | `src/SweetHide.Cli` | คำสั่ง `sweethide` |
+| `src/SweetHide.Presentation` | ViewModel (MVVM), ข้อความ UI ภาษาไทย/อังกฤษ (`Resources/Strings*.resx`), interface ของ service ทั้งหมดอยู่ที่นี่ ไม่ผูกกับ WinUI จึงเทสต์บน Linux ได้ |
+| `src/SweetHide.App` | แอป WinUI 3: XAML, file picker, clipboard, drag & drop |
 | `tests/` | xUnit v3 + FsCheck (property-based) |
 | `docs/PLAN.md` | แผนงานและ tech stack |
 | `docs/FORMAT.md` | สเปกรูปแบบข้อมูลในภาพ (เวอร์ชัน v1) |
