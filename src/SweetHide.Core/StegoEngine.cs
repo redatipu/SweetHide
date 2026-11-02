@@ -21,7 +21,7 @@ namespace SweetHide.Core;
 /// slot, then the encrypted body. No plaintext marker anywhere.</item>
 /// </list>
 /// </remarks>
-public sealed class StegoEngine
+public sealed partial class StegoEngine
 {
     public const int DefaultBitsPerChannel = 1;
 
