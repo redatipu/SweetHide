@@ -18,8 +18,6 @@ internal static class Converters
         _ => InfoBarSeverity.Informational,
     };
 
-    public static bool Not(bool value) => !value;
-
     /// <summary>In-app preview of a revealed image file; null when there is nothing to show or it can't be decoded.</summary>
     public static ImageSource? ImageFromBytes(byte[] bytes)
     {

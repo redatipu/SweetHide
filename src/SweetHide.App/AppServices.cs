@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
 
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 
 using SweetHide.App.Services;
 using SweetHide.Core;

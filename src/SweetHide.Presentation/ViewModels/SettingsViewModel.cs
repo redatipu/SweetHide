@@ -70,6 +70,8 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public bool HasVaultEntries => VaultEntries.Count > 0;
 
+    public bool HasNoVaultEntries => VaultEntries.Count == 0;
+
     public bool HasExplorerIntegration => _explorer is not null;
 
     public bool ExplorerMenuEnabled
@@ -111,6 +113,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(HasVaultEntries));
+        OnPropertyChanged(nameof(HasNoVaultEntries));
     }
 
     [RelayCommand]

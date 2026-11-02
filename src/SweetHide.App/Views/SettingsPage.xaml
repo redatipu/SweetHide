@@ -4,7 +4,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:p="using:SweetHide.Presentation"
-    xmlns:local="using:SweetHide.App"
     xmlns:services="using:SweetHide.Presentation.Services"
     xmlns:vm="using:SweetHide.Presentation.ViewModels">
 
@@ -44,7 +43,7 @@
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind p:Strings.VaultHint}"
                         TextWrapping="Wrap" />
-                    <TextBlock Text="{x:Bind p:Strings.VaultEmpty}" Visibility="{x:Bind local:Converters.Not(ViewModel.HasVaultEntries), Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind p:Strings.VaultEmpty}" Visibility="{x:Bind ViewModel.HasNoVaultEntries, Mode=OneWay}" />
                     <ItemsRepeater ItemsSource="{x:Bind ViewModel.VaultEntries}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="services:VaultEntry">
