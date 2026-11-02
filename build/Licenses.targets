@@ -1,0 +1,28 @@
+<Project>
+  <!--
+    Ships the licenses with every `dotnet publish`: SweetHide's own LICENSE and THIRD-PARTY-NOTICES.txt next to the
+    executable, plus the upstream notice files that MIT/BSD components require us to pass on, in licenses/.
+    Projects importing this reference the native asset packages with GeneratePathProperty="true".
+  -->
+  <Target Name="PublishLicenses" AfterTargets="Publish">
+    <PropertyGroup>
+      <_RuntimePackDir>$(NuGetPackageRoot)microsoft.netcore.app.runtime.$(RuntimeIdentifier.ToLowerInvariant())/$(BundledNETCoreAppPackageVersion)/</_RuntimePackDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_OwnLicense Include="$(MSBuildThisFileDirectory)../LICENSE;$(MSBuildThisFileDirectory)../THIRD-PARTY-NOTICES.txt" />
+
+      <_Notice Include="$(_RuntimePackDir)THIRD-PARTY-NOTICES.TXT" TargetName="dotnet-THIRD-PARTY-NOTICES.txt"
+               Condition="Exists('$(_RuntimePackDir)THIRD-PARTY-NOTICES.TXT')" />
+      <_Notice Include="$(PkgSkiaSharp_NativeAssets_Win32)/THIRD-PARTY-NOTICES.txt" TargetName="SkiaSharp-native-THIRD-PARTY-NOTICES.txt"
+               Condition="$(RuntimeIdentifier.StartsWith('win')) and '$(PkgSkiaSharp_NativeAssets_Win32)' != ''" />
+      <_Notice Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)/THIRD-PARTY-NOTICES.txt" TargetName="SkiaSharp-native-THIRD-PARTY-NOTICES.txt"
+               Condition="$(RuntimeIdentifier.StartsWith('linux')) and '$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)' != ''" />
+      <_Notice Include="$(PkgMicrosoft_WindowsAppSDK_WinUI)/license.txt" TargetName="WindowsAppSDK-LICENSE.txt"
+               Condition="'$(PkgMicrosoft_WindowsAppSDK_WinUI)' != ''" />
+      <_Notice Include="$(PkgMicrosoft_WindowsAppSDK_WinUI)/NOTICE.txt" TargetName="WindowsAppSDK-NOTICE.txt"
+               Condition="'$(PkgMicrosoft_WindowsAppSDK_WinUI)' != ''" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_OwnLicense)" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="@(_Notice)" DestinationFiles="@(_Notice->'$(PublishDir)licenses/%(TargetName)')" />
+  </Target>
+</Project>

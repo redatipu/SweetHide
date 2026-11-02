@@ -1,0 +1,165 @@
+name: Package
+
+# Reusable: builds every downloadable file exactly as a release ships it, runs the GUI smoke test,
+# and produces SHA256SUMS.txt. The "release-assets" artifact is what release.yml attaches to a release.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version stamped into the binaries and file names (e.g. 1.2.0). "dev" keeps the project version.
+        type: string
+        default: dev
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+  VERSION_PROPERTY: ${{ inputs.version != 'dev' && format('-p:Version={0}', inputs.version) || '' }}
+
+jobs:
+  windows-app:
+    name: Windows app (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            platform: x64
+          - arch: arm64
+            platform: ARM64
+    runs-on: windows-latest
+    env:
+      NAME: SweetHide-${{ inputs.version }}-win-${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Publish (self-contained, unpackaged)
+        run: dotnet publish src/SweetHide.App -c Release -r win-${{ matrix.arch }} -p:Platform=${{ matrix.platform }} ${{ env.VERSION_PROPERTY }} -o dist/${{ env.NAME }}
+
+      - name: Smoke test (launch, drive every page, screenshots)
+        if: matrix.arch == 'x64'
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path "dist/$env:NAME/SweetHide.exe").Path
+          foreach ($run in @(@{ lang = 'th'; theme = 'dark' }, @{ lang = 'en'; theme = 'light' })) {
+            $out = Join-Path (Get-Location) "screenshots/$($run.lang)-$($run.theme)"
+            New-Item -ItemType Directory -Force $out | Out-Null
+            $p = Start-Process $exe -ArgumentList '--smoke-test', "`"$out`"", '--lang', $run.lang, '--theme', $run.theme -PassThru
+            $null = $p.Handle # keeps ExitCode available after exit
+            if (-not $p.WaitForExit(180000)) { Stop-Process -Id $p.Id -Force; throw "Smoke test ($($run.lang)/$($run.theme)) timed out" }
+            if ($p.ExitCode -ne 0) {
+              Get-Content (Join-Path $out 'error.txt') -ErrorAction SilentlyContinue
+              throw "Smoke test ($($run.lang)/$($run.theme)) failed with exit code $($p.ExitCode)"
+            }
+            Get-ChildItem $out -Filter *.png | Format-Table Name, Length
+          }
+
+      - name: Upload screenshots
+        if: always() && matrix.arch == 'x64'
+        uses: actions/upload-artifact@v5
+        with:
+          name: SweetHide-screenshots
+          path: screenshots
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Zip (one top-level folder)
+        shell: pwsh
+        run: |
+          Push-Location dist
+          7z a -tzip -mx=9 "$env:NAME.zip" "$env:NAME" | Out-Null
+          Pop-Location
+          Get-Item "dist/$env:NAME.zip" | Format-Table Name, Length
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: asset-${{ env.NAME }}
+          path: dist/${{ env.NAME }}.zip
+          if-no-files-found: error
+          retention-days: 7
+
+  cli:
+    name: CLI (${{ matrix.rid }})
+    strategy:
+      matrix:
+        rid: [win-x64, win-arm64, linux-x64, linux-arm64]
+    runs-on: ubuntu-latest
+    env:
+      NAME: sweethide-${{ inputs.version }}-${{ matrix.rid }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Publish self-contained single file
+        run: dotnet publish src/SweetHide.Cli -c Release -r ${{ matrix.rid }} ${{ env.VERSION_PROPERTY }} -o "publish/$NAME"
+
+      - name: Archive (executable + LICENSE + notices, one top-level folder)
+        run: |
+          mkdir -p dist
+          if [[ "${{ matrix.rid }}" == win-* ]]; then
+            (cd publish && zip -9 -r "../dist/$NAME.zip" "$NAME")
+          else
+            if [[ "${{ matrix.rid }}" == linux-x64 ]]; then "publish/$NAME/sweethide" --help > /dev/null; fi
+            tar -czf "dist/$NAME.tar.gz" -C publish "$NAME"
+          fi
+          ls -l dist
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: asset-${{ env.NAME }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  checksums:
+    name: Checksums
+    needs: [windows-app, cli]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: asset-*
+          merge-multiple: true
+          path: release
+
+      - uses: anchore/sbom-action/download-syft@v0
+        id: syft
+
+      - name: SBOM per download (CycloneDX)
+        working-directory: release
+        env:
+          SYFT: ${{ steps.syft.outputs.cmd }}
+        run: |
+          for f in *.zip *.tar.gz; do
+            name="${f%.zip}"; name="${name%.tar.gz}"
+            tmp="$(mktemp -d)"
+            case "$f" in
+              *.zip) unzip -q "$f" -d "$tmp" ;;
+              *) tar -xzf "$f" -C "$tmp" ;;
+            esac
+            "$SYFT" "dir:$tmp" -q -o "cyclonedx-json=$name.sbom.cdx.json"
+            rm -rf "$tmp"
+          done
+          ls -l
+
+      - name: SHA256SUMS.txt
+        working-directory: release
+        run: |
+          sha256sum -- * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: release-assets
+          path: release
+          if-no-files-found: error
+          retention-days: 14

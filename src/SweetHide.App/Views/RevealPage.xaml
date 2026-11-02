@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="SweetHide.App.Views.RevealPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:SweetHide.App.Controls"
+    xmlns:local="using:SweetHide.App"
+    xmlns:p="using:SweetHide.Presentation"
+    xmlns:vm="using:SweetHide.Presentation.ViewModels"
+    KeyboardAcceleratorPlacementMode="Hidden"
+    NavigationCacheMode="Required">
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="V" Invoked="OnPasteAccelerator" Modifiers="Control" />
+        <KeyboardAccelerator Key="O" Invoked="OnOpenAccelerator" Modifiers="Control" />
+        <KeyboardAccelerator Key="Enter" Invoked="OnPrimaryAccelerator" Modifiers="Control" />
+    </Page.KeyboardAccelerators>
+
+    <ScrollViewer>
+        <Grid
+            MaxWidth="{StaticResource PageMaxWidth}"
+            Padding="{StaticResource PagePadding}"
+            ColumnSpacing="16"
+            RowSpacing="16">
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup>
+                    <VisualState x:Name="Wide">
+                        <VisualState.StateTriggers>
+                            <AdaptiveTrigger MinWindowWidth="1000" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Target="SecondColumn.Width" Value="*" />
+                            <Setter Target="ResultsColumn.(Grid.Column)" Value="1" />
+                            <Setter Target="ResultsColumn.(Grid.Row)" Value="1" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Narrow">
+                        <VisualState.StateTriggers>
+                            <AdaptiveTrigger MinWindowWidth="0" />
+                        </VisualState.StateTriggers>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition x:Name="SecondColumn" Width="0" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                Grid.ColumnSpan="2"
+                Style="{StaticResource PageHeaderStyle}"
+                Text="{x:Bind p:Strings.RevealHeader}" />
+
+            <StackPanel Grid.Row="1" Spacing="16">
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind p:Strings.ImageSection}" />
+                        <controls:ImageDropZone
+                            BrowseCommand="{x:Bind ViewModel.BrowseImageCommand}"
+                            DropCommand="{x:Bind ViewModel.LoadDroppedImageCommand}"
+                            Image="{x:Bind ViewModel.Image, Mode=OneWay}"
+                            ImageInfo="{x:Bind ViewModel.ImageInfo, Mode=OneWay}"
+                            PasteCommand="{x:Bind ViewModel.PasteImageCommand}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="12">
+                        <PasswordBox
+                            Header="{x:Bind p:Strings.PasswordSection}"
+                            KeyDown="OnPasswordKeyDown"
+                            Password="{x:Bind ViewModel.Password, Mode=TwoWay}"
+                            PlaceholderText="{x:Bind p:Strings.PasswordPlaceholder}" />
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Button Command="{x:Bind ViewModel.RevealCommand}" Style="{StaticResource AccentButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="14" Glyph="&#xE785;" />
+                                    <TextBlock Text="{x:Bind p:Strings.RevealButton}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{x:Bind ViewModel.TryVaultCommand}" Visibility="{x:Bind ViewModel.HasVault, Mode=OneWay}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="14" Glyph="&#xE8D7;" />
+                                    <TextBlock Text="{x:Bind p:Strings.TryVault}" />
+                                </StackPanel>
+                            </Button>
+                            <ProgressRing
+                                Width="24"
+                                Height="24"
+                                IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+                        </StackPanel>
+                        <Grid ColumnSpacing="8" Visibility="{x:Bind ViewModel.CanRemember, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                Header="{x:Bind p:Strings.SaveToVault}"
+                                PlaceholderText="{x:Bind p:Strings.VaultNamePlaceholder}"
+                                Text="{x:Bind ViewModel.RememberName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button
+                                Grid.Column="1"
+                                VerticalAlignment="Bottom"
+                                Command="{x:Bind ViewModel.RememberPasswordCommand}"
+                                Content="{x:Bind p:Strings.Remember}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <InfoBar
+                    IsOpen="{x:Bind ViewModel.StatusIsOpen, Mode=TwoWay}"
+                    Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                    Severity="{x:Bind local:Converters.Severity(ViewModel.StatusSeverity), Mode=OneWay}"
+                    Title="{x:Bind ViewModel.StatusTitle, Mode=OneWay}">
+                    <InfoBar.ActionButton>
+                        <HyperlinkButton
+                            Command="{x:Bind ViewModel.ShowInFolderCommand}"
+                            Content="{x:Bind p:Strings.ShowInFolder}"
+                            Visibility="{x:Bind ViewModel.HasStatusAction, Mode=OneWay}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+            </StackPanel>
+
+            <StackPanel
+                x:Name="ResultsColumn"
+                Grid.Row="2"
+                Spacing="12"
+                Visibility="{x:Bind ViewModel.HasResults, Mode=OneWay}">
+                <Grid>
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind p:Strings.ResultsSection}" />
+                    <Button
+                        HorizontalAlignment="Right"
+                        Command="{x:Bind ViewModel.SaveAllFilesCommand}"
+                        Visibility="{x:Bind ViewModel.HasFiles, Mode=OneWay}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="14" Glyph="&#xE74E;" />
+                            <TextBlock Text="{x:Bind p:Strings.SaveAllFiles}" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Items}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Spacing="12" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RevealedItemViewModel">
+                            <Border Style="{StaticResource CardStyle}">
+                                <Grid ColumnSpacing="12" RowSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <FontIcon
+                                        FontSize="16"
+                                        Glyph="&#xE8BD;"
+                                        Visibility="{x:Bind IsText}" />
+                                    <FontIcon
+                                        FontSize="16"
+                                        Glyph="&#xE7C3;"
+                                        Visibility="{x:Bind IsFile}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                                        Text="{x:Bind Title}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{x:Bind SizeText}" />
+                                    <Button
+                                        Grid.Column="3"
+                                        Click="OnCopyClick"
+                                        Visibility="{x:Bind IsText}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon FontSize="14" Glyph="&#xE8C8;" />
+                                            <TextBlock Text="{x:Bind p:Strings.CopyText}" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button
+                                        Grid.Column="3"
+                                        Click="OnSaveClick"
+                                        Visibility="{x:Bind IsFile}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon FontSize="14" Glyph="&#xE74E;" />
+                                            <TextBlock Text="{x:Bind p:Strings.SaveFile}" />
+                                        </StackPanel>
+                                    </Button>
+
+                                    <TextBox
+                                        Grid.Row="1"
+                                        Grid.ColumnSpan="4"
+                                        MaxHeight="320"
+                                        AcceptsReturn="True"
+                                        AutomationProperties.Name="{x:Bind Title}"
+                                        IsReadOnly="True"
+                                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                        Text="{x:Bind Text}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{x:Bind IsText}" />
+                                    <Image
+                                        Grid.Row="1"
+                                        Grid.ColumnSpan="4"
+                                        MaxHeight="240"
+                                        HorizontalAlignment="Left"
+                                        Source="{x:Bind local:Converters.ImageFromBytes(PreviewImageBytes)}"
+                                        Stretch="Uniform"
+                                        Visibility="{x:Bind IsImagePreview}" />
+                                    <Expander
+                                        Grid.Row="1"
+                                        Grid.ColumnSpan="4"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Header="{x:Bind p:Strings.PreviewLabel}"
+                                        Visibility="{x:Bind HasTextPreview}">
+                                        <TextBox
+                                            MaxHeight="240"
+                                            AcceptsReturn="True"
+                                            FontFamily="Consolas"
+                                            IsReadOnly="True"
+                                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                            Text="{x:Bind PreviewText}"
+                                            TextWrapping="Wrap" />
+                                    </Expander>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

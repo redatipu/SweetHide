@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>SweetHide</value></data>
+  <data name="AppSubtitle" xml:space="preserve"><value>ซ่อนข้อความและไฟล์ในรูปภาพ</value></data>
+  <data name="NavHide" xml:space="preserve"><value>ซ่อน</value></data>
+  <data name="NavReveal" xml:space="preserve"><value>ถอด</value></data>
+  <data name="NavAnalyze" xml:space="preserve"><value>วิเคราะห์</value></data>
+  <data name="NavSettings" xml:space="preserve"><value>ตั้งค่า</value></data>
+  <data name="DropZoneTitle" xml:space="preserve"><value>ลากรูปมาวางที่นี่</value></data>
+  <data name="DropZoneHint" xml:space="preserve"><value>PNG, JPEG, HEIC, WebP, BMP, GIF, TIFF… · หรือวางด้วย Ctrl+V</value></data>
+  <data name="BrowseImage" xml:space="preserve"><value>เลือกรูป…</value></data>
+  <data name="PasteImage" xml:space="preserve"><value>วาง</value></data>
+  <data name="ChangeImage" xml:space="preserve"><value>เปลี่ยนรูป</value></data>
+  <data name="ImageInfoFormat" xml:space="preserve"><value>{0} × {1} · {2}</value></data>
+  <data name="DropToUse" xml:space="preserve"><value>ใช้รูปนี้</value></data>
+  <data name="DropToAttach" xml:space="preserve"><value>แนบไฟล์</value></data>
+  <data name="ClipboardImageName" xml:space="preserve"><value>clipboard.png</value></data>
+  <data name="HideHeader" xml:space="preserve"><value>ซ่อนข้อมูลลับ</value></data>
+  <data name="CoverSection" xml:space="preserve"><value>รูปปก</value></data>
+  <data name="MessageSection" xml:space="preserve"><value>ข้อความ</value></data>
+  <data name="MessagePlaceholder" xml:space="preserve"><value>พิมพ์ข้อความลับ (เว้นว่างได้ถ้าแนบไฟล์)</value></data>
+  <data name="AttachmentsSection" xml:space="preserve"><value>ไฟล์แนบ</value></data>
+  <data name="AddFiles" xml:space="preserve"><value>เพิ่มไฟล์…</value></data>
+  <data name="RemoveAttachment" xml:space="preserve"><value>นำออก</value></data>
+  <data name="NoAttachments" xml:space="preserve"><value>ยังไม่มีไฟล์แนบ ลากไฟล์มาวางที่นี่หรือกดเพิ่มไฟล์</value></data>
+  <data name="CapacitySection" xml:space="preserve"><value>ความจุ</value></data>
+  <data name="CapacityNoImage" xml:space="preserve"><value>เลือกรูปปกเพื่อดูว่าจุข้อมูลได้เท่าไร</value></data>
+  <data name="CapacityMeasuring" xml:space="preserve"><value>กำลังคำนวณ…</value></data>
+  <data name="CapacityFormat" xml:space="preserve"><value>ใช้ {0} จาก {1} ({2})</value></data>
+  <data name="CapacityWarning" xml:space="preserve"><value>ใช้เกินครึ่งของความจุ ตรวจจับทางสถิติได้ง่ายขึ้น ใช้รูปที่ใหญ่หรือมีรายละเอียดมากขึ้นจะช่วยได้</value></data>
+  <data name="CapacityOver" xml:space="preserve"><value>ใส่ไม่พอ ลองใช้รูปที่ใหญ่ขึ้น ลดข้อมูลลง หรือเพิ่มจำนวนบิตในตั้งค่าขั้นสูง</value></data>
+  <data name="PasswordSection" xml:space="preserve"><value>รหัสผ่าน</value></data>
+  <data name="PasswordPlaceholder" xml:space="preserve"><value>รหัสผ่าน</value></data>
+  <data name="ConfirmPasswordPlaceholder" xml:space="preserve"><value>ยืนยันรหัสผ่าน</value></data>
+  <data name="PasswordMismatch" xml:space="preserve"><value>รหัสผ่านไม่ตรงกัน</value></data>
+  <data name="PasswordHint" xml:space="preserve"><value>ถ้าลืมรหัสผ่านจะกู้ข้อมูลคืนไม่ได้ ใช้วลียาว ๆ จะปลอดภัยที่สุด</value></data>
+  <data name="StrengthFormat" xml:space="preserve"><value>ความแข็งแรง: {0}</value></data>
+  <data name="StrengthWeak" xml:space="preserve"><value>อ่อน</value></data>
+  <data name="StrengthFair" xml:space="preserve"><value>พอใช้</value></data>
+  <data name="StrengthGood" xml:space="preserve"><value>ดี</value></data>
+  <data name="StrengthStrong" xml:space="preserve"><value>ดีมาก</value></data>
+  <data name="AdvancedSection" xml:space="preserve"><value>ตั้งค่าขั้นสูง</value></data>
+  <data name="BitsLabel" xml:space="preserve"><value>จำนวนบิตต่อ channel สี</value></data>
+  <data name="Bits1" xml:space="preserve"><value>1 — มองไม่เห็น (แนะนำ)</value></data>
+  <data name="Bits2" xml:space="preserve"><value>2 — จุได้ 2 เท่า ยังมองด้วยตาไม่เห็น</value></data>
+  <data name="Bits3" xml:space="preserve"><value>3 — อาจเห็น noise ในพื้นที่เรียบ เช่น ท้องฟ้า</value></data>
+  <data name="Bits4" xml:space="preserve"><value>4 — เห็น noise ชัดเจน</value></data>
+  <data name="HideButton" xml:space="preserve"><value>ซ่อนและบันทึก…</value></data>
+  <data name="SendAsFileTitle" xml:space="preserve"><value>ส่งเป็นไฟล์เท่านั้น</value></data>
+  <data name="SendAsFileMessage" xml:space="preserve"><value>แอปแชตจะบีบอัดรูปใหม่และข้อมูลที่ซ่อนจะหาย ให้ส่ง PNG เป็นไฟล์หรือเอกสาร</value></data>
+  <data name="HideSuccessTitle" xml:space="preserve"><value>บันทึกแล้ว</value></data>
+  <data name="HideSuccessMessage" xml:space="preserve"><value>{0} · เปลี่ยนค่าสี {1} · PSNR {2} dB</value></data>
+  <data name="ShowInFolder" xml:space="preserve"><value>เปิดโฟลเดอร์</value></data>
+  <data name="ErrorTitle" xml:space="preserve"><value>เกิดข้อผิดพลาด</value></data>
+  <data name="ImageLoadFailed" xml:space="preserve"><value>เปิดรูปนี้ไม่ได้: {0}</value></data>
+  <data name="FileTooLarge" xml:space="preserve"><value>{0} มีขนาดเกิน {1}</value></data>
+  <data name="ClipboardNoImage" xml:space="preserve"><value>ไม่มีรูปในคลิปบอร์ด</value></data>
+  <data name="InvalidText" xml:space="preserve"><value>ข้อความมีตัวอักษรที่บันทึกไม่ได้</value></data>
+  <data name="RevealHeader" xml:space="preserve"><value>ถอดข้อมูลลับ</value></data>
+  <data name="ImageSection" xml:space="preserve"><value>รูปภาพ</value></data>
+  <data name="RevealButton" xml:space="preserve"><value>ถอดข้อมูล</value></data>
+  <data name="RevealNotFoundTitle" xml:space="preserve"><value>ไม่พบข้อมูล</value></data>
+  <data name="RevealNotFound" xml:space="preserve"><value>ไม่พบข้อมูล หรือรหัสผ่านไม่ถูกต้อง</value></data>
+  <data name="RevealCorrupted" xml:space="preserve"><value>รหัสผ่านถูกต้อง แต่ข้อมูลเสียหาย (รูปถูกแก้ไขหรือบีบอัดใหม่)</value></data>
+  <data name="RevealSuccessTitle" xml:space="preserve"><value>พบ {0} รายการ</value></data>
+  <data name="ResultsSection" xml:space="preserve"><value>ผลลัพธ์</value></data>
+  <data name="MessageItemFormat" xml:space="preserve"><value>ข้อความ {0}</value></data>
+  <data name="CopyText" xml:space="preserve"><value>คัดลอก</value></data>
+  <data name="Copied" xml:space="preserve"><value>คัดลอกไปที่คลิปบอร์ดแล้ว</value></data>
+  <data name="SaveFile" xml:space="preserve"><value>บันทึก…</value></data>
+  <data name="SaveAllFiles" xml:space="preserve"><value>บันทึกไฟล์ทั้งหมด…</value></data>
+  <data name="SavedFileMessage" xml:space="preserve"><value>บันทึก {0} แล้ว</value></data>
+  <data name="SavedFilesMessage" xml:space="preserve"><value>บันทึก {0} ไฟล์ไว้ที่ {1}</value></data>
+  <data name="FileSafetyNote" xml:space="preserve"><value>ไฟล์มาจากคนที่สร้างรูป โปรแกรมจะไม่เปิดไฟล์ให้อัตโนมัติ</value></data>
+  <data name="AnalyzeHeader" xml:space="preserve"><value>วิเคราะห์รูป</value></data>
+  <data name="AnalyzeIntro" xml:space="preserve"><value>Steganalysis เบื้องต้น: สถิติ LSB และ chi-square attack ใช้ทดสอบรูปที่เพื่อนส่งมา</value></data>
+  <data name="ColumnChannel" xml:space="preserve"><value>Channel</value></data>
+  <data name="ColumnOnes" xml:space="preserve"><value>LSB = 1</value></data>
+  <data name="ColumnChiSquare" xml:space="preserve"><value>Chi-square</value></data>
+  <data name="ColumnProbability" xml:space="preserve"><value>p (LSB replacement)</value></data>
+  <data name="AnalyzeExplanation" xml:space="preserve"><value>ถ้า p เข้าใกล้ 1 ทุก channel แสดงว่าน่าจะมีการฝังแบบ LSB replacement จำนวนมาก SweetHide ใช้ LSB matching ซึ่งการทดสอบนี้ไม่ได้ออกแบบมาให้จับได้</value></data>
+  <data name="BitPlaneLabel" xml:space="preserve"><value>Bit plane</value></data>
+  <data name="BitPlaneHint" xml:space="preserve"><value>0 = บิตต่ำสุด</value></data>
+  <data name="SettingsHeader" xml:space="preserve"><value>ตั้งค่า</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>ภาษา</value></data>
+  <data name="LanguageDefault" xml:space="preserve"><value>ตามการตั้งค่า Windows</value></data>
+  <data name="LanguageThai" xml:space="preserve"><value>ไทย</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageRestart" xml:space="preserve"><value>เปิดโปรแกรมใหม่เพื่อเปลี่ยนภาษา</value></data>
+  <data name="ThemeLabel" xml:space="preserve"><value>ธีม</value></data>
+  <data name="ThemeDefault" xml:space="preserve"><value>ตามการตั้งค่า Windows</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>สว่าง</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>มืด</value></data>
+  <data name="UpdatesLabel" xml:space="preserve"><value>อัปเดต</value></data>
+  <data name="CheckForUpdatesOnStart" xml:space="preserve"><value>ตรวจหาเวอร์ชันใหม่ตอนเปิดโปรแกรม</value></data>
+  <data name="CheckForUpdatesHint" xml:space="preserve"><value>แค่ถาม GitHub ว่าเวอร์ชันล่าสุดคืออะไร ไม่มีข้อมูลของคุณหรือรูปภาพถูกส่งออกไป</value></data>
+  <data name="CheckNow" xml:space="preserve"><value>ตรวจตอนนี้</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>กำลังตรวจ…</value></data>
+  <data name="UpToDate" xml:space="preserve"><value>ใช้เวอร์ชันล่าสุดอยู่แล้ว</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>มีเวอร์ชัน {0} ให้ดาวน์โหลดแล้ว</value></data>
+  <data name="DownloadUpdate" xml:space="preserve"><value>ดาวน์โหลดและตรวจไฟล์</value></data>
+  <data name="UpdateDownloaded" xml:space="preserve"><value>ดาวน์โหลดและตรวจ checksum แล้ว: {0}</value></data>
+  <data name="UpdateFailed" xml:space="preserve"><value>ตรวจหาอัปเดตไม่ได้: {0}</value></data>
+  <data name="OpenReleasePage" xml:space="preserve"><value>ดูว่ามีอะไรใหม่</value></data>
+  <data name="OpenSettings" xml:space="preserve"><value>เปิดหน้าตั้งค่า</value></data>
+  <data name="PortableMode" xml:space="preserve"><value>โหมดพกพา: เก็บการตั้งค่าไว้ในโฟลเดอร์ data ข้าง SweetHide.exe</value></data>
+  <data name="FitBits" xml:space="preserve"><value>ปรับให้พอดี ({0} บิต)</value></data>
+  <data name="GeneratePassphrase" xml:space="preserve"><value>สุ่มรหัสผ่านให้</value></data>
+  <data name="GeneratedPassphraseHint" xml:space="preserve"><value>จดไว้หรือส่งให้เพื่อนทางอื่น ถ้าลืมแล้วจะกู้คืนไม่ได้</value></data>
+  <data name="CopiedWillClear" xml:space="preserve"><value>คัดลอกแล้ว คลิปบอร์ดจะถูกล้างใน {0} วินาที</value></data>
+  <data name="CopyAsFile" xml:space="preserve"><value>คัดลอกเป็นไฟล์</value></data>
+  <data name="CopiedAsFile" xml:space="preserve"><value>คัดลอกเป็นไฟล์แล้ว วางใน Discord, Telegram หรือ LINE ได้เลย ไฟล์จะถูกส่งไปแบบไม่บีบอัด</value></data>
+  <data name="SendGuideTitle" xml:space="preserve"><value>ส่งยังไงให้ข้อมูลไม่หาย</value></data>
+  <data name="SendGuideLine" xml:space="preserve"><value>LINE: ส่งเป็น “ไฟล์” ไม่ใช่ส่งเป็นรูป</value></data>
+  <data name="SendGuideTelegram" xml:space="preserve"><value>Telegram: เลือก “File” หรือปิดการบีบอัดรูป</value></data>
+  <data name="SendGuideDiscord" xml:space="preserve"><value>Discord, อีเมล, Google Drive, OneDrive, USB: แนบเป็นไฟล์ได้เลย</value></data>
+  <data name="SendGuideWhatsApp" xml:space="preserve"><value>WhatsApp: ส่งเป็น “เอกสาร”</value></data>
+  <data name="SendGuideBad" xml:space="preserve"><value>รูปใน Messenger, โพสต์ Facebook, Instagram, X: รูปจะถูกบีบอัดใหม่และข้อมูลจะหาย</value></data>
+  <data name="SaveToVault" xml:space="preserve"><value>จำรหัสนี้ไว้ในชื่อ</value></data>
+  <data name="VaultNamePlaceholder" xml:space="preserve"><value>ชื่อเพื่อน</value></data>
+  <data name="VaultLabel" xml:space="preserve"><value>รหัสผ่านที่จำไว้</value></data>
+  <data name="VaultHint" xml:space="preserve"><value>เข้ารหัสไว้กับบัญชี Windows ของคุณ หน้าถอดจะลองรหัสเหล่านี้ให้อัตโนมัติ</value></data>
+  <data name="VaultEmpty" xml:space="preserve"><value>ยังไม่มีรหัสที่จำไว้</value></data>
+  <data name="VaultSaved" xml:space="preserve"><value>จำรหัสไว้ในชื่อ “{0}” แล้ว</value></data>
+  <data name="TryVault" xml:space="preserve"><value>ลองรหัสที่จำไว้</value></data>
+  <data name="TryingVault" xml:space="preserve"><value>กำลังลองรหัสที่จำไว้ {0}/{1}…</value></data>
+  <data name="VaultNoMatch" xml:space="preserve"><value>ไม่มีรหัสที่จำไว้ตัวไหนเปิดรูปนี้ได้</value></data>
+  <data name="RevealedWithVault" xml:space="preserve"><value>เปิดได้ด้วยรหัสที่จำไว้ในชื่อ “{0}”</value></data>
+  <data name="Remember" xml:space="preserve"><value>จำไว้</value></data>
+  <data name="Remove" xml:space="preserve"><value>ลบ</value></data>
+  <data name="PreviewLabel" xml:space="preserve"><value>ดูตัวอย่าง</value></data>
+  <data name="WatchFolderLabel" xml:space="preserve"><value>เฝ้าดูโฟลเดอร์</value></data>
+  <data name="WatchFolderHint" xml:space="preserve"><value>ไฟล์ PNG ใหม่ในโฟลเดอร์นี้ (เช่น Downloads) จะถูกลองเปิดด้วยรหัสที่จำไว้ ถ้าเปิดได้จะมีแจ้งเตือน</value></data>
+  <data name="WatchFolderOff" xml:space="preserve"><value>ยังไม่ได้เฝ้าดูโฟลเดอร์ไหน</value></data>
+  <data name="ChooseFolder" xml:space="preserve"><value>เลือกโฟลเดอร์…</value></data>
+  <data name="StopWatching" xml:space="preserve"><value>หยุด</value></data>
+  <data name="WatchFound" xml:space="preserve"><value>พบข้อมูลลับใน {0}</value></data>
+  <data name="ExplorerMenu" xml:space="preserve"><value>เพิ่ม SweetHide ในเมนูคลิกขวาของ Explorer</value></data>
+  <data name="ExplorerMenuHint" xml:space="preserve"><value>บน Windows 11 จะอยู่ใต้ “Show more options”</value></data>
+  <data name="ExplorerHide" xml:space="preserve"><value>ซ่อนข้อมูลด้วย SweetHide</value></data>
+  <data name="ExplorerReveal" xml:space="preserve"><value>ถอดข้อมูลด้วย SweetHide</value></data>
+  <data name="ShortcutsLabel" xml:space="preserve"><value>คีย์ลัด</value></data>
+  <data name="ShortcutsText" xml:space="preserve"><value>Ctrl+O เปิดรูป · Ctrl+V วางรูป · Ctrl+Enter ซ่อน/ถอด · Ctrl+1–4 สลับหน้า</value></data>
+  <data name="DoneTitle" xml:space="preserve"><value>เสร็จแล้ว</value></data>
+  <data name="HideDoneToast" xml:space="preserve"><value>บันทึก {0} แล้ว</value></data>
+  <data name="WelcomeTitle" xml:space="preserve"><value>ยินดีต้อนรับสู่ SweetHide</value></data>
+  <data name="WelcomeBody" xml:space="preserve"><value>ซ่อน: เลือกรูป พิมพ์ข้อความหรือแนบไฟล์ ตั้งรหัสผ่าน แล้วบันทึกเป็น PNG
+ถอด: เปิด PNG ที่เพื่อนส่งมา แล้วใส่รหัสผ่าน
+ส่งรูปเป็นไฟล์เสมอ เพราะแอปแชตจะบีบอัดรูปใหม่</value></data>
+  <data name="WelcomeTrySample" xml:space="preserve"><value>ลองรูปตัวอย่าง</value></data>
+  <data name="WelcomeClose" xml:space="preserve"><value>เข้าใจแล้ว</value></data>
+  <data name="SampleTitle" xml:space="preserve"><value>โหลดรูปตัวอย่างแล้ว</value></data>
+  <data name="SampleHint" xml:space="preserve"><value>พิมพ์รหัสผ่าน “{0}” แล้วกดถอดข้อมูล</value></data>
+  <data name="SampleMessage" xml:space="preserve"><value>สวัสดีจาก SweetHide! 🍬 ถ้าอ่านข้อความนี้ได้ แปลว่าถอดข้อมูลสำเร็จ ลองซ่อนอะไรของตัวเองดูนะ</value></data>
+  <data name="SampleFile" xml:space="preserve"><value>ซ่อนไฟล์ได้ด้วยนะ ไฟล์นี้เป็นแค่ไฟล์ข้อความเล็ก ๆ</value></data>
+  <data name="AboutLabel" xml:space="preserve"><value>เกี่ยวกับ</value></data>
+  <data name="AboutVersion" xml:space="preserve"><value>เวอร์ชัน {0}</value></data>
+  <data name="AboutLicense" xml:space="preserve"><value>เผยแพร่ภายใต้ MIT License ส่วนข้อความลิขสิทธิ์ของซอฟต์แวร์อื่นที่ใช้ อยู่ในไฟล์ THIRD-PARTY-NOTICES.txt ข้าง ๆ SweetHide.exe</value></data>
+  <data name="AboutText" xml:space="preserve"><value>เข้ารหัสด้วย AES-256-GCM และ Argon2id ฝังข้อมูลแบบ LSB matching กระจายตำแหน่งตามรหัสผ่าน ทุกอย่างทำงานในเครื่องนี้เท่านั้น</value></data>
+</root>

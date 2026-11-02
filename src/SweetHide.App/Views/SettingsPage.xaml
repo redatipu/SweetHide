@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="SweetHide.App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:p="using:SweetHide.Presentation"
+    xmlns:services="using:SweetHide.Presentation.Services"
+    xmlns:vm="using:SweetHide.Presentation.ViewModels">
+
+    <ScrollViewer>
+        <StackPanel
+            MaxWidth="{StaticResource PageMaxWidth}"
+            Padding="{StaticResource PagePadding}"
+            Spacing="16">
+            <TextBlock Style="{StaticResource PageHeaderStyle}" Text="{x:Bind p:Strings.SettingsHeader}" />
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="8">
+                    <RadioButtons
+                        Header="{x:Bind p:Strings.LanguageLabel}"
+                        ItemsSource="{x:Bind vm:SettingsViewModel.LanguageOptions}"
+                        SelectedIndex="{x:Bind ViewModel.LanguageIndex, Mode=TwoWay}" />
+                    <InfoBar
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowRestartHint, Mode=OneWay}"
+                        Message="{x:Bind p:Strings.LanguageRestart}"
+                        Severity="Informational" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <RadioButtons
+                    Header="{x:Bind p:Strings.ThemeLabel}"
+                    ItemsSource="{x:Bind vm:SettingsViewModel.ThemeOptions}"
+                    SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}" />
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Visibility="{x:Bind ViewModel.HasVault}">
+                <StackPanel Spacing="8">
+                    <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind p:Strings.VaultLabel}" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind p:Strings.VaultHint}"
+                        TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind p:Strings.VaultEmpty}" Visibility="{x:Bind ViewModel.HasNoVaultEntries, Mode=OneWay}" />
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.VaultEntries}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="services:VaultEntry">
+                                <Grid Padding="0,2" ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon FontSize="14" Glyph="&#xE77B;" />
+                                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Name}" />
+                                    <Button Grid.Column="2" Click="OnRemoveVaultEntryClick" Content="{x:Bind p:Strings.Remove}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind p:Strings.WatchFolderLabel}" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind p:Strings.WatchFolderHint}"
+                        TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind ViewModel.WatchFolderText, Mode=OneWay}" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Command="{x:Bind ViewModel.ChooseWatchFolderCommand}" Content="{x:Bind p:Strings.ChooseFolder}" />
+                        <Button
+                            Command="{x:Bind ViewModel.StopWatchingCommand}"
+                            Content="{x:Bind p:Strings.StopWatching}"
+                            Visibility="{x:Bind ViewModel.IsWatching, Mode=OneWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="8">
+                    <ToggleSwitch
+                        Header="{x:Bind p:Strings.ExplorerMenu}"
+                        IsEnabled="{x:Bind ViewModel.HasExplorerIntegration}"
+                        IsOn="{x:Bind ViewModel.ExplorerMenuEnabled, Mode=TwoWay}" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind p:Strings.ExplorerMenuHint}"
+                        TextWrapping="Wrap" />
+                    <TextBlock Margin="0,8,0,0" Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind p:Strings.ShortcutsLabel}" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind p:Strings.ShortcutsText}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind p:Strings.UpdatesLabel}" />
+                    <ToggleSwitch Header="{x:Bind p:Strings.CheckForUpdatesOnStart}" IsOn="{x:Bind ViewModel.CheckForUpdatesOnStart, Mode=TwoWay}" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind p:Strings.CheckForUpdatesHint}"
+                        TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Command="{x:Bind ViewModel.CheckForUpdatesCommand}" Content="{x:Bind p:Strings.CheckNow}" />
+                        <Button
+                            Command="{x:Bind ViewModel.DownloadUpdateCommand}"
+                            Content="{x:Bind p:Strings.DownloadUpdate}"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Visibility="{x:Bind ViewModel.HasUpdate, Mode=OneWay}" />
+                        <HyperlinkButton
+                            Command="{x:Bind ViewModel.OpenReleasePageCommand}"
+                            Content="{x:Bind p:Strings.OpenReleasePage}"
+                            Visibility="{x:Bind ViewModel.HasUpdate, Mode=OneWay}" />
+                        <ProgressRing
+                            Width="20"
+                            Height="20"
+                            IsActive="{x:Bind ViewModel.IsCheckingUpdates, Mode=OneWay}" />
+                    </StackPanel>
+                    <TextBlock Text="{x:Bind ViewModel.UpdateStatus, Mode=OneWay}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind p:Strings.AboutLabel}" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Image Width="48" Height="48" Source="ms-appx:///Assets/AppIcon.png" />
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind p:Strings.AppTitle}" />
+                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind vm:SettingsViewModel.VersionText}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind p:Strings.AboutText}"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind p:Strings.AboutLicense}"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind p:Strings.PortableMode}"
+                        TextWrapping="Wrap"
+                        Visibility="{x:Bind ViewModel.IsPortable}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

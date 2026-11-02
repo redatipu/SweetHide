@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="SweetHide.App.Controls.ImageDropZone"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:p="using:SweetHide.Presentation"
+    AllowDrop="True"
+    DragOver="OnDragOver"
+    DragLeave="OnDragLeave"
+    Drop="OnDrop">
+
+    <Grid MinHeight="220">
+        <!-- Dashed outline; turns accent-coloured while something is dragged over. -->
+        <Rectangle
+            x:Name="Outline"
+            RadiusX="8"
+            RadiusY="8"
+            Fill="{ThemeResource SubtleFillColorTransparentBrush}"
+            Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+            StrokeDashArray="4,3"
+            StrokeThickness="1.5" />
+        <Rectangle
+            x:Name="DragOutline"
+            Fill="{ThemeResource SubtleFillColorSecondaryBrush}"
+            Opacity="0"
+            RadiusX="8"
+            RadiusY="8"
+            Stroke="{ThemeResource AccentFillColorDefaultBrush}"
+            StrokeDashArray="4,3"
+            StrokeThickness="2" />
+
+        <!-- Empty state -->
+        <StackPanel
+            x:Name="EmptyState"
+            Padding="24"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="8">
+            <FontIcon
+                HorizontalAlignment="Center"
+                FontSize="40"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Glyph="&#xE8B9;" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                Style="{StaticResource BodyStrongTextBlockStyle}"
+                Text="{x:Bind p:Strings.DropZoneTitle}" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{x:Bind p:Strings.DropZoneHint}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+            <StackPanel
+                Margin="0,8,0,0"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button Command="{x:Bind BrowseCommand, Mode=OneWay}" Style="{StaticResource AccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE838;" />
+                        <TextBlock Text="{x:Bind p:Strings.BrowseImage}" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{x:Bind PasteCommand, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE77F;" />
+                        <TextBlock Text="{x:Bind p:Strings.PasteImage}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Loaded state -->
+        <Grid
+            x:Name="LoadedState"
+            Padding="12"
+            RowSpacing="8"
+            Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Image
+                x:Name="Preview"
+                MaxHeight="260"
+                AutomationProperties.Name="{x:Bind ImageInfo, Mode=OneWay}"
+                Stretch="Uniform" />
+            <Grid Grid.Row="1" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind ImageInfo, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis" />
+                <Button Grid.Column="1" Command="{x:Bind BrowseCommand, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE838;" />
+                        <TextBlock Text="{x:Bind p:Strings.ChangeImage}" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    Grid.Column="2"
+                    AutomationProperties.Name="{x:Bind p:Strings.PasteImage}"
+                    Command="{x:Bind PasteCommand, Mode=OneWay}"
+                    ToolTipService.ToolTip="{x:Bind p:Strings.PasteImage}">
+                    <FontIcon FontSize="14" Glyph="&#xE77F;" />
+                </Button>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

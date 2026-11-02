@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  # Builds the same files a release would ship, so packaging is proven on every pull request.
+  package:
+    needs: test
+    uses: ./.github/workflows/package.yml
+    with:
+      version: dev

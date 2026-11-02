@@ -1,0 +1,43 @@
+name: Test
+
+# Reusable: build, format-check and test everything that builds off Windows (SweetHide.Portable.slnf)
+# on both Windows and Linux.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  build-test:
+    name: Build & test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore SweetHide.Portable.slnf
+
+      - name: Check formatting
+        if: runner.os == 'Linux'
+        run: |
+          dotnet format SweetHide.Portable.slnf --verify-no-changes --no-restore
+          dotnet format whitespace --folder --verify-no-changes --include src/SweetHide.App
+
+      - name: Build
+        run: dotnet build SweetHide.Portable.slnf -c Release --no-restore
+
+      - name: Test
+        run: dotnet test --solution SweetHide.Portable.slnf -c Release --no-build
