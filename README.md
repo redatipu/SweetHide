@@ -90,6 +90,32 @@ sweethide analyze -i suspect.png --bit-plane plane.png
 
 `capacity` บอกว่ารูปนี้จุข้อมูลได้เท่าไรในแต่ละระดับบิต ส่วน `analyze` ทำ steganalysis คือคำนวณสถิติ LSB, chi-square attack และสร้างภาพ bit plane เอาไว้ลองตรวจรูปที่เพื่อนส่งมา
 
+### ใช้ในสคริปต์และ homelab
+
+ทุกคำสั่งใส่ `-i` ได้หลายครั้ง ตอนซ่อนหลายรูปพร้อมกันให้ใช้ `--output-dir` ระบบจะถามรหัสผ่านแค่ครั้งเดียว ตอนถอดหลายรูป ไฟล์ของแต่ละรูปจะแยกไปอยู่ในโฟลเดอร์ของตัวเอง
+
+```bash
+sweethide hide -i a.jpg -i b.jpg --output-dir out -t "ข้อความเดียวกันทุกรูป"
+```
+
+ถ้า `--file` ชี้ไปที่โฟลเดอร์ โปรแกรมจะ zip ทั้งโฟลเดอร์ให้เองก่อนซ่อน ส่วนชื่อไฟล์ `-` หมายถึง stdin/stdout เอาไว้ต่อ pipe กับคำสั่งอื่น
+
+```bash
+cat photo.png | sweethide hide -i - -o - -t "ผ่าน pipe" > secret.png
+```
+
+```bash
+journalctl -n 50 | sweethide hide -i photo.jpg -o logs.png --text-file -
+```
+
+ใส่ `--json` แล้วผลจะออกมาเป็น JSON (array ตามจำนวนรูปเสมอ) เหมาะเอาไปต่อกับ `jq`
+
+```bash
+sweethide capacity -i photo.jpg --json | jq '.[0].capacity[0].payloadBytes'
+```
+
+เปิด tab completion ได้ด้วย `sweethide completion bash|zsh|powershell` ดูวิธีติดตั้งได้ที่ `sweethide completion --help`
+
 | Exit code | ความหมาย |
 |---|---|
 | 0 | สำเร็จ |

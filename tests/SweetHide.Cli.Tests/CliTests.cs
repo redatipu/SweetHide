@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Text.Json;
 
 using SweetHide.Core;
 using SweetHide.Core.Crypto;
@@ -17,9 +18,12 @@ public sealed class CliTests : IDisposable
     private readonly StringWriter _err = new();
     private readonly FakePasswords _passwords = new(Password);
     private readonly SkiaImageCodec _codec = new();
+    private readonly MemoryStream _stdout = new();
+    private byte[] _stdin = [];
 
     public void Dispose()
     {
+        _stdout.Dispose();
         _out.Dispose();
         _err.Dispose();
         _dir.Delete(recursive: true);
@@ -192,6 +196,143 @@ public sealed class CliTests : IDisposable
         Assert.StartsWith("error:", _err.ToString(), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Json_output_for_hide_reveal_capacity_and_analyze()
+    {
+        var cover = WriteCover("cover.png", 120, 90);
+        var output = Path(_dir, "out.png");
+
+        Assert.Equal(0, Run("hide", "-i", cover, "-o", output, "-t", "สวัสดี", "--json"));
+        using (var hide = JsonDocument.Parse(_out.ToString()))
+        {
+            var report = hide.RootElement[0];
+            Assert.Equal(output, report.GetProperty("output").GetString());
+            Assert.Equal(1, report.GetProperty("messages").GetInt32());
+            Assert.True(report.GetProperty("psnr").GetDouble() > 40);
+        }
+
+        ResetOutput();
+        Assert.Equal(0, Run("reveal", "-i", output, "--json", "--list"));
+        using (var reveal = JsonDocument.Parse(_out.ToString()))
+        {
+            Assert.Equal("สวัสดี", reveal.RootElement[0].GetProperty("messages")[0].GetString());
+        }
+
+        ResetOutput();
+        Assert.Equal(0, Run("capacity", "-i", cover, "-i", output, "--json"));
+        using (var capacity = JsonDocument.Parse(_out.ToString()))
+        {
+            Assert.Equal(2, capacity.RootElement.GetArrayLength());
+            Assert.Equal(4, capacity.RootElement[0].GetProperty("capacity").GetArrayLength());
+        }
+
+        ResetOutput();
+        Assert.Equal(0, Run("analyze", "-i", output, "--json"));
+        using var analyze = JsonDocument.Parse(_out.ToString());
+        Assert.Equal(3, analyze.RootElement[0].GetProperty("channels").GetArrayLength());
+    }
+
+    [Fact]
+    public void Json_errors_are_machine_readable()
+    {
+        var output = HideSample();
+        _passwords.Value = "wrong";
+        Assert.Equal(2, Run("reveal", "-i", output, "--json"));
+        using var error = JsonDocument.Parse(_out.ToString());
+        Assert.Equal(2, error.RootElement.GetProperty("exitCode").GetInt32());
+    }
+
+    [Fact]
+    public void Cover_from_stdin_and_png_to_stdout()
+    {
+        _stdin = File.ReadAllBytes(WriteCover("c.png", 100, 80));
+        Assert.Equal(0, Run("hide", "-i", "-", "-o", "-", "-t", "piped"));
+        Assert.Empty(_out.ToString()); // stdout carried only the PNG
+        Assert.Contains("Wrote stdout", _err.ToString(), StringComparison.Ordinal);
+
+        _stdin = _stdout.ToArray();
+        ResetOutput();
+        Assert.Equal(0, Run("reveal", "-i", "-"));
+        Assert.Equal("piped", _out.ToString().TrimEnd());
+    }
+
+    [Fact]
+    public void Message_from_stdin()
+    {
+        _stdin = "จากไฟล์ที่ pipe เข้ามา\n"u8.ToArray();
+        var output = Path(_dir, "o.png");
+        Assert.Equal(0, Run("hide", "-i", WriteCover("c.png", 100, 80), "-o", output, "--text-file", "-"));
+        ResetOutput();
+        Assert.Equal(0, Run("reveal", "-i", output));
+        Assert.Equal("จากไฟล์ที่ pipe เข้ามา", _out.ToString().TrimEnd());
+    }
+
+    [Fact]
+    public void Only_one_thing_may_read_stdin()
+    {
+        Assert.Equal(1, Run("hide", "-i", "-", "--text-file", "-", "-o", Path(_dir, "o.png")));
+        Assert.Contains("standard input", _err.ToString(), StringComparison.Ordinal);
+        Assert.Equal(1, Run("reveal", "-i", "-", "--password-stdin"));
+    }
+
+    [Fact]
+    public void Batch_hide_and_reveal()
+    {
+        var a = WriteCover("a.png", 90, 90);
+        var b = WriteCover("b.png", 100, 70);
+        var outDir = _dir.CreateSubdirectory("batch");
+
+        Assert.Equal(0, Run("hide", "-i", a, "-i", b, "--output-dir", outDir.FullName, "-t", "same note", "-f", WriteFile("n.txt", [1, 2, 3])));
+        Assert.True(File.Exists(Path(outDir, "a.png")));
+        Assert.True(File.Exists(Path(outDir, "b.png")));
+        Assert.Equal(1, _passwords.Calls); // asked once for the whole batch
+
+        var revealDir = _dir.CreateSubdirectory("revealed");
+        ResetOutput();
+        Assert.Equal(0, Run("reveal", "-i", Path(outDir, "a.png"), "-i", Path(outDir, "b.png"), "-o", revealDir.FullName));
+        Assert.True(File.Exists(System.IO.Path.Combine(revealDir.FullName, "a", "n.txt")));
+        Assert.True(File.Exists(System.IO.Path.Combine(revealDir.FullName, "b", "n.txt")));
+        Assert.Contains("== ", _out.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Several_covers_need_an_output_folder()
+    {
+        Assert.Equal(1, Run("hide", "-i", WriteCover("a.png", 50, 50), "-i", WriteCover("b.png", 50, 50), "-o", Path(_dir, "x.png"), "-t", "x"));
+        Assert.Contains("--output-dir", _err.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Folders_are_hidden_as_zip()
+    {
+        var folder = _dir.CreateSubdirectory("notes");
+        File.WriteAllText(System.IO.Path.Combine(folder.FullName, "one.txt"), "1");
+        folder.CreateSubdirectory("sub").CreateSubdirectory("deep");
+        File.WriteAllText(System.IO.Path.Combine(folder.FullName, "sub", "deep", "two.txt"), "2");
+        var output = Path(_dir, "o.png");
+
+        Assert.Equal(0, Run("hide", "-i", WriteCover("c.png", 200, 200), "-o", output, "-f", folder.FullName));
+        var revealDir = _dir.CreateSubdirectory("r");
+        Assert.Equal(0, Run("reveal", "-i", output, "-o", revealDir.FullName));
+
+        using var zip = System.IO.Compression.ZipFile.OpenRead(Path(revealDir, "notes.zip"));
+        Assert.Contains(zip.Entries, e => e.FullName.EndsWith("deep/two.txt", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("bash", "complete -o filenames -F _sweethide sweethide")]
+    [InlineData("zsh", "bashcompinit")]
+    [InlineData("powershell", "Register-ArgumentCompleter")]
+    public void Completion_scripts_list_commands_and_options(string shell, string expected)
+    {
+        Assert.Equal(0, Run("completion", shell));
+        var script = _out.ToString();
+        Assert.Contains(expected, script, StringComparison.Ordinal);
+        Assert.Contains("reveal", script, StringComparison.Ordinal);
+        Assert.Contains("--password-stdin", script, StringComparison.Ordinal);
+        Assert.Contains("--json", script, StringComparison.Ordinal);
+    }
+
     private string HideSample()
     {
         var output = Path(_dir, $"sample-{Guid.NewGuid():N}.png");
@@ -203,7 +344,15 @@ public sealed class CliTests : IDisposable
 
     private int Run(params string[] args)
     {
-        var context = new CliContext { Out = _out, Error = _err, Passwords = _passwords, Kdf = FastKdf };
+        var context = new CliContext
+        {
+            Out = _out,
+            Error = _err,
+            Passwords = _passwords,
+            Kdf = FastKdf,
+            OpenStandardInput = () => new MemoryStream(_stdin),
+            OpenStandardOutput = () => _stdout,
+        };
         return CliApp.Create(context).Parse(args).Invoke(new InvocationConfiguration { Output = _out, Error = _err });
     }
 

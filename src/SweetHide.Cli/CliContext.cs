@@ -15,6 +15,15 @@ internal sealed class CliContext
     public IImageCodec Codec { get; init; } = new SkiaImageCodec();
 
     public KdfParameters Kdf { get; init; } = KdfParameters.Default;
+
+    /// <summary>Raw standard input, for <c>-i -</c> and <c>--text-file -</c>.</summary>
+    public Func<Stream> OpenStandardInput { get; init; } = Console.OpenStandardInput;
+
+    /// <summary>Raw standard output, for <c>-o -</c> (the PNG goes here, so messages move to stderr).</summary>
+    public Func<Stream> OpenStandardOutput { get; init; } = Console.OpenStandardOutput;
+
+    /// <summary>Print machine-readable JSON on stdout instead of human text.</summary>
+    public bool Json { get; set; }
 }
 
 internal static class ExitCodes
