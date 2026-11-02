@@ -122,10 +122,14 @@ internal sealed class RobustLayout
     public static int BodyBits(int payloadLength, int parityPercent) =>
         Codewords(payloadLength, parityPercent).Sum(c => c.Data + c.Parity) * 8;
 
-    /// <summary>Largest payload whose body still gets <see cref="RobustProfile.MinRepetition"/> copies of every bit.</summary>
+    /// <summary>True if a payload of this size gets <see cref="RobustProfile.MinRepetition"/> copies of every bit.</summary>
+    public bool Fits(int payloadLength) =>
+        payloadLength is >= 0 and <= RobustStego.MaxPayloadLength
+        && (long)BodyBits(payloadLength, Profile.ParityPercent) * Profile.MinRepetition <= BodySlotCount;
+
+    /// <summary>Largest payload that <see cref="Fits"/>; 0 also when not even an empty payload fits.</summary>
     public int MaxPayloadBytes()
     {
-        bool Fits(int n) => (long)BodyBits(n, Profile.ParityPercent) * Profile.MinRepetition <= BodySlotCount;
         if (!Fits(0))
         {
             return 0;

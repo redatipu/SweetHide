@@ -115,12 +115,12 @@ public static class RobustStego
         RequireKey(key);
         var (width, height) = TargetSize(cover.Width, cover.Height, profile);
         var layout = new RobustLayout(width, height, key, profile);
-        var capacity = layout.MaxPayloadBytes();
-        if (payload.Length > capacity)
+        if (!layout.Fits(payload.Length))
         {
+            var capacity = layout.Fits(0) ? $"{layout.MaxPayloadBytes():N0} bytes" : "nothing";
             throw new StegoException(
                 StegoError.InsufficientCapacity,
-                $"Needs {payload.Length:N0} bytes but a {width}x{height} image holds {capacity:N0} in {profile.Name} robust mode.");
+                $"Needs {payload.Length:N0} bytes but a {width}x{height} image holds {capacity} in {profile.Name} robust mode.");
         }
 
         var bits = SlotBits(layout, payload);
@@ -245,7 +245,7 @@ public static class RobustStego
     private static RobustExtraction ExtractAtSize(PixelBuffer image, ReadOnlySpan<byte> key, RobustProfile profile)
     {
         var layout = new RobustLayout(image.Width, image.Height, key, profile);
-        if ((long)RobustLayout.BodyBits(0, profile.ParityPercent) * profile.MinRepetition > layout.BodySlotCount)
+        if (!layout.Fits(0))
         {
             return new RobustExtraction(RobustStatus.NotFound, ReadOnlyMemory<byte>.Empty, null, 0, 0.5, 0);
         }

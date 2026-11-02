@@ -1,3 +1,6 @@
+using FsCheck;
+using FsCheck.Xunit;
+
 using SkiaSharp;
 
 using SweetHide.Core.Imaging;
@@ -157,6 +160,31 @@ public class RobustStegoTests
         var result = RobustStego.Extract(RobustTestImages.Recompress(RobustStego.Embed(Cover, [], Key, RobustProfile.Line), 70), Key, RobustProfile.Line);
 
         AssertFound(result, []);
+    }
+
+    [Property(MaxTest = 15)]
+    public void Any_payload_that_fits_roundtrips(PositiveInt seed, bool telegram)
+    {
+        var profile = telegram ? RobustProfile.Telegram : RobustProfile.Line;
+        var random = new Random(seed.Get);
+        var cover = TestImages.Photo(640, 480, seed.Get);
+        var key = RobustTestImages.Key(seed.Get);
+        var payload = RobustTestImages.Payload(random.Next(0, RobustStego.MaxPayloadBytes(640, 480, profile) + 1), seed.Get);
+
+        var result = RobustStego.Extract(RobustTestImages.Recompress(RobustStego.Embed(cover, payload, key, profile), 85), key, profile);
+
+        AssertFound(result, payload);
+    }
+
+    [Fact]
+    public void Tiny_covers_hold_nothing()
+    {
+        var tiny = TestImages.Photo(200, 150);
+
+        Assert.Equal(0, RobustStego.MaxPayloadBytes(200, 150, RobustProfile.Line));
+        var ex = Assert.Throws<StegoException>(() => RobustStego.Embed(tiny, [], Key, RobustProfile.Line));
+        Assert.Equal(StegoError.InsufficientCapacity, ex.Error);
+        Assert.Equal(RobustStatus.NotFound, RobustStego.Extract(tiny, Key).Status);
     }
 
     [Fact]
