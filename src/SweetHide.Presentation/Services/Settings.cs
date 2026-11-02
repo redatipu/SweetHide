@@ -19,7 +19,8 @@ public enum AppTheme
 
 /// <param name="Language">UI language; <see cref="AppLanguage.Default"/> follows Windows.</param>
 /// <param name="Theme">Colour theme; SweetHide starts in <see cref="AppTheme.Dark"/>.</param>
-public sealed record AppSettings(AppLanguage Language = AppLanguage.Default, AppTheme Theme = AppTheme.Dark);
+/// <param name="CheckForUpdates">Ask GitHub for a newer release at start-up. Off by default: no network unless asked.</param>
+public sealed record AppSettings(AppLanguage Language = AppLanguage.Default, AppTheme Theme = AppTheme.Dark, bool CheckForUpdates = false);
 
 public interface ISettingsStore
 {
@@ -34,9 +35,6 @@ public interface ISettingsStore
 /// </summary>
 public sealed class JsonSettingsStore(string path) : ISettingsStore
 {
-    public static string DefaultPath { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SweetHide", "settings.json");
-
     public string FilePath { get; } = path;
 
     public AppSettings Load()
@@ -64,9 +62,11 @@ public sealed class JsonSettingsStore(string path) : ISettingsStore
         File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, SettingsJsonContext.Default.AppSettings));
     }
 
-    private static AppSettings Sanitize(AppSettings settings) => new(
-        Enum.IsDefined(settings.Language) ? settings.Language : AppLanguage.Default,
-        Enum.IsDefined(settings.Theme) ? settings.Theme : new AppSettings().Theme);
+    private static AppSettings Sanitize(AppSettings settings) => settings with
+    {
+        Language = Enum.IsDefined(settings.Language) ? settings.Language : AppLanguage.Default,
+        Theme = Enum.IsDefined(settings.Theme) ? settings.Theme : new AppSettings().Theme,
+    };
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, UseStringEnumConverter = true)]

@@ -11,6 +11,7 @@ public partial class App : Application
 {
     private MainWindow? _window;
 
+    private static readonly AppPaths Paths = AppPaths.Resolve(AppContext.BaseDirectory);
     private readonly JsonSettingsStore _store;
     private readonly AppSettings _settings;
 
@@ -19,7 +20,7 @@ public partial class App : Application
         SmokeTest.ParseArguments(Environment.GetCommandLineArgs());
         _store = new JsonSettingsStore(SmokeTest.IsEnabled
             ? Path.Combine(SmokeTest.OutputDirectory!, "settings.json")
-            : JsonSettingsStore.DefaultPath);
+            : Paths.SettingsFile);
         _settings = _store.Load();
         if (SmokeTest.Language is { } language)
         {
@@ -49,7 +50,7 @@ public partial class App : Application
         Strings.ApplyLanguage(_settings.Language); // before any page builds its text
 
         _window = new MainWindow();
-        Services = new AppServices(_window, _store, _settings);
+        Services = new AppServices(_window, _store, _settings, Paths);
         Services.Theme.Apply(_settings.Theme);
         _window.ShowStartPage();
 
@@ -67,7 +68,9 @@ public partial class App : Application
             return;
         }
 
+        _window.AttachUpdateBanner(Services.Settings);
         _window.Activate();
+        _ = Services.Settings.CheckOnStartupAsync();
     }
 
     private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -80,7 +83,7 @@ public partial class App : Application
 
         try
         {
-            var log = Path.Combine(Path.GetDirectoryName(JsonSettingsStore.DefaultPath)!, "crash.log");
+            var log = Paths.CrashLog;
             Directory.CreateDirectory(Path.GetDirectoryName(log)!);
             File.AppendAllText(log, $"{DateTimeOffset.Now:O}{Environment.NewLine}{e.Exception}{Environment.NewLine}{Environment.NewLine}");
         }

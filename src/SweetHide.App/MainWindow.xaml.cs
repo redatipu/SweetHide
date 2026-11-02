@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 
 using SweetHide.App.Views;
 using SweetHide.Presentation;
+using SweetHide.Presentation.ViewModels;
 
 using Windows.Graphics;
 
@@ -37,6 +38,31 @@ public sealed partial class MainWindow : Window
     public void ShowStartPage() => Navigation.SelectedItem = Navigation.MenuItems[0];
 
     internal Page? CurrentPage => ContentFrame.Content as Page;
+
+    /// <summary>Shows a banner when the settings page found a newer release.</summary>
+    internal void AttachUpdateBanner(SettingsViewModel settings)
+    {
+        void Refresh()
+        {
+            UpdateBar.Message = settings.UpdateBanner;
+            UpdateBar.IsOpen = settings.HasUpdate;
+        }
+
+        settings.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(SettingsViewModel.HasUpdate))
+            {
+                Refresh();
+            }
+        };
+        Refresh();
+    }
+
+    private void OnOpenSettingsClick(object sender, RoutedEventArgs e)
+    {
+        UpdateBar.IsOpen = false;
+        NavigateTo("settings");
+    }
 
     /// <summary>Selects the navigation item with the given tag ("hide", "reveal", "analyze" or "settings").</summary>
     internal void NavigateTo(string tag) =>

@@ -52,7 +52,11 @@ internal sealed class FakeShell : IShellService
 {
     public List<string> Shown { get; } = [];
 
+    public List<Uri> Opened { get; } = [];
+
     public void ShowInFolder(string path) => Shown.Add(path);
+
+    public void OpenUri(Uri uri) => Opened.Add(uri);
 }
 
 internal sealed class FakeTheme : IThemeService

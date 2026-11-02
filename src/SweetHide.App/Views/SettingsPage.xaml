@@ -36,6 +36,35 @@
 
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="8">
+                    <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind p:Strings.UpdatesLabel}" />
+                    <ToggleSwitch Header="{x:Bind p:Strings.CheckForUpdatesOnStart}" IsOn="{x:Bind ViewModel.CheckForUpdatesOnStart, Mode=TwoWay}" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind p:Strings.CheckForUpdatesHint}"
+                        TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Command="{x:Bind ViewModel.CheckForUpdatesCommand}" Content="{x:Bind p:Strings.CheckNow}" />
+                        <Button
+                            Command="{x:Bind ViewModel.DownloadUpdateCommand}"
+                            Content="{x:Bind p:Strings.DownloadUpdate}"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Visibility="{x:Bind ViewModel.HasUpdate, Mode=OneWay}" />
+                        <HyperlinkButton
+                            Command="{x:Bind ViewModel.OpenReleasePageCommand}"
+                            Content="{x:Bind p:Strings.OpenReleasePage}"
+                            Visibility="{x:Bind ViewModel.HasUpdate, Mode=OneWay}" />
+                        <ProgressRing
+                            Width="20"
+                            Height="20"
+                            IsActive="{x:Bind ViewModel.IsCheckingUpdates, Mode=OneWay}" />
+                    </StackPanel>
+                    <TextBlock Text="{x:Bind ViewModel.UpdateStatus, Mode=OneWay}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="8">
                     <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind p:Strings.AboutLabel}" />
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <Image Width="48" Height="48" Source="ms-appx:///Assets/AppIcon.png" />
@@ -52,6 +81,11 @@
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="{x:Bind p:Strings.AboutLicense}"
                         TextWrapping="Wrap" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind p:Strings.PortableMode}"
+                        TextWrapping="Wrap"
+                        Visibility="{x:Bind ViewModel.IsPortable}" />
                 </StackPanel>
             </Border>
         </StackPanel>

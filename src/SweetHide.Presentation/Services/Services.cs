@@ -29,6 +29,9 @@ public interface IShellService
 {
     /// <summary>Opens Explorer with the file selected, or the folder itself.</summary>
     void ShowInFolder(string path);
+
+    /// <summary>Opens a web page in the default browser (only ever our own release pages).</summary>
+    void OpenUri(Uri uri);
 }
 
 public interface IThemeService

@@ -95,6 +95,19 @@
   <data name="ThemeDefault" xml:space="preserve"><value>Use Windows setting</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
   <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="UpdatesLabel" xml:space="preserve"><value>Updates</value></data>
+  <data name="CheckForUpdatesOnStart" xml:space="preserve"><value>Check for a new version when SweetHide starts</value></data>
+  <data name="CheckForUpdatesHint" xml:space="preserve"><value>Only asks GitHub which version is newest. Nothing about you or your images is sent.</value></data>
+  <data name="CheckNow" xml:space="preserve"><value>Check now</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Checking…</value></data>
+  <data name="UpToDate" xml:space="preserve"><value>You have the latest version.</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Version {0} is available.</value></data>
+  <data name="DownloadUpdate" xml:space="preserve"><value>Download and verify</value></data>
+  <data name="UpdateDownloaded" xml:space="preserve"><value>Downloaded and checksum verified: {0}</value></data>
+  <data name="UpdateFailed" xml:space="preserve"><value>Couldn't check for updates: {0}</value></data>
+  <data name="OpenReleasePage" xml:space="preserve"><value>What's new</value></data>
+  <data name="OpenSettings" xml:space="preserve"><value>Open settings</value></data>
+  <data name="PortableMode" xml:space="preserve"><value>Portable mode: settings are kept in the data folder next to SweetHide.exe.</value></data>
   <data name="AboutLabel" xml:space="preserve"><value>About</value></data>
   <data name="AboutVersion" xml:space="preserve"><value>Version {0}</value></data>
   <data name="AboutLicense" xml:space="preserve"><value>Released under the MIT License. Notices for the third-party software it uses are in THIRD-PARTY-NOTICES.txt next to SweetHide.exe.</value></data>

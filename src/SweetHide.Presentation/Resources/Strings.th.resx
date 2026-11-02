@@ -95,6 +95,19 @@
   <data name="ThemeDefault" xml:space="preserve"><value>ตามการตั้งค่า Windows</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>สว่าง</value></data>
   <data name="ThemeDark" xml:space="preserve"><value>มืด</value></data>
+  <data name="UpdatesLabel" xml:space="preserve"><value>อัปเดต</value></data>
+  <data name="CheckForUpdatesOnStart" xml:space="preserve"><value>ตรวจหาเวอร์ชันใหม่ตอนเปิดโปรแกรม</value></data>
+  <data name="CheckForUpdatesHint" xml:space="preserve"><value>แค่ถาม GitHub ว่าเวอร์ชันล่าสุดคืออะไร ไม่มีข้อมูลของคุณหรือรูปภาพถูกส่งออกไป</value></data>
+  <data name="CheckNow" xml:space="preserve"><value>ตรวจตอนนี้</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>กำลังตรวจ…</value></data>
+  <data name="UpToDate" xml:space="preserve"><value>ใช้เวอร์ชันล่าสุดอยู่แล้ว</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>มีเวอร์ชัน {0} ให้ดาวน์โหลดแล้ว</value></data>
+  <data name="DownloadUpdate" xml:space="preserve"><value>ดาวน์โหลดและตรวจไฟล์</value></data>
+  <data name="UpdateDownloaded" xml:space="preserve"><value>ดาวน์โหลดและตรวจ checksum แล้ว: {0}</value></data>
+  <data name="UpdateFailed" xml:space="preserve"><value>ตรวจหาอัปเดตไม่ได้: {0}</value></data>
+  <data name="OpenReleasePage" xml:space="preserve"><value>ดูว่ามีอะไรใหม่</value></data>
+  <data name="OpenSettings" xml:space="preserve"><value>เปิดหน้าตั้งค่า</value></data>
+  <data name="PortableMode" xml:space="preserve"><value>โหมดพกพา: เก็บการตั้งค่าไว้ในโฟลเดอร์ data ข้าง SweetHide.exe</value></data>
   <data name="AboutLabel" xml:space="preserve"><value>เกี่ยวกับ</value></data>
   <data name="AboutVersion" xml:space="preserve"><value>เวอร์ชัน {0}</value></data>
   <data name="AboutLicense" xml:space="preserve"><value>เผยแพร่ภายใต้ MIT License ส่วนข้อความลิขสิทธิ์ของซอฟต์แวร์อื่นที่ใช้ อยู่ในไฟล์ THIRD-PARTY-NOTICES.txt ข้าง ๆ SweetHide.exe</value></data>

@@ -199,6 +199,32 @@ public static class Strings
 
     public static string ThemeDark => Get();
 
+    public static string UpdatesLabel => Get();
+
+    public static string CheckForUpdatesOnStart => Get();
+
+    public static string CheckForUpdatesHint => Get();
+
+    public static string CheckNow => Get();
+
+    public static string UpdateChecking => Get();
+
+    public static string UpToDate => Get();
+
+    public static string UpdateAvailable => Get();
+
+    public static string DownloadUpdate => Get();
+
+    public static string UpdateDownloaded => Get();
+
+    public static string UpdateFailed => Get();
+
+    public static string OpenReleasePage => Get();
+
+    public static string OpenSettings => Get();
+
+    public static string PortableMode => Get();
+
     public static string AboutLabel => Get();
 
     public static string AboutVersion => Get();

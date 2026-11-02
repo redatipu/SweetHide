@@ -12,4 +12,15 @@ internal sealed class ShellService : IShellService
         var arguments = Directory.Exists(path) ? $"\"{path}\"" : $"/select,\"{path}\"";
         using var process = Process.Start(new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = false });
     }
+
+    public void OpenUri(Uri uri)
+    {
+        ArgumentNullException.ThrowIfNull(uri);
+        if (uri.Scheme != Uri.UriSchemeHttps)
+        {
+            throw new ArgumentException("Only https links are opened.", nameof(uri));
+        }
+
+        using var process = Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+    }
 }
