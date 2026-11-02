@@ -1,0 +1,16 @@
+# Only what the server image needs goes into the build context: everything else is excluded first,
+# then the inputs of src/SweetHide.Server are let back in.
+*
+!global.json
+!Directory.Build.props
+!Directory.Packages.props
+!.editorconfig
+!LICENSE
+!THIRD-PARTY-NOTICES.txt
+!build/Licenses.targets
+!src/SweetHide.Core
+!src/SweetHide.Server
+
+# Local build output must never leak into the image.
+**/bin
+**/obj

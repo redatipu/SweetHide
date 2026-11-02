@@ -37,6 +37,13 @@ Microsoft.AspNetCore.Mvc.Testing (server tests only, not shipped)
   MIT License. Copyright (c) .NET Foundation and Contributors.
   https://github.com/dotnet/aspnetcore
 
+Container image (web server only)
+  Built on Microsoft's .NET image mcr.microsoft.com/dotnet/aspnet (Ubuntu 24.04
+  "chiseled"), which brings the .NET runtime and a few Ubuntu packages such as
+  glibc, libstdc++, OpenSSL, zlib, ICU and tzdata. Each keeps its own license;
+  the texts are in the image under /usr/share/doc/<package>/copyright.
+  https://github.com/dotnet/dotnet-docker
+
 Windows App SDK / WinUI 3 (desktop app only)
   Microsoft Software License Terms; files placed in the app by the Windows App
   SDK NuGet packages may be redistributed with it.
