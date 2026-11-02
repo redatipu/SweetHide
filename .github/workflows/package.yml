@@ -62,7 +62,7 @@ jobs:
 
       - name: Upload screenshots
         if: always() && matrix.arch == 'x64'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: SweetHide-screenshots
           path: screenshots
@@ -77,7 +77,7 @@ jobs:
           Pop-Location
           Get-Item "dist/$env:NAME.zip" | Format-Table Name, Length
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: asset-${{ env.NAME }}
           path: dist/${{ env.NAME }}.zip
@@ -113,7 +113,7 @@ jobs:
           fi
           ls -l dist
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: asset-${{ env.NAME }}
           path: dist/*
@@ -157,7 +157,7 @@ jobs:
           sha256sum -- * > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: release-assets
           path: release
