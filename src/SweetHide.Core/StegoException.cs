@@ -15,6 +15,9 @@ public enum StegoError
 
     /// <summary>The password was right but the hidden data was damaged (e.g. the image was edited or re-encoded).</summary>
     Corrupted,
+
+    /// <summary>The password was right but the data was written by a newer version of SweetHide.</summary>
+    UnsupportedFormat,
 }
 
 public sealed class StegoException : Exception

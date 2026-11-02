@@ -14,9 +14,10 @@ internal interface ISlotSource
 /// </summary>
 internal sealed class SlotLayout
 {
-    public const int SaltBits = StegoEngine.SaltSize * 8;
+    public const int SaltBits = V1Format.SaltSize * 8;
 
-    private static readonly byte[] SaltPermutationKey = SHA512.HashData("sweethide/v1/salt-slots"u8);
+    /// <summary>Public key of the salt-slot order. Format v2 reuses it for its public order, see <see cref="V2Layout"/>.</summary>
+    internal static readonly byte[] SaltPermutationKey = SHA512.HashData("sweethide/v1/salt-slots"u8);
 
     private readonly HashSet<long> _saltSet;
 

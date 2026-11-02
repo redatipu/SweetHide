@@ -28,12 +28,14 @@ public sealed class HideViewModelTests : IDisposable
         Assert.Equal(CapacityState.NoImage, _vm.CapacityState);
         Assert.False(_vm.HideCommand.CanExecute(null));
 
-        await _vm.LoadCoverFromBytesAsync("photo.png", PngBytes(200, 100));
+        var png = PngBytes(200, 100);
+        await _vm.LoadCoverFromBytesAsync("photo.png", png);
         Assert.True(_vm.HasCover);
         Assert.Equal("200 × 100 · photo.png", _vm.CoverInfo);
         Assert.Equal(CapacityState.Empty, _vm.CapacityState);
-        var oneBit = _vm.CapacityBytes;
-        Assert.Equal((200 * 100 * 3 - 128) / 8, oneBit);
+        var pixels = Codec.Decode(new MemoryStream(png), applyOrientation: true);
+        Assert.Equal(StegoEngine.GetCapacity(pixels, 1).ContainerBytes, _vm.CapacityBytes);
+        Assert.InRange(_vm.CapacityBytes, 7000, 200 * 100 * 3 / 8);
 
         _vm.MessageText = "สวัสดี";
         Assert.Equal(CapacityState.Measuring, _vm.CapacityState);
@@ -43,7 +45,7 @@ public sealed class HideViewModelTests : IDisposable
 
         _vm.BitsIndex = 1;
         Assert.Equal(2, _vm.BitsPerChannel);
-        Assert.Equal((200 * 100 * 3 - 128) * 2 / 8, _vm.CapacityBytes);
+        Assert.Equal(StegoEngine.GetCapacity(pixels, 2).ContainerBytes, _vm.CapacityBytes);
     }
 
     [Fact]
