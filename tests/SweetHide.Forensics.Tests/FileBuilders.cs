@@ -132,6 +132,39 @@ internal static class FileBuilders
         return riff;
     }
 
+    /// <summary>A PCM WAV file. <paramref name="samples"/> holds raw sample bytes (16-bit samples little-endian).</summary>
+    public static byte[] Wav(int channels, int sampleRate, int bits, byte[] samples, ushort formatTag = 1)
+    {
+        var fmt = new byte[16];
+        BinaryPrimitives.WriteUInt16LittleEndian(fmt, formatTag);
+        BinaryPrimitives.WriteUInt16LittleEndian(fmt.AsSpan(2), (ushort)channels);
+        BinaryPrimitives.WriteUInt32LittleEndian(fmt.AsSpan(4), (uint)sampleRate);
+        BinaryPrimitives.WriteUInt32LittleEndian(fmt.AsSpan(8), (uint)(sampleRate * channels * bits / 8));
+        BinaryPrimitives.WriteUInt16LittleEndian(fmt.AsSpan(12), (ushort)(channels * bits / 8));
+        BinaryPrimitives.WriteUInt16LittleEndian(fmt.AsSpan(14), (ushort)bits);
+        return Riff("WAVE", ("fmt ", fmt), ("data", samples));
+    }
+
+    /// <summary>16-bit PCM samples (interleaved) as little-endian bytes.</summary>
+    public static byte[] Pcm16(IEnumerable<short> samples) =>
+        [.. samples.SelectMany(s => new[] { (byte)(s & 0xFF), (byte)((s >> 8) & 0xFF) })];
+
+    /// <summary>A sine tone with a little noise, as 16-bit samples, interleaved over <paramref name="channels"/>.</summary>
+    public static short[] Tone(int frames, int channels, int sampleRate, double frequency, int seed = 1)
+    {
+        var random = new Random(seed);
+        var samples = new short[frames * channels];
+        for (var f = 0; f < frames; f++)
+        {
+            for (var c = 0; c < channels; c++)
+            {
+                samples[(f * channels) + c] = (short)((8000 * Math.Sin(2 * Math.PI * frequency * f / sampleRate)) + random.Next(-40, 41));
+            }
+        }
+
+        return samples;
+    }
+
     /// <summary>A 24-bit BMP; <paramref name="gap"/> extra bytes sit between the header and the pixels.</summary>
     public static byte[] Bmp(int width, int height, int gap = 0)
     {
