@@ -62,7 +62,7 @@
 - อ่านเขียน slot หลาย core, PNG ใช้ zlib level 6, test แบบ mutation/fuzz และ harness สำหรับ SharpFuzz
 
 ### 💡 Phase 4: ทำเพิ่มถ้าสนใจ
-- **Robust mode** ให้ข้อมูลรอดการส่งผ่าน LINE หรือ Facebook: ฝังใน DCT coefficient ร่วมกับ Reed–Solomon ECC แต่จะเก็บข้อมูลได้น้อยลงมาก
+- ~~**Robust mode** ให้ข้อมูลรอดการส่งผ่าน LINE หรือ Telegram~~ ✅ ทำแล้วในเฟส B (QIM บน DCT ร่วมกับ Reed–Solomon ดู [ROBUST.md](ROBUST.md)) ส่วน Facebook/Messenger ตัดสินใจไม่ทำ
 - Adaptive embedding ขั้นกว่า (HUGO/S-UNIWARD ร่วมกับ syndrome-trellis codes) แทนการเลือกด้วย threshold ที่มีใน v2
 - Elligator 2 สำหรับ ephemeral key ในโหมด public key เพื่อปิดหลักฐาน 1 บิตที่เหลืออยู่
 - เมนูคลิกขวาใน Explorer ("Reveal with SweetHide"), batch mode
