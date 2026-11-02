@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Core package only: decoding works on raw luminance, no System.Drawing or SkiaSharp bindings needed. -->
+    <PackageReference Include="ZXing.Net" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SweetHide.Core\SweetHide.Core.csproj" />
   </ItemGroup>
 
