@@ -33,6 +33,10 @@ internal static class ExitCodes
     public const int NotFoundOrWrongPassword = 2;
     public const int InsufficientCapacity = 3;
     public const int Corrupted = 4;
+    public const int UnsupportedFormat = 5;
+    public const int SplitShare = 6;
+    public const int NotEnoughShares = 7;
+    public const int SharesDoNotMatch = 8;
 }
 
 /// <summary>A failure with a message meant for the user and a specific exit code.</summary>
