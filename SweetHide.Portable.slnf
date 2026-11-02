@@ -4,10 +4,12 @@
     "projects": [
       "src/SweetHide.Core/SweetHide.Core.csproj",
       "src/SweetHide.Cli/SweetHide.Cli.csproj",
+      "src/SweetHide.Forensics/SweetHide.Forensics.csproj",
       "src/SweetHide.Presentation/SweetHide.Presentation.csproj",
       "src/SweetHide.Server/SweetHide.Server.csproj",
       "tests/SweetHide.Core.Tests/SweetHide.Core.Tests.csproj",
       "tests/SweetHide.Cli.Tests/SweetHide.Cli.Tests.csproj",
+      "tests/SweetHide.Forensics.Tests/SweetHide.Forensics.Tests.csproj",
       "tests/SweetHide.Presentation.Tests/SweetHide.Presentation.Tests.csproj",
       "tests/SweetHide.Server.Tests/SweetHide.Server.Tests.csproj",
       "tests/SweetHide.Fuzz/SweetHide.Fuzz.csproj"

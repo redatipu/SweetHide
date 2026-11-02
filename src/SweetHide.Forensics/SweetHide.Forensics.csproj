@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>SweetHide.Forensics</RootNamespace>
+    <Description>Read-only forensics for finding data hidden in images and audio by other tools (CTF-style "stego finder").</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SweetHide.Core\SweetHide.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SweetHide.Forensics.Tests" />
+  </ItemGroup>
+
+</Project>
