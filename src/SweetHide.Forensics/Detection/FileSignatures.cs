@@ -39,6 +39,8 @@ public static class FileSignatures
 
     private static readonly SearchValues<byte> FirstBytesValues = SearchValues.Create([.. Table.Select(s => s.Magic[0]).Distinct()]);
 
+    private static readonly Signature[][] ByFirstByte = BuildBuckets();
+
     /// <summary>Every type that <see cref="Identify"/> can return.</summary>
     public static IReadOnlyList<FileTypeMatch> KnownTypes { get; } = [.. Table.Select(s => s.Match).DistinctBy(m => m.Type)];
 
@@ -48,12 +50,12 @@ public static class FileSignatures
     /// <summary>Returns the type of a file that starts at the beginning of <paramref name="data"/>, if recognised.</summary>
     public static FileTypeMatch? Identify(ReadOnlySpan<byte> data)
     {
-        if (data.IsEmpty || !FirstBytesValues.Contains(data[0]))
+        if (data.IsEmpty)
         {
             return null;
         }
 
-        foreach (var signature in Table)
+        foreach (var signature in ByFirstByte[data[0]])
         {
             if (data.StartsWith(signature.Magic) && (signature.Validate is null || signature.Validate(data)))
             {
@@ -66,6 +68,17 @@ public static class FileSignatures
 
     internal static FileTypeMatch MatchFor(FileType type) =>
         KnownTypes.FirstOrDefault(m => m.Type == type) ?? new FileTypeMatch(type, type.ToString(), ".bin");
+
+    private static Signature[][] BuildBuckets()
+    {
+        var buckets = new Signature[256][];
+        for (var b = 0; b < buckets.Length; b++)
+        {
+            buckets[b] = [.. Table.Where(s => s.Magic[0] == b)];
+        }
+
+        return buckets;
+    }
 
     private static bool RiffForm(ReadOnlySpan<byte> d, ReadOnlySpan<byte> form) => d.Length >= 12 && d.Slice(8, 4).SequenceEqual(form);
 
