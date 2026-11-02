@@ -4,9 +4,9 @@
     <RootNamespace>SweetHide.Server</RootNamespace>
     <Description>Self-hosted web server and browser UI for SweetHide, meant for trusted home networks.</Description>
     <!--
-      Passwords are normalized to NFC before key derivation (docs/FORMAT.md), which needs ICU. Saying "false" here
-      (instead of leaving it unset) makes the app refuse to start without ICU rather than silently skipping
-      normalization, which would produce images whose Thai or accented passwords don't open in the other apps.
+      Passwords are normalized to NFC before key derivation (docs/FORMAT.md), which needs ICU, so this must never be
+      switched to true. An environment can still force invariant mode (DOTNET_SYSTEM_GLOBALIZATION_INVARIANT, as the
+      plain chiseled images do); ServerApp checks for that at startup and refuses to run.
     -->
     <InvariantGlobalization>false</InvariantGlobalization>
     <!-- Ship only what the container needs: no .pdb/.xml next to the app. -->
