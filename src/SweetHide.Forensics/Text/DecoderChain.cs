@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Text.Unicode;
 
 using SweetHide.Forensics.Detection;
@@ -15,7 +16,8 @@ public sealed record DecodeStep(string Decoder, string Output);
 /// <param name="Score">0–1. Flag-shaped text and files score highest, then readable language.</param>
 public sealed record DecodeResult(IReadOnlyList<DecodeStep> Steps, string? Text, FileTypeMatch? FileType, double Score)
 {
-    /// <summary>The decoded bytes when the chain ends in a file (null for text results).</summary>
+    /// <summary>The decoded bytes when the chain ends in a file (null for text results). Not written to JSON.</summary>
+    [JsonIgnore]
     public byte[]? FileBytes { get; init; }
 
     /// <summary>"Base64 → Hex → ROT13".</summary>

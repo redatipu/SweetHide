@@ -12,9 +12,13 @@ namespace SweetHide.Forensics.Tests;
 internal static class FileBuilders
 {
     /// <summary>A real PNG with extra chunks inserted before IEND.</summary>
-    public static byte[] Png(int width = 8, int height = 8, params (string Type, byte[] Data)[] extraChunks)
+    public static byte[] Png(int width = 8, int height = 8, params (string Type, byte[] Data)[] extraChunks) =>
+        PngOf(TestData.Photo(width, height), extraChunks);
+
+    /// <summary>The given pixels as PNG, with extra chunks inserted before IEND.</summary>
+    public static byte[] PngOf(SweetHide.Core.Imaging.PixelBuffer image, params (string Type, byte[] Data)[] extraChunks)
     {
-        var png = TestData.EncodePng(TestData.Photo(width, height));
+        var png = TestData.EncodePng(image);
         var iend = png.Length - 12;
         using var output = new MemoryStream();
         output.Write(png, 0, iend);

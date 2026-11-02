@@ -13,7 +13,9 @@ namespace SweetHide.Forensics.Steganalysis;
 /// randomises only the LSB, so high values point at hidden data in otherwise smooth areas.
 /// </param>
 /// <param name="SuspiciousBlockRatio">Share of blocks whose excess is above 0.5.</param>
-/// <param name="Heatmap">Image-sized: each block coloured from blue (structured LSBs) to red (random LSBs).</param>
+/// <param name="Heatmap">
+/// Image-sized: each block coloured from blue (structured LSBs) to red (random LSBs). Null when not requested.
+/// </param>
 public sealed record LsbRandomnessMap(
     int BlockSize,
     int Columns,
@@ -21,14 +23,18 @@ public sealed record LsbRandomnessMap(
     IReadOnlyList<double> Randomness,
     IReadOnlyList<double> ExcessOverBit1,
     double SuspiciousBlockRatio,
-    PixelBuffer Heatmap);
+    PixelBuffer? Heatmap);
 
 /// <summary>Maps where in the image the least significant bits look random.</summary>
 public static class LsbRandomness
 {
     private const double SuspiciousExcess = 0.5;
 
-    public static LsbRandomnessMap Map(PixelBuffer image, int blockSize = 32, CancellationToken cancellationToken = default)
+    /// <param name="image">The image to map.</param>
+    /// <param name="blockSize">Block edge in pixels.</param>
+    /// <param name="renderHeatmap">Also render <see cref="LsbRandomnessMap.Heatmap"/> (as large as the image).</param>
+    /// <param name="cancellationToken">Stops the work between rows of blocks.</param>
+    public static LsbRandomnessMap Map(PixelBuffer image, int blockSize = 32, bool renderHeatmap = true, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(image);
         ArgumentOutOfRangeException.ThrowIfLessThan(blockSize, 2);
@@ -56,7 +62,8 @@ public static class LsbRandomness
             }
         }
 
-        return new LsbRandomnessMap(blockSize, columns, rows, randomness, excess, (double)suspicious / randomness.Length, Render(image, blockSize, columns, randomness));
+        var heatmap = renderHeatmap ? Render(image, blockSize, columns, randomness) : null;
+        return new LsbRandomnessMap(blockSize, columns, rows, randomness, excess, (double)suspicious / randomness.Length, heatmap);
     }
 
     /// <summary>

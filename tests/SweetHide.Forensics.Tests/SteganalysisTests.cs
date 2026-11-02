@@ -8,23 +8,6 @@ namespace SweetHide.Forensics.Tests;
 
 public class SteganalysisTests
 {
-    /// <summary>LSB replacement: each R/G/B sample carries a random message bit with probability <paramref name="rate"/>.</summary>
-    private static PixelBuffer ReplaceLsbs(PixelBuffer cover, double rate, int seed)
-    {
-        var random = new Random(seed);
-        var image = cover.Clone();
-        var pixels = image.Pixels;
-        for (var i = 0; i < pixels.Length; i++)
-        {
-            if ((i & 3) != 3 && random.NextDouble() < rate)
-            {
-                pixels[i] = (byte)((pixels[i] & 0xFE) | random.Next(2));
-            }
-        }
-
-        return image;
-    }
-
     [Fact]
     public void Rs_and_spa_track_the_embedding_rate()
     {
@@ -110,7 +93,7 @@ public class SteganalysisTests
             }
         }
 
-        var map = LsbRandomness.Map(cover, blockSize: 32, Ct);
+        var map = LsbRandomness.Map(cover, blockSize: 32, cancellationToken: Ct);
 
         Assert.Equal((4, 2), (map.Columns, map.Rows));
         for (var row = 0; row < 2; row++)
@@ -131,6 +114,8 @@ public class SteganalysisTests
         }
 
         Assert.Equal(0.5, map.SuspiciousBlockRatio);
+        Assert.Null(LsbRandomness.Map(cover, renderHeatmap: false, cancellationToken: Ct).Heatmap);
+        Assert.NotNull(map.Heatmap);
         Assert.Equal((128, 64), (map.Heatmap.Width, map.Heatmap.Height));
         Assert.True(map.Heatmap.Pixels[0] > 200);         // left: red
         Assert.True(map.Heatmap.Pixels[(127 * 4) + 2] > 200); // right: blue

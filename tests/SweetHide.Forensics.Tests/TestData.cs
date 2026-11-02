@@ -101,6 +101,23 @@ internal static class TestData
         return image;
     }
 
+    /// <summary>LSB replacement: each R/G/B sample carries a random message bit with probability <paramref name="rate"/>.</summary>
+    public static PixelBuffer ReplaceLsbs(PixelBuffer cover, double rate, int seed)
+    {
+        var random = new Random(seed);
+        var image = cover.Clone();
+        var pixels = image.Pixels;
+        for (var i = 0; i < pixels.Length; i++)
+        {
+            if ((i & 3) != 3 && random.NextDouble() < rate)
+            {
+                pixels[i] = (byte)((pixels[i] & 0xFE) | random.Next(2));
+            }
+        }
+
+        return image;
+    }
+
     public static byte[] Utf8(string text) => Encoding.UTF8.GetBytes(text);
 
     public static byte[] Concat(params byte[][] parts) => [.. parts.SelectMany(p => p)];
