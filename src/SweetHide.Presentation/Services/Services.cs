@@ -23,6 +23,20 @@ public interface IClipboardService
     Task<ImageInput?> GetImageAsync();
 
     void SetText(string text);
+
+    /// <summary>Puts files on the clipboard as files, so chat apps send them untouched instead of as photos.</summary>
+    Task CopyFilesAsync(IReadOnlyList<string> paths);
+
+    /// <summary>Clears the clipboard if it still holds <paramref name="text"/> (we don't wipe what the user copied since).</summary>
+    void ClearIfText(string text);
+}
+
+/// <summary>"Hide with SweetHide" / "Reveal with SweetHide" in Explorer's right-click menu.</summary>
+public interface IExplorerIntegration
+{
+    bool IsEnabled { get; }
+
+    void SetEnabled(bool enabled);
 }
 
 public interface IShellService

@@ -12,6 +12,8 @@
 
     <Page.KeyboardAccelerators>
         <KeyboardAccelerator Key="V" Invoked="OnPasteAccelerator" Modifiers="Control" />
+        <KeyboardAccelerator Key="O" Invoked="OnOpenAccelerator" Modifiers="Control" />
+        <KeyboardAccelerator Key="Enter" Invoked="OnPrimaryAccelerator" Modifiers="Control" />
     </Page.KeyboardAccelerators>
 
     <ScrollViewer>
@@ -82,11 +84,32 @@
                                     <TextBlock Text="{x:Bind p:Strings.RevealButton}" />
                                 </StackPanel>
                             </Button>
+                            <Button Command="{x:Bind ViewModel.TryVaultCommand}" Visibility="{x:Bind ViewModel.HasVault, Mode=OneWay}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="14" Glyph="&#xE8D7;" />
+                                    <TextBlock Text="{x:Bind p:Strings.TryVault}" />
+                                </StackPanel>
+                            </Button>
                             <ProgressRing
                                 Width="24"
                                 Height="24"
                                 IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
                         </StackPanel>
+                        <Grid ColumnSpacing="8" Visibility="{x:Bind ViewModel.CanRemember, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                Header="{x:Bind p:Strings.SaveToVault}"
+                                PlaceholderText="{x:Bind p:Strings.VaultNamePlaceholder}"
+                                Text="{x:Bind ViewModel.RememberName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button
+                                Grid.Column="1"
+                                VerticalAlignment="Bottom"
+                                Command="{x:Bind ViewModel.RememberPasswordCommand}"
+                                Content="{x:Bind p:Strings.Remember}" />
+                        </Grid>
                     </StackPanel>
                 </Border>
 
@@ -190,6 +213,30 @@
                                         Text="{x:Bind Text}"
                                         TextWrapping="Wrap"
                                         Visibility="{x:Bind IsText}" />
+                                    <Image
+                                        Grid.Row="1"
+                                        Grid.ColumnSpan="4"
+                                        MaxHeight="240"
+                                        HorizontalAlignment="Left"
+                                        Source="{x:Bind local:Converters.ImageFromBytes(PreviewImageBytes)}"
+                                        Stretch="Uniform"
+                                        Visibility="{x:Bind IsImagePreview}" />
+                                    <Expander
+                                        Grid.Row="1"
+                                        Grid.ColumnSpan="4"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Header="{x:Bind p:Strings.PreviewLabel}"
+                                        Visibility="{x:Bind HasTextPreview}">
+                                        <TextBox
+                                            MaxHeight="240"
+                                            AcceptsReturn="True"
+                                            FontFamily="Consolas"
+                                            IsReadOnly="True"
+                                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                            Text="{x:Bind PreviewText}"
+                                            TextWrapping="Wrap" />
+                                    </Expander>
                                 </Grid>
                             </Border>
                         </DataTemplate>

@@ -108,6 +108,55 @@
   <data name="OpenReleasePage" xml:space="preserve"><value>ดูว่ามีอะไรใหม่</value></data>
   <data name="OpenSettings" xml:space="preserve"><value>เปิดหน้าตั้งค่า</value></data>
   <data name="PortableMode" xml:space="preserve"><value>โหมดพกพา: เก็บการตั้งค่าไว้ในโฟลเดอร์ data ข้าง SweetHide.exe</value></data>
+  <data name="FitBits" xml:space="preserve"><value>ปรับให้พอดี ({0} บิต)</value></data>
+  <data name="GeneratePassphrase" xml:space="preserve"><value>สุ่มรหัสผ่านให้</value></data>
+  <data name="GeneratedPassphraseHint" xml:space="preserve"><value>จดไว้หรือส่งให้เพื่อนทางอื่น ถ้าลืมแล้วจะกู้คืนไม่ได้</value></data>
+  <data name="CopiedWillClear" xml:space="preserve"><value>คัดลอกแล้ว คลิปบอร์ดจะถูกล้างใน {0} วินาที</value></data>
+  <data name="CopyAsFile" xml:space="preserve"><value>คัดลอกเป็นไฟล์</value></data>
+  <data name="CopiedAsFile" xml:space="preserve"><value>คัดลอกเป็นไฟล์แล้ว วางใน Discord, Telegram หรือ LINE ได้เลย ไฟล์จะถูกส่งไปแบบไม่บีบอัด</value></data>
+  <data name="SendGuideTitle" xml:space="preserve"><value>ส่งยังไงให้ข้อมูลไม่หาย</value></data>
+  <data name="SendGuideLine" xml:space="preserve"><value>LINE: ส่งเป็น “ไฟล์” ไม่ใช่ส่งเป็นรูป</value></data>
+  <data name="SendGuideTelegram" xml:space="preserve"><value>Telegram: เลือก “File” หรือปิดการบีบอัดรูป</value></data>
+  <data name="SendGuideDiscord" xml:space="preserve"><value>Discord, อีเมล, Google Drive, OneDrive, USB: แนบเป็นไฟล์ได้เลย</value></data>
+  <data name="SendGuideWhatsApp" xml:space="preserve"><value>WhatsApp: ส่งเป็น “เอกสาร”</value></data>
+  <data name="SendGuideBad" xml:space="preserve"><value>รูปใน Messenger, โพสต์ Facebook, Instagram, X: รูปจะถูกบีบอัดใหม่และข้อมูลจะหาย</value></data>
+  <data name="SaveToVault" xml:space="preserve"><value>จำรหัสนี้ไว้ในชื่อ</value></data>
+  <data name="VaultNamePlaceholder" xml:space="preserve"><value>ชื่อเพื่อน</value></data>
+  <data name="VaultLabel" xml:space="preserve"><value>รหัสผ่านที่จำไว้</value></data>
+  <data name="VaultHint" xml:space="preserve"><value>เข้ารหัสไว้กับบัญชี Windows ของคุณ หน้าถอดจะลองรหัสเหล่านี้ให้อัตโนมัติ</value></data>
+  <data name="VaultEmpty" xml:space="preserve"><value>ยังไม่มีรหัสที่จำไว้</value></data>
+  <data name="VaultSaved" xml:space="preserve"><value>จำรหัสไว้ในชื่อ “{0}” แล้ว</value></data>
+  <data name="TryVault" xml:space="preserve"><value>ลองรหัสที่จำไว้</value></data>
+  <data name="TryingVault" xml:space="preserve"><value>กำลังลองรหัสที่จำไว้ {0}/{1}…</value></data>
+  <data name="VaultNoMatch" xml:space="preserve"><value>ไม่มีรหัสที่จำไว้ตัวไหนเปิดรูปนี้ได้</value></data>
+  <data name="RevealedWithVault" xml:space="preserve"><value>เปิดได้ด้วยรหัสที่จำไว้ในชื่อ “{0}”</value></data>
+  <data name="Remember" xml:space="preserve"><value>จำไว้</value></data>
+  <data name="Remove" xml:space="preserve"><value>ลบ</value></data>
+  <data name="PreviewLabel" xml:space="preserve"><value>ดูตัวอย่าง</value></data>
+  <data name="WatchFolderLabel" xml:space="preserve"><value>เฝ้าดูโฟลเดอร์</value></data>
+  <data name="WatchFolderHint" xml:space="preserve"><value>ไฟล์ PNG ใหม่ในโฟลเดอร์นี้ (เช่น Downloads) จะถูกลองเปิดด้วยรหัสที่จำไว้ ถ้าเปิดได้จะมีแจ้งเตือน</value></data>
+  <data name="WatchFolderOff" xml:space="preserve"><value>ยังไม่ได้เฝ้าดูโฟลเดอร์ไหน</value></data>
+  <data name="ChooseFolder" xml:space="preserve"><value>เลือกโฟลเดอร์…</value></data>
+  <data name="StopWatching" xml:space="preserve"><value>หยุด</value></data>
+  <data name="WatchFound" xml:space="preserve"><value>พบข้อมูลลับใน {0}</value></data>
+  <data name="ExplorerMenu" xml:space="preserve"><value>เพิ่ม SweetHide ในเมนูคลิกขวาของ Explorer</value></data>
+  <data name="ExplorerMenuHint" xml:space="preserve"><value>บน Windows 11 จะอยู่ใต้ “Show more options”</value></data>
+  <data name="ExplorerHide" xml:space="preserve"><value>ซ่อนข้อมูลด้วย SweetHide</value></data>
+  <data name="ExplorerReveal" xml:space="preserve"><value>ถอดข้อมูลด้วย SweetHide</value></data>
+  <data name="ShortcutsLabel" xml:space="preserve"><value>คีย์ลัด</value></data>
+  <data name="ShortcutsText" xml:space="preserve"><value>Ctrl+O เปิดรูป · Ctrl+V วางรูป · Ctrl+Enter ซ่อน/ถอด · Ctrl+1–4 สลับหน้า</value></data>
+  <data name="DoneTitle" xml:space="preserve"><value>เสร็จแล้ว</value></data>
+  <data name="HideDoneToast" xml:space="preserve"><value>บันทึก {0} แล้ว</value></data>
+  <data name="WelcomeTitle" xml:space="preserve"><value>ยินดีต้อนรับสู่ SweetHide</value></data>
+  <data name="WelcomeBody" xml:space="preserve"><value>ซ่อน: เลือกรูป พิมพ์ข้อความหรือแนบไฟล์ ตั้งรหัสผ่าน แล้วบันทึกเป็น PNG
+ถอด: เปิด PNG ที่เพื่อนส่งมา แล้วใส่รหัสผ่าน
+ส่งรูปเป็นไฟล์เสมอ เพราะแอปแชตจะบีบอัดรูปใหม่</value></data>
+  <data name="WelcomeTrySample" xml:space="preserve"><value>ลองรูปตัวอย่าง</value></data>
+  <data name="WelcomeClose" xml:space="preserve"><value>เข้าใจแล้ว</value></data>
+  <data name="SampleTitle" xml:space="preserve"><value>โหลดรูปตัวอย่างแล้ว</value></data>
+  <data name="SampleHint" xml:space="preserve"><value>พิมพ์รหัสผ่าน “{0}” แล้วกดถอดข้อมูล</value></data>
+  <data name="SampleMessage" xml:space="preserve"><value>สวัสดีจาก SweetHide! 🍬 ถ้าอ่านข้อความนี้ได้ แปลว่าถอดข้อมูลสำเร็จ ลองซ่อนอะไรของตัวเองดูนะ</value></data>
+  <data name="SampleFile" xml:space="preserve"><value>ซ่อนไฟล์ได้ด้วยนะ ไฟล์นี้เป็นแค่ไฟล์ข้อความเล็ก ๆ</value></data>
   <data name="AboutLabel" xml:space="preserve"><value>เกี่ยวกับ</value></data>
   <data name="AboutVersion" xml:space="preserve"><value>เวอร์ชัน {0}</value></data>
   <data name="AboutLicense" xml:space="preserve"><value>เผยแพร่ภายใต้ MIT License ส่วนข้อความลิขสิทธิ์ของซอฟต์แวร์อื่นที่ใช้ อยู่ในไฟล์ THIRD-PARTY-NOTICES.txt ข้าง ๆ SweetHide.exe</value></data>

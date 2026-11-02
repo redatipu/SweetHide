@@ -12,6 +12,7 @@
 
     <Page.KeyboardAccelerators>
         <KeyboardAccelerator Key="V" Invoked="OnPasteAccelerator" Modifiers="Control" />
+        <KeyboardAccelerator Key="O" Invoked="OnOpenAccelerator" Modifiers="Control" />
     </Page.KeyboardAccelerators>
 
     <ScrollViewer>

@@ -32,6 +32,21 @@ public sealed partial class RevealPage : Page
     private void OnPasteAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
         args.Handled = PageHelpers.PasteImageUnlessTyping(XamlRoot, ViewModel.PasteImageCommand);
 
+    private void OnOpenAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true;
+        ViewModel.BrowseImageCommand.Execute(null);
+    }
+
+    private void OnPrimaryAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true;
+        if (ViewModel.RevealCommand.CanExecute(null))
+        {
+            ViewModel.RevealCommand.Execute(null);
+        }
+    }
+
     private void OnPasswordKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Enter && ViewModel.RevealCommand.CanExecute(null))

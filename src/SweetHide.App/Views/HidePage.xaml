@@ -12,6 +12,8 @@
 
     <Page.KeyboardAccelerators>
         <KeyboardAccelerator Key="V" Invoked="OnPasteAccelerator" Modifiers="Control" />
+        <KeyboardAccelerator Key="O" Invoked="OnOpenAccelerator" Modifiers="Control" />
+        <KeyboardAccelerator Key="Enter" Invoked="OnPrimaryAccelerator" Modifiers="Control" />
     </Page.KeyboardAccelerators>
 
     <ScrollViewer>
@@ -87,15 +89,35 @@
                             Text="{x:Bind ViewModel.CapacityHint, Mode=OneWay}"
                             TextWrapping="Wrap"
                             Visibility="{x:Bind ViewModel.HasCapacityHint, Mode=OneWay}" />
+                        <Button
+                            Command="{x:Bind ViewModel.FitBitsCommand}"
+                            Content="{x:Bind ViewModel.FitButtonText, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.HasRecommendedBits, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
 
-                <InfoBar
-                    IsClosable="True"
-                    IsOpen="True"
-                    Message="{x:Bind p:Strings.SendAsFileMessage}"
-                    Severity="Informational"
-                    Title="{x:Bind p:Strings.SendAsFileTitle}" />
+                <Expander
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    IsExpanded="True">
+                    <Expander.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="14" Glyph="&#xE724;" />
+                            <TextBlock Text="{x:Bind p:Strings.SendGuideTitle}" />
+                        </StackPanel>
+                    </Expander.Header>
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{x:Bind p:Strings.SendAsFileMessage}" TextWrapping="Wrap" />
+                        <TextBlock Text="{x:Bind local:GuideText.Line}" TextWrapping="Wrap" />
+                        <TextBlock Text="{x:Bind local:GuideText.Telegram}" TextWrapping="Wrap" />
+                        <TextBlock Text="{x:Bind local:GuideText.WhatsApp}" TextWrapping="Wrap" />
+                        <TextBlock Text="{x:Bind local:GuideText.Discord}" TextWrapping="Wrap" />
+                        <TextBlock
+                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                            Text="{x:Bind local:GuideText.Bad}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Expander>
             </StackPanel>
 
             <!-- Right (or below, when narrow): what to hide, password, action -->
@@ -177,10 +199,42 @@
 
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel Spacing="8">
-                        <PasswordBox
-                            Header="{x:Bind p:Strings.PasswordSection}"
-                            Password="{x:Bind ViewModel.Password, Mode=TwoWay}"
-                            PlaceholderText="{x:Bind p:Strings.PasswordPlaceholder}" />
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <PasswordBox
+                                Header="{x:Bind p:Strings.PasswordSection}"
+                                Password="{x:Bind ViewModel.Password, Mode=TwoWay}"
+                                PlaceholderText="{x:Bind p:Strings.PasswordPlaceholder}" />
+                            <Button
+                                Grid.Column="1"
+                                VerticalAlignment="Bottom"
+                                Command="{x:Bind ViewModel.GeneratePassphraseCommand}"
+                                ToolTipService.ToolTip="{x:Bind p:Strings.GeneratePassphrase}"
+                                AutomationProperties.Name="{x:Bind p:Strings.GeneratePassphrase}">
+                                <FontIcon FontSize="14" Glyph="&#xE8B1;" />
+                            </Button>
+                        </Grid>
+                        <Grid ColumnSpacing="8" Visibility="{x:Bind ViewModel.HasGeneratedPassphrase, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                FontFamily="Consolas"
+                                IsReadOnly="True"
+                                Text="{x:Bind ViewModel.GeneratedPassphrase, Mode=OneWay}"
+                                AutomationProperties.Name="{x:Bind p:Strings.GeneratePassphrase}" />
+                            <Button Grid.Column="1" Command="{x:Bind ViewModel.CopyGeneratedPassphraseCommand}" Content="{x:Bind p:Strings.CopyText}" />
+                        </Grid>
+                        <TextBlock
+                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind p:Strings.GeneratedPassphraseHint}"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind ViewModel.HasGeneratedPassphrase, Mode=OneWay}" />
                         <ProgressBar
                             Maximum="4"
                             Visibility="{x:Bind ViewModel.ShowStrength, Mode=OneWay}"
@@ -203,6 +257,19 @@
                             Style="{StaticResource CaptionTextBlockStyle}"
                             Text="{x:Bind p:Strings.PasswordHint}"
                             TextWrapping="Wrap" />
+                        <Grid ColumnSpacing="8" Visibility="{x:Bind ViewModel.HasVault}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Content="{x:Bind p:Strings.SaveToVault}" IsChecked="{x:Bind ViewModel.SaveToVault, Mode=TwoWay}" />
+                            <TextBox
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsEnabled="{x:Bind ViewModel.SaveToVault, Mode=OneWay}"
+                                PlaceholderText="{x:Bind p:Strings.VaultNamePlaceholder}"
+                                Text="{x:Bind ViewModel.VaultName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
                     </StackPanel>
                 </Border>
 
@@ -240,6 +307,17 @@
                             Content="{x:Bind p:Strings.ShowInFolder}"
                             Visibility="{x:Bind ViewModel.HasStatusAction, Mode=OneWay}" />
                     </InfoBar.ActionButton>
+                    <InfoBar.Content>
+                        <Button
+                            Margin="0,0,0,12"
+                            Command="{x:Bind ViewModel.CopySavedFileCommand}"
+                            Visibility="{x:Bind ViewModel.HasSavedFile, Mode=OneWay}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="14" Glyph="&#xE8C8;" />
+                                <TextBlock Text="{x:Bind p:Strings.CopyAsFile}" />
+                            </StackPanel>
+                        </Button>
+                    </InfoBar.Content>
                 </InfoBar>
             </StackPanel>
         </Grid>

@@ -44,6 +44,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <!-- Already transitive via Core; referenced here only to locate its notice file (build/Licenses.targets). -->
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" GeneratePathProperty="true" />
   </ItemGroup>

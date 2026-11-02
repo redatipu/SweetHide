@@ -69,8 +69,38 @@ public partial class App : Application
         }
 
         _window.AttachUpdateBanner(Services.Settings);
+        _window.Closed += (_, _) => Services.Dispose();
         _window.Activate();
+        Services.StartBackgroundFeatures();
         _ = Services.Settings.CheckOnStartupAsync();
+
+        var startup = StartupRequest.Parse(Environment.GetCommandLineArgs());
+        if (startup is not null)
+        {
+            _ = OpenStartupFileAsync(startup);
+        }
+        else if (Services.Settings.ShowWelcome && _window.Content is FrameworkElement content)
+        {
+            content.Loaded += async (_, _) =>
+            {
+                Services.Settings.MarkWelcomeSeen();
+                await _window.ShowWelcomeAsync(() => Services.Reveal.LoadSampleAsync(Services.Codec));
+            };
+        }
+    }
+
+    /// <summary>"Hide/Reveal with SweetHide" from Explorer, a file dropped on the exe, or "Open with".</summary>
+    private async Task OpenStartupFileAsync(StartupRequest request)
+    {
+        _window!.NavigateTo(request.Page);
+        if (request.Page == "hide")
+        {
+            await Services.Hide.LoadCoverFromPathAsync(request.Path);
+        }
+        else
+        {
+            await Services.Reveal.LoadImageFromPathAsync(request.Path);
+        }
     }
 
     private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

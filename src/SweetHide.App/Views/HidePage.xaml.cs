@@ -23,6 +23,21 @@ public sealed partial class HidePage : Page
     private void OnPasteAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
         args.Handled = PageHelpers.PasteImageUnlessTyping(XamlRoot, ViewModel.PasteCoverCommand);
 
+    private void OnOpenAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true;
+        ViewModel.BrowseCoverCommand.Execute(null);
+    }
+
+    private void OnPrimaryAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true;
+        if (ViewModel.HideCommand.CanExecute(null))
+        {
+            ViewModel.HideCommand.Execute(null);
+        }
+    }
+
     private void OnAttachmentsDragOver(object sender, DragEventArgs e)
     {
         if (e.DataView.Contains(StandardDataFormats.StorageItems))

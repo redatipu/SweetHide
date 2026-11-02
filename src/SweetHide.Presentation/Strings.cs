@@ -225,6 +225,100 @@ public static class Strings
 
     public static string PortableMode => Get();
 
+    public static string FitBits => Get();
+
+    public static string GeneratePassphrase => Get();
+
+    public static string GeneratedPassphraseHint => Get();
+
+    public static string CopiedWillClear => Get();
+
+    public static string CopyAsFile => Get();
+
+    public static string CopiedAsFile => Get();
+
+    public static string SendGuideTitle => Get();
+
+    public static string SendGuideLine => Get();
+
+    public static string SendGuideTelegram => Get();
+
+    public static string SendGuideDiscord => Get();
+
+    public static string SendGuideWhatsApp => Get();
+
+    public static string SendGuideBad => Get();
+
+    public static string SaveToVault => Get();
+
+    public static string VaultNamePlaceholder => Get();
+
+    public static string VaultLabel => Get();
+
+    public static string VaultHint => Get();
+
+    public static string VaultEmpty => Get();
+
+    public static string VaultSaved => Get();
+
+    public static string TryVault => Get();
+
+    public static string TryingVault => Get();
+
+    public static string VaultNoMatch => Get();
+
+    public static string RevealedWithVault => Get();
+
+    public static string Remember => Get();
+
+    public static string Remove => Get();
+
+    public static string PreviewLabel => Get();
+
+    public static string WatchFolderLabel => Get();
+
+    public static string WatchFolderHint => Get();
+
+    public static string WatchFolderOff => Get();
+
+    public static string ChooseFolder => Get();
+
+    public static string StopWatching => Get();
+
+    public static string WatchFound => Get();
+
+    public static string ExplorerMenu => Get();
+
+    public static string ExplorerMenuHint => Get();
+
+    public static string ExplorerHide => Get();
+
+    public static string ExplorerReveal => Get();
+
+    public static string ShortcutsLabel => Get();
+
+    public static string ShortcutsText => Get();
+
+    public static string DoneTitle => Get();
+
+    public static string HideDoneToast => Get();
+
+    public static string WelcomeTitle => Get();
+
+    public static string WelcomeBody => Get();
+
+    public static string WelcomeTrySample => Get();
+
+    public static string WelcomeClose => Get();
+
+    public static string SampleTitle => Get();
+
+    public static string SampleHint => Get();
+
+    public static string SampleMessage => Get();
+
+    public static string SampleFile => Get();
+
     public static string AboutLabel => Get();
 
     public static string AboutVersion => Get();

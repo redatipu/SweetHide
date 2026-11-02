@@ -17,4 +17,8 @@
     <InternalsVisibleTo Include="SweetHide.Presentation.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Words\*.txt" LogicalName="SweetHide.Words.%(Filename).txt" />
+  </ItemGroup>
+
 </Project>

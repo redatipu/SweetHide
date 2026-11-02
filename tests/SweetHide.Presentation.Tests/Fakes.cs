@@ -43,9 +43,40 @@ internal sealed class FakeClipboard : IClipboardService
 
     public string? Text { get; private set; }
 
+    public List<string> Files { get; } = [];
+
     public Task<ImageInput?> GetImageAsync() => Task.FromResult(Image);
 
     public void SetText(string text) => Text = text;
+
+    public Task CopyFilesAsync(IReadOnlyList<string> paths)
+    {
+        Files.AddRange(paths);
+        return Task.CompletedTask;
+    }
+
+    public void ClearIfText(string text)
+    {
+        if (Text == text)
+        {
+            Text = null;
+        }
+    }
+}
+
+internal sealed class FakeExplorer : IExplorerIntegration
+{
+    public bool IsEnabled { get; private set; }
+
+    public void SetEnabled(bool enabled) => IsEnabled = enabled;
+}
+
+/// <summary>Stands in for DPAPI: reversible, but the file is not plain JSON.</summary>
+internal sealed class XorProtector : IDataProtector
+{
+    public byte[] Protect(byte[] data) => [.. data.Select(b => (byte)(b ^ 0x5A))];
+
+    public byte[] Unprotect(byte[] data) => Protect(data);
 }
 
 internal sealed class FakeShell : IShellService

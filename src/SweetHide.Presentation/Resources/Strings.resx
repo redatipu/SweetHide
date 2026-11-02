@@ -108,6 +108,55 @@
   <data name="OpenReleasePage" xml:space="preserve"><value>What's new</value></data>
   <data name="OpenSettings" xml:space="preserve"><value>Open settings</value></data>
   <data name="PortableMode" xml:space="preserve"><value>Portable mode: settings are kept in the data folder next to SweetHide.exe.</value></data>
+  <data name="FitBits" xml:space="preserve"><value>Fit automatically ({0} bits)</value></data>
+  <data name="GeneratePassphrase" xml:space="preserve"><value>Suggest a passphrase</value></data>
+  <data name="GeneratedPassphraseHint" xml:space="preserve"><value>Write it down or send it to your friend another way. It can't be recovered later.</value></data>
+  <data name="CopiedWillClear" xml:space="preserve"><value>Copied. The clipboard will be cleared in {0} seconds.</value></data>
+  <data name="CopyAsFile" xml:space="preserve"><value>Copy as file</value></data>
+  <data name="CopiedAsFile" xml:space="preserve"><value>Copied as a file. Paste it into Discord, Telegram or LINE and it is sent untouched.</value></data>
+  <data name="SendGuideTitle" xml:space="preserve"><value>How to send it without losing the secret</value></data>
+  <data name="SendGuideLine" xml:space="preserve"><value>LINE: send as a file, not as a photo.</value></data>
+  <data name="SendGuideTelegram" xml:space="preserve"><value>Telegram: choose “File” (or turn off compression).</value></data>
+  <data name="SendGuideDiscord" xml:space="preserve"><value>Discord, e-mail, Google Drive, OneDrive, USB: fine as an attachment.</value></data>
+  <data name="SendGuideWhatsApp" xml:space="preserve"><value>WhatsApp: send as a document.</value></data>
+  <data name="SendGuideBad" xml:space="preserve"><value>Messenger photos, Facebook, Instagram, X posts: the image is re-compressed and the secret is lost.</value></data>
+  <data name="SaveToVault" xml:space="preserve"><value>Remember this password as</value></data>
+  <data name="VaultNamePlaceholder" xml:space="preserve"><value>Friend's name</value></data>
+  <data name="VaultLabel" xml:space="preserve"><value>Saved passwords</value></data>
+  <data name="VaultHint" xml:space="preserve"><value>Encrypted for your Windows account. Reveal tries them automatically.</value></data>
+  <data name="VaultEmpty" xml:space="preserve"><value>No saved passwords yet.</value></data>
+  <data name="VaultSaved" xml:space="preserve"><value>Saved the password as “{0}”.</value></data>
+  <data name="TryVault" xml:space="preserve"><value>Try saved passwords</value></data>
+  <data name="TryingVault" xml:space="preserve"><value>Trying saved passwords {0}/{1}…</value></data>
+  <data name="VaultNoMatch" xml:space="preserve"><value>None of the saved passwords opened this image.</value></data>
+  <data name="RevealedWithVault" xml:space="preserve"><value>Opened with the password saved as “{0}”.</value></data>
+  <data name="Remember" xml:space="preserve"><value>Remember</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="PreviewLabel" xml:space="preserve"><value>Preview</value></data>
+  <data name="WatchFolderLabel" xml:space="preserve"><value>Watch a folder</value></data>
+  <data name="WatchFolderHint" xml:space="preserve"><value>New PNG files in this folder (e.g. Downloads) are tried with your saved passwords, and you get a notification when one opens.</value></data>
+  <data name="WatchFolderOff" xml:space="preserve"><value>Not watching any folder.</value></data>
+  <data name="ChooseFolder" xml:space="preserve"><value>Choose folder…</value></data>
+  <data name="StopWatching" xml:space="preserve"><value>Stop</value></data>
+  <data name="WatchFound" xml:space="preserve"><value>Found a secret in {0}</value></data>
+  <data name="ExplorerMenu" xml:space="preserve"><value>Add SweetHide to the Explorer right-click menu</value></data>
+  <data name="ExplorerMenuHint" xml:space="preserve"><value>On Windows 11 it appears under “Show more options”.</value></data>
+  <data name="ExplorerHide" xml:space="preserve"><value>Hide a secret with SweetHide</value></data>
+  <data name="ExplorerReveal" xml:space="preserve"><value>Reveal with SweetHide</value></data>
+  <data name="ShortcutsLabel" xml:space="preserve"><value>Keyboard shortcuts</value></data>
+  <data name="ShortcutsText" xml:space="preserve"><value>Ctrl+O open image · Ctrl+V paste image · Ctrl+Enter hide/reveal · Ctrl+1–4 switch page</value></data>
+  <data name="DoneTitle" xml:space="preserve"><value>Done</value></data>
+  <data name="HideDoneToast" xml:space="preserve"><value>Saved {0}</value></data>
+  <data name="WelcomeTitle" xml:space="preserve"><value>Welcome to SweetHide</value></data>
+  <data name="WelcomeBody" xml:space="preserve"><value>Hide: pick a photo, type a message or add files, set a password and save the PNG.
+Reveal: open the PNG your friend sent and type the password.
+Always send the PNG as a file; chat apps re-compress photos.</value></data>
+  <data name="WelcomeTrySample" xml:space="preserve"><value>Try a sample</value></data>
+  <data name="WelcomeClose" xml:space="preserve"><value>Got it</value></data>
+  <data name="SampleTitle" xml:space="preserve"><value>Sample image loaded</value></data>
+  <data name="SampleHint" xml:space="preserve"><value>Type the password “{0}” and press Reveal.</value></data>
+  <data name="SampleMessage" xml:space="preserve"><value>Hello from SweetHide! 🍬 If you can read this, revealing works. Now try hiding something of your own.</value></data>
+  <data name="SampleFile" xml:space="preserve"><value>Files can be hidden too. This one is just a small text file.</value></data>
   <data name="AboutLabel" xml:space="preserve"><value>About</value></data>
   <data name="AboutVersion" xml:space="preserve"><value>Version {0}</value></data>
   <data name="AboutLicense" xml:space="preserve"><value>Released under the MIT License. Notices for the third-party software it uses are in THIRD-PARTY-NOTICES.txt next to SweetHide.exe.</value></data>

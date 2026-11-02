@@ -49,6 +49,12 @@ public sealed partial class AnalyzePage : Page
         }
     }
 
+    private void OnOpenAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true;
+        ViewModel.BrowseImageCommand.Execute(null);
+    }
+
     private void OnPasteAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
         args.Handled = PageHelpers.PasteImageUnlessTyping(XamlRoot, ViewModel.PasteImageCommand);
 }

@@ -73,6 +73,24 @@ public sealed partial class HideViewModel : PageViewModel, IDisposable
     [ObservableProperty]
     private bool _isMeasuring;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasGeneratedPassphrase))]
+    [NotifyCanExecuteChangedFor(nameof(CopyGeneratedPassphraseCommand))]
+    private string _generatedPassphrase = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSavedFile))]
+    [NotifyCanExecuteChangedFor(nameof(CopySavedFileCommand))]
+    private string? _lastSavedPath;
+
+    [ObservableProperty]
+    private bool _saveToVault;
+
+    [ObservableProperty]
+    private string _vaultName = string.Empty;
+
+    private readonly IPasswordVault? _vault;
+
     public HideViewModel(
         StegoEngine engine,
         IImageCodec codec,
@@ -80,9 +98,13 @@ public sealed partial class HideViewModel : PageViewModel, IDisposable
         IFileDialogService dialogs,
         IClipboardService clipboard,
         IShellService shell,
-        TimeSpan? measureDelay = null)
+        TimeSpan? measureDelay = null,
+        TimeSpan? clipboardClearDelay = null,
+        IPasswordVault? vault = null)
         : base(shell)
     {
+        _vault = vault;
+        ClipboardClearDelay = clipboardClearDelay ?? TimeSpan.FromSeconds(30);
         _engine = engine;
         _codec = codec;
         _loader = loader;
@@ -107,8 +129,36 @@ public sealed partial class HideViewModel : PageViewModel, IDisposable
     /// <summary>The running (debounced) size measurement; awaited by tests.</summary>
     public Task MeasureTask { get; private set; } = Task.CompletedTask;
 
-    /// <summary>Where the last successful hide wrote its PNG.</summary>
-    public string? LastSavedPath { get; private set; }
+    /// <summary>How long copied secrets stay on the clipboard.</summary>
+    public TimeSpan ClipboardClearDelay { get; }
+
+    /// <summary>The pending "clear the clipboard" task, awaited by tests.</summary>
+    public Task ClipboardClearTask { get; private set; } = Task.CompletedTask;
+
+    public bool HasGeneratedPassphrase => GeneratedPassphrase.Length > 0;
+
+    public bool HasVault => _vault is not null;
+
+    /// <summary>Smallest bits per channel that fits the payload, if that differs from the current choice.</summary>
+    public int? RecommendedBits
+    {
+        get
+        {
+            if (Cover is null || RequiredBytes is not { } required || !HasContent || IsMeasuring)
+            {
+                return null;
+            }
+
+            var fit = StegoEngine.SupportedBitsPerChannel.FirstOrDefault(bits => Cover.CapacityFor(bits) >= required);
+            return fit != 0 && fit != BitsPerChannel ? fit : null;
+        }
+    }
+
+    public bool HasRecommendedBits => RecommendedBits is not null;
+
+    public bool HasSavedFile => LastSavedPath is not null;
+
+    public string FitButtonText => RecommendedBits is { } bits ? Strings.Format(Strings.FitBits, bits) : string.Empty;
 
     public bool HasCover => Cover is not null;
 
@@ -286,7 +336,11 @@ public sealed partial class HideViewModel : PageViewModel, IDisposable
         OnPropertyChanged(nameof(CapacityText));
         OnPropertyChanged(nameof(CapacityHint));
         OnPropertyChanged(nameof(HasCapacityHint));
+        OnPropertyChanged(nameof(RecommendedBits));
+        OnPropertyChanged(nameof(HasRecommendedBits));
+        OnPropertyChanged(nameof(FitButtonText));
         HideCommand.NotifyCanExecuteChanged();
+        FitBitsCommand.NotifyCanExecuteChanged();
     }
 
     private void ScheduleMeasure()
@@ -408,6 +462,50 @@ public sealed partial class HideViewModel : PageViewModel, IDisposable
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanFitBits))]
+    private void FitBits()
+    {
+        if (RecommendedBits is { } bits)
+        {
+            BitsPerChannel = bits;
+        }
+    }
+
+    private bool CanFitBits() => RecommendedBits is not null;
+
+    [RelayCommand]
+    private void GeneratePassphrase()
+    {
+        var thai = (Strings.Culture ?? System.Globalization.CultureInfo.CurrentUICulture).TwoLetterISOLanguageName == "th";
+        GeneratedPassphrase = PassphraseGenerator.Generate(thai);
+        Password = GeneratedPassphrase;
+        ConfirmPassword = GeneratedPassphrase;
+    }
+
+    [RelayCommand(CanExecute = nameof(HasGeneratedPassphrase))]
+    private void CopyGeneratedPassphrase()
+    {
+        var text = GeneratedPassphrase;
+        _clipboard.SetText(text);
+        ShowStatus(StatusSeverity.Informational, Strings.CopyText, Strings.Format(Strings.CopiedWillClear, (int)ClipboardClearDelay.TotalSeconds));
+        ClipboardClearTask = ClearClipboardLaterAsync(text);
+    }
+
+    private async Task ClearClipboardLaterAsync(string text)
+    {
+        await Task.Delay(ClipboardClearDelay);
+        _clipboard.ClearIfText(text);
+    }
+
+    private bool CanCopySavedFile() => LastSavedPath is not null && File.Exists(LastSavedPath);
+
+    [RelayCommand(CanExecute = nameof(CanCopySavedFile))]
+    private async Task CopySavedFileAsync()
+    {
+        await _clipboard.CopyFilesAsync([LastSavedPath!]);
+        ShowStatus(StatusSeverity.Success, Strings.CopyAsFile, Strings.CopiedAsFile, LastSavedPath);
+    }
+
     [RelayCommand(CanExecute = nameof(CanHide))]
     private async Task HideAsync()
     {
@@ -436,6 +534,11 @@ public sealed partial class HideViewModel : PageViewModel, IDisposable
                 _codec.SavePng(stego, path, overwrite: true); // the save dialog already asked about overwriting
                 return ImageMetrics.Compare(cover.Pixels, stego);
             });
+
+            if (SaveToVault && _vault is not null && VaultName.Trim().Length > 0)
+            {
+                _vault.Save(VaultName.Trim(), password);
+            }
 
             Password = string.Empty;
             ConfirmPassword = string.Empty;

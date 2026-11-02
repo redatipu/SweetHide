@@ -20,7 +20,14 @@ public enum AppTheme
 /// <param name="Language">UI language; <see cref="AppLanguage.Default"/> follows Windows.</param>
 /// <param name="Theme">Colour theme; SweetHide starts in <see cref="AppTheme.Dark"/>.</param>
 /// <param name="CheckForUpdates">Ask GitHub for a newer release at start-up. Off by default: no network unless asked.</param>
-public sealed record AppSettings(AppLanguage Language = AppLanguage.Default, AppTheme Theme = AppTheme.Dark, bool CheckForUpdates = false);
+/// <param name="ShowWelcome">Show the first-run welcome (turned off once seen).</param>
+/// <param name="WatchFolder">Folder to watch for incoming images (e.g. Downloads); null when off.</param>
+public sealed record AppSettings(
+    AppLanguage Language = AppLanguage.Default,
+    AppTheme Theme = AppTheme.Dark,
+    bool CheckForUpdates = false,
+    bool ShowWelcome = true,
+    string? WatchFolder = null);
 
 public interface ISettingsStore
 {
