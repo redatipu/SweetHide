@@ -20,6 +20,7 @@ public class PasswordProbeTests
         Assert.False(probe.TryPassword("dragon"));
         Assert.True(probe.TryPassword("ร้านกาแฟ"));
         Assert.True(probe.TryPassword("ร้านกาแฟ".Normalize(System.Text.NormalizationForm.FormD)));
+        Assert.False(probe.TryPassword("broken \uD800 surrogate"));
 
         var reports = new List<long>();
         var found = probe.FindPassword(Wordlist, progress: new SyncProgress(reports), cancellationToken: TestContext.Current.CancellationToken);

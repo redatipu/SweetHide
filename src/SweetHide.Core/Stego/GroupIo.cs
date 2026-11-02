@@ -58,6 +58,7 @@ internal static class GroupIo
         var coins = RandomBytes(random, (groups + 7) / 8);
         var padding = RandomBytes(random, 1)[0];
         return Scan(
+            Workers(),
             sequence,
             start,
             accept,
@@ -80,9 +81,11 @@ internal static class GroupIo
     {
         Array.Clear(destination);
         var groups = GroupCount(destination.LongLength, bits);
-        var values = new byte[Math.Max(1, Environment.ProcessorCount) * ChunkElements];
+        var workers = Workers();
+        var values = new byte[workers * ChunkElements];
         long waveFirst = 0;
         return Scan(
+            workers,
             sequence,
             start,
             accept,
@@ -144,6 +147,7 @@ internal static class GroupIo
     }
 
     private static bool Scan(
+        int workers,
         SlotSequence sequence,
         long start,
         Func<long, bool> accept,
@@ -151,7 +155,6 @@ internal static class GroupIo
         Action<long[], int, long> process,
         Action<long, long>? afterWave)
     {
-        var workers = Math.Max(1, Environment.ProcessorCount);
         var lists = new long[workers][];
         for (var w = 0; w < workers; w++)
         {
@@ -205,6 +208,9 @@ internal static class GroupIo
     }
 
     private static long ChunkCount(long groups) => (groups + ChunkGroups - 1) / ChunkGroups;
+
+    // Work items per wave of a filtered walk; the wave's results are still assigned in element order.
+    private static int Workers() => Math.Max(1, Environment.ProcessorCount);
 
     private static byte[] RandomBytes(IRandomSource random, long count)
     {

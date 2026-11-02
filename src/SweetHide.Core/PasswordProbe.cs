@@ -47,6 +47,10 @@ public sealed class PasswordProbe
         {
             return true; // a header authenticated: the password is right even if what follows is damaged
         }
+        catch (ArgumentException)
+        {
+            return false; // not valid Unicode (e.g. a lone surrogate), so it could never have been used to hide
+        }
     }
 
     /// <summary>Tests candidates in order until one matches.</summary>
