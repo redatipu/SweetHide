@@ -16,6 +16,12 @@ public sealed record StegoFinderOptions
     /// <summary>Payloads attached to findings are cut to this size.</summary>
     public int MaxPayloadBytes { get; init; } = 16 * 1024 * 1024;
 
+    /// <summary>
+    /// All payloads in one report together stay under this. Once it is spent, findings are still reported but carry
+    /// no bytes, so a file stuffed with hundreds of embedded signatures cannot make the report huge.
+    /// </summary>
+    public long MaxTotalPayloadBytes { get; init; } = 64L * 1024 * 1024;
+
     /// <summary>Findings below this confidence are dropped from the report.</summary>
     public double MinConfidence { get; init; }
 

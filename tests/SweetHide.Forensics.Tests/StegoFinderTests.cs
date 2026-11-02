@@ -183,6 +183,25 @@ public class StegoFinderTests
     }
 
     [Fact]
+    public void Payloads_share_one_budget_per_report()
+    {
+        // 200 PDF signatures with no end marker: each would carve to the end of the 2 MiB file.
+        var file = new byte[2 * 1024 * 1024];
+        for (var i = 0; i < 200; i++)
+        {
+            "%PDF-1.4"u8.CopyTo(file.AsSpan(i * 8192));
+        }
+
+        var finder = new StegoFinder(new StegoFinderOptions { MaxTotalPayloadBytes = 4 * 1024 * 1024 });
+        var report = finder.Analyze(file, cancellationToken: Ct);
+
+        var embedded = report.Findings.Where(f => f.Kind == FindingKind.EmbeddedFile).ToList();
+        Assert.True(embedded.Count > 100);
+        Assert.InRange(embedded.Sum(f => (long)(f.PayloadLength ?? 0)), 1, 4 * 1024 * 1024);
+        Assert.Contains(embedded, f => f.Payload is null);
+    }
+
+    [Fact]
     public void Options_switch_checks_off_and_filter_findings()
     {
         var file = LayeredPng(out _);

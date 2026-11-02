@@ -167,6 +167,7 @@ public sealed class StegoFinder
         private readonly HashSet<string> _flags = new(StringComparer.Ordinal);
         private List<StructureItem>? _structure;
         private int _decodes;
+        private long _payloadBudget = options.MaxTotalPayloadBytes;
 
         public List<Finding> Findings { get; } = [];
 
@@ -301,7 +302,7 @@ public sealed class StegoFinder
             var seen = new HashSet<string>(StringComparer.Ordinal);
             foreach (var result in LsbScanner.Scan(image, options.Lsb, cancellationToken).Where(r => r.Content.Score >= ReportThreshold).Take(MaxLsbFindings))
             {
-                var payload = LsbScanner.ExtractPayload(image, result, options.MaxPayloadBytes, cancellationToken);
+                var payload = LsbScanner.ExtractPayload(image, result, ExtractionLimit(), cancellationToken);
                 if (seen.Add(Convert.ToHexString(SHA256.HashData(payload))))
                 {
                     AddStreamPayload(FindingKind.LsbPayload, "LSBs", result.Config.Name, result.Content, result.StreamCapacity, payload);
@@ -365,7 +366,7 @@ public sealed class StegoFinder
             var seen = new HashSet<string>(StringComparer.Ordinal);
             foreach (var result in WavInspector.ScanLsb(audio, options.AudioLsb, cancellationToken).Where(r => r.Content.Score >= ReportThreshold).Take(MaxLsbFindings))
             {
-                var payload = WavInspector.ExtractPayload(audio, result, options.MaxPayloadBytes, cancellationToken);
+                var payload = WavInspector.ExtractPayload(audio, result, ExtractionLimit(), cancellationToken);
                 if (seen.Add(Convert.ToHexString(SHA256.HashData(payload))))
                 {
                     AddStreamPayload(FindingKind.AudioLsb, "sample LSBs", result.Config.Name, result.Content, result.StreamCapacity, payload);
@@ -537,7 +538,21 @@ public sealed class StegoFinder
             }
         }
 
-        private byte[] Cap(ReadOnlySpan<byte> data) => data[..Math.Min(data.Length, options.MaxPayloadBytes)].ToArray();
+        /// <summary>A copy of the data cut to the per-payload limit, or null once the report's payload budget is spent.</summary>
+        private byte[]? Cap(ReadOnlySpan<byte> data)
+        {
+            var length = Math.Min(data.Length, options.MaxPayloadBytes);
+            if (length > _payloadBudget)
+            {
+                return null;
+            }
+
+            _payloadBudget -= length;
+            return data[..length].ToArray();
+        }
+
+        /// <summary>How much an extractor may read: what is left of the budget, but enough to preview and compare.</summary>
+        private int ExtractionLimit() => (int)Math.Clamp(_payloadBudget, 4096, options.MaxPayloadBytes);
 
         private static double FlagConfidence(string? text) =>
             FlagPattern.IsLikelyFlag(text) ? 0.95 : FlagPattern.IsMatch(text) ? 0.7 : 0;
