@@ -78,6 +78,35 @@ public sealed class StegoEngine
         return Capacity(image, carrier, ContainerBytes(layout, V2Layout.PublicSlots, ContainerPlacement.Whole, options), options);
     }
 
+    /// <summary>
+    /// The smallest bits per channel at which <paramref name="payload"/> fits a password-mode embed with
+    /// <paramref name="options"/> (its own bits value is ignored), or null if it does not fit even at 4.
+    /// Fewer bits change the image less, so this is also the least detectable choice.
+    /// </summary>
+    public static int? RecommendBitsPerChannel(PixelBuffer cover, Payload payload, EmbedOptions? options = null) =>
+        RecommendBitsPerChannel(cover, GetContainerSize(payload), options);
+
+    /// <inheritdoc cref="RecommendBitsPerChannel(PixelBuffer, Payload, EmbedOptions?)"/>
+    /// <param name="cover">The cover image.</param>
+    /// <param name="containerSize">From <see cref="GetContainerSize"/> or <see cref="GetShareContainerSize"/>.</param>
+    /// <param name="options">Adaptive or not; the bits value is ignored.</param>
+    public static int? RecommendBitsPerChannel(PixelBuffer cover, long containerSize, EmbedOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(cover);
+        options ??= EmbedOptions.Default;
+        options.Validate();
+        var layout = new V2Layout(new RgbLsbCarrier(cover));
+        foreach (var bits in SupportedBitsPerChannel)
+        {
+            if (ContainerBytes(layout, V2Layout.PublicSlots, ContainerPlacement.Whole, options with { BitsPerChannel = bits }) >= containerSize)
+            {
+                return bits;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>Bytes the payload will occupy in the image (after compression, with encryption overhead).</summary>
     public static long GetContainerSize(Payload payload)
     {
