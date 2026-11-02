@@ -319,6 +319,14 @@ public sealed class StegoEngine
         return FromContainer(reader.Carrier, container, HidingMode.Recipients, profile: null);
     }
 
+    /// <summary>A <see cref="PasswordProbe"/> for auditing the password of one of your own images.</summary>
+    /// <param name="image">The stego image; it is copied, so later changes to it do not matter.</param>
+    public PasswordProbe CreatePasswordProbe(PixelBuffer image)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        return new PasswordProbe(new StegoImageReader(new RgbLsbCarrier(image.Clone()), _profiles));
+    }
+
     /// <summary>Bytes each image of a split must hold (see <see cref="EmbedShares"/>).</summary>
     public static long GetShareContainerSize(Payload payload)
     {
