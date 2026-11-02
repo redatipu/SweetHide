@@ -28,7 +28,7 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
-    # A 64-megapixel image needs roughly 1 GiB while it is processed. On a small board, lower
-    # SWEETHIDE__MAXIMAGEPIXELS and SWEETHIDE__MAXCONCURRENTJOBS together with this.
+    # Each job needs about 30 bytes per pixel at its peak: ~0.4 GiB for a 12-megapixel phone photo, ~2 GiB at the
+    # 64-megapixel limit. On a small board, lower SWEETHIDE__MAXIMAGEPIXELS and SWEETHIDE__MAXCONCURRENTJOBS too.
     mem_limit: 2g
     pids_limit: 256

@@ -25,6 +25,7 @@ internal static class ProblemCodes
     public const string RateLimited = "rate-limited";
     public const string Busy = "busy";
     public const string Timeout = "timeout";
+    public const string OutOfMemory = "out-of-memory";
     public const string NotFound = "not-found";
     public const string InternalError = "internal-error";
 }
@@ -129,7 +130,7 @@ internal sealed partial class ProblemExceptionHandler(IProblemDetailsService pro
         return problem;
     }
 
-    private static ProblemDetails Map(Exception exception) => exception switch
+    internal static ProblemDetails Map(Exception exception) => exception switch
     {
         ApiProblemException api => Create(api.Status, api.Code, api.Message, api.Detail, api.Extensions),
         StegoException { Error: StegoError.NotFoundOrWrongPassword } => Create(
@@ -148,6 +149,14 @@ internal sealed partial class ProblemExceptionHandler(IProblemDetailsService pro
         BadHttpRequestException bad => Create(bad.StatusCode, ProblemCodes.BadRequest, "The request could not be read."),
         InvalidDataException => Create(
             StatusCodes.Status400BadRequest, ProblemCodes.BadRequest, "The form data is malformed or exceeds a limit."),
+
+        // A big image on a small box (or a container memory limit) can fail one large allocation; nothing is corrupted
+        // by that, and the next, smaller request works.
+        OutOfMemoryException => Create(
+            StatusCodes.Status503ServiceUnavailable,
+            ProblemCodes.OutOfMemory,
+            "The server ran out of memory for this image.",
+            "Try a smaller image, or give the server more memory (see MaxImagePixels and MaxConcurrentJobs)."),
         _ => Create(StatusCodes.Status500InternalServerError, ProblemCodes.InternalError, "An unexpected error occurred."),
     };
 

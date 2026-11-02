@@ -117,6 +117,7 @@
       errRateLimited: 'Too many requests. Wait a minute and try again.',
       errBusy: 'The server is busy. Try again in a moment.',
       errTimeout: 'That took too long. Try a smaller image or try again.',
+      errOutOfMemory: 'The server ran out of memory for this image. Try a smaller image.',
       errUnauthorized: 'This server needs an access token. Reload the page to sign in.',
       errNetwork: 'Couldn\'t reach the server. Check the connection and try again.',
       errUnknown: 'The server answered with an error ({0}).',
@@ -216,6 +217,7 @@
       errRateLimited: 'ส่งคำขอถี่เกินไป รอสักครู่แล้วลองใหม่',
       errBusy: 'เซิร์ฟเวอร์กำลังยุ่ง ลองใหม่อีกครั้งในอีกสักครู่',
       errTimeout: 'ใช้เวลานานเกินไป ลองใช้รูปที่เล็กลงหรือลองใหม่',
+      errOutOfMemory: 'หน่วยความจำของเซิร์ฟเวอร์ไม่พอสำหรับรูปนี้ ลองใช้รูปที่เล็กลง',
       errUnauthorized: 'เซิร์ฟเวอร์นี้ต้องใช้ access token ให้โหลดหน้าใหม่เพื่อล็อกอิน',
       errNetwork: 'ติดต่อเซิร์ฟเวอร์ไม่ได้ ตรวจการเชื่อมต่อแล้วลองใหม่',
       errUnknown: 'เซิร์ฟเวอร์ตอบกลับด้วยข้อผิดพลาด ({0})',
@@ -368,6 +370,7 @@
       case 'rate-limited': return { title: t('errorTitle'), text: t('errRateLimited') };
       case 'busy': return { title: t('errorTitle'), text: t('errBusy') };
       case 'timeout': return { title: t('errorTitle'), text: t('errTimeout') };
+      case 'out-of-memory': return { title: t('errorTitle'), text: t('errOutOfMemory') };
       case 'unauthorized': return { title: t('errorTitle'), text: t('errUnauthorized') };
       case 'network': return { title: t('errorTitle'), text: t('errNetwork') };
       default: {
