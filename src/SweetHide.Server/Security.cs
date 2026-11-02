@@ -17,7 +17,21 @@ internal sealed class SecurityHeadersMiddleware(RequestDelegate next)
         "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; " +
         "manifest-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'";
 
+    private static readonly Func<object, Task> ApplyHeaders = state =>
+    {
+        Apply((HttpContext)state);
+        return Task.CompletedTask;
+    };
+
     public Task InvokeAsync(HttpContext context)
+    {
+        // Applied just before the headers go out: the exception handler clears the response (headers included) before
+        // writing an error, and callbacks registered this early run after everyone else's.
+        context.Response.OnStarting(ApplyHeaders, context);
+        return next(context);
+    }
+
+    private static void Apply(HttpContext context)
     {
         var headers = context.Response.Headers;
         headers.ContentSecurityPolicy = ContentSecurityPolicy;
@@ -33,8 +47,6 @@ internal sealed class SecurityHeadersMiddleware(RequestDelegate next)
             // Responses carry secrets (revealed messages and files) or are derived from them.
             headers.CacheControl = "no-store";
         }
-
-        return next(context);
     }
 }
 
