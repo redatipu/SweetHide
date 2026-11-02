@@ -6,6 +6,7 @@
 - `SweetHide-{version}-win-arm64.zip` แอปสำหรับ Windows บนชิป ARM
 - `sweethide-{version}-…` ตัว CLI มีทั้ง Windows และ Linux (arm64 ใช้กับ Raspberry Pi ได้)
 - `SHA256SUMS.txt` ไว้เช็กว่าไฟล์ที่โหลดมาไม่ถูกแก้ไข
+- เว็บเซิร์ฟเวอร์สำหรับ homelab อยู่บน GitHub Container Registry: `docker pull ghcr.io/redatipu/sweethide:{version}` (amd64 และ arm64)
 
 แอปยังไม่ได้เซ็นโค้ด เปิดครั้งแรก Windows จะขึ้นหน้าเตือน แนะนำให้เช็ก checksum ก่อน ถ้าตรงกับใน `SHA256SUMS.txt` ค่อยกด More info แล้ว Run anyway
 
