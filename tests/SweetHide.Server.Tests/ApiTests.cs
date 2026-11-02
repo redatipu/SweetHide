@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
+using SweetHide.Core;
+
 using static SweetHide.Server.Tests.Http;
 
 namespace SweetHide.Server.Tests;
@@ -147,16 +149,18 @@ public sealed class ApiTests
         await using var factory = new ServerFactory();
         using var client = factory.CreateClient();
 
-        // 40x40 holds 584 bytes at 1 bit and 1168 at 2 bits; 700 random bytes don't compress.
+        // 40x40 holds a bit under 600 bytes at 1 bit and twice that at 2 bits; 700 random bytes don't compress.
+        var cover = TestImages.PhotoPng(40, 40);
+        var oneBit = StegoEngine.GetCapacity(TestImages.Decode(cover), 1).ContainerBytes;
         using var response = await client.PostAsync("/api/hide", Form(
-            ("cover", TestImages.PhotoPng(40, 40), "small.png"),
+            ("cover", cover, "small.png"),
             ("file", TestImages.RandomBytes(700), "noise.bin"),
             ("password", ServerFactory.Password, null)), Ct);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         var problem = await ProblemAsync(response);
         Assert.Equal("insufficient-capacity", problem.Code());
-        Assert.Equal(584, problem.GetProperty("capacityBytes").GetInt64());
+        Assert.Equal(oneBit, problem.GetProperty("capacityBytes").GetInt64());
         Assert.True(problem.GetProperty("neededBytes").GetInt64() > 700);
         Assert.Equal(1, problem.GetProperty("bitsPerChannel").GetInt32());
         Assert.Equal(2, problem.GetProperty("suggestedBitsPerChannel").GetInt32());
@@ -168,13 +172,18 @@ public sealed class ApiTests
         await using var factory = new ServerFactory();
         using var client = factory.CreateClient();
 
-        using var response = await client.PostAsync("/api/capacity", Form(("image", TestImages.PhotoPng(40, 40), "c.png")), Ct);
+        var cover = TestImages.PhotoPng(40, 40);
+        using var response = await client.PostAsync("/api/capacity", Form(("image", cover, "c.png")), Ct);
 
+        // The server must report exactly what the engine computes; the numbers depend on the format version.
+        var image = TestImages.Decode(cover);
+        var expected = StegoEngine.SupportedBitsPerChannel.Select(bits => StegoEngine.GetCapacity(image, bits).ContainerBytes);
         var capacity = await JsonAsync<CapacityDto>(response);
-        Assert.Equal((40, 40, 1600L, 36), (capacity.Width, capacity.Height, capacity.UsablePixels, capacity.OverheadBytes));
+        Assert.Equal((40, 40, 1600L, StegoEngine.ContainerOverhead), (capacity.Width, capacity.Height, capacity.UsablePixels, capacity.OverheadBytes));
         Assert.Equal([1, 2, 3, 4], capacity.Levels.Select(l => l.BitsPerChannel));
-        Assert.Equal([584L, 1168, 1752, 2336], capacity.Levels.Select(l => l.ContainerBytes));
-        Assert.All(capacity.Levels, l => Assert.Equal(l.ContainerBytes - 36, l.PayloadBytes));
+        Assert.Equal(expected, capacity.Levels.Select(l => l.ContainerBytes));
+        Assert.All(capacity.Levels, l => Assert.Equal(l.ContainerBytes - StegoEngine.ContainerOverhead, l.PayloadBytes));
+        Assert.True(capacity.Levels[0].ContainerBytes is > 500 and < 700, "the 700-byte test in Data_that_does_not_fit_returns_422_with_sizes_and_a_suggestion relies on this");
     }
 
     [Fact]
