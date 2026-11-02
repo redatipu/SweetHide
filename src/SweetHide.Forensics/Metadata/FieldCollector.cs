@@ -15,6 +15,9 @@ internal sealed class FieldCollector(MetadataOptions options)
 
     public bool IsFull => Fields.Count >= Options.MaxFields;
 
+    /// <summary>Decompressed bytes still allowed in this read.</summary>
+    public long DecompressionBudget { get; set; } = options.MaxTotalDecompressedBytes;
+
     /// <summary>Adds a text value decoded from raw bytes (UTF-8 when valid, Latin-1 otherwise).</summary>
     public void AddBytes(string source, string name, ReadOnlySpan<byte> raw, long offset, string? note = null, bool unusual = false) =>
         AddText(source, name, Decode(raw), offset, raw.Length, note, unusual, binary: TextHeuristics.TextRatio(raw) < 0.9);

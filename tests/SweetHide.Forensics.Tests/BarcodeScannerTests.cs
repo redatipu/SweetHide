@@ -1,3 +1,6 @@
+using FsCheck;
+using FsCheck.Fluent;
+
 using SweetHide.Core.Imaging;
 using SweetHide.Forensics.Barcodes;
 
@@ -94,6 +97,19 @@ public class BarcodeScannerTests
         Assert.Single(BarcodeScanner.Scan(inBit1, new BarcodeScanOptions { PlanePixelBudget = inBit1.PixelCount * 4 }, Ct)); // one whole level, RGBA
         Assert.Single(BarcodeScanner.Scan(inBit0, new BarcodeScanOptions { PlanePixelBudget = 0 }, Ct)); // bit 0 is always scanned
         Assert.Empty(BarcodeScanner.Scan(inBit0, new BarcodeScanOptions { ScanBitPlanes = false }, Ct));
+    }
+
+    [Fact]
+    public void Arbitrary_pixels_never_throw()
+    {
+        var gen =
+            from width in Gen.Choose(1, 64)
+            from height in Gen.Choose(1, 64)
+            from seed in Gen.Choose(0, int.MaxValue)
+            select new PixelBuffer(width, height, RandomBytes(width * height * 4, seed));
+
+        Prop.ForAll(gen.ToArbitrary(), image => BarcodeScanner.Scan(image, cancellationToken: Ct) is not null)
+            .Check(Config.QuickThrowOnFailure.WithMaxTest(200));
     }
 
     [Fact]

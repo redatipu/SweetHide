@@ -167,14 +167,22 @@ public static class MetadataReader
 
     private static void AddInflated(FieldCollector collector, string source, string name, ReadOnlySpan<byte> compressed, long offset, StructureItem item, bool isXmp = false)
     {
-        var (inflated, capped, failed) = Inflate(compressed, collector.Options.MaxDecompressedBytes);
+        var limit = (int)Math.Min(collector.Options.MaxDecompressedBytes, collector.DecompressionBudget);
+        if (limit <= 0)
+        {
+            collector.AddText(source, name, string.Empty, offset, compressed.Length, "not decompressed: this file's decompression budget is spent", unusual: true);
+            return;
+        }
+
+        var (inflated, capped, failed) = Inflate(compressed, limit);
+        collector.DecompressionBudget -= inflated.Length;
         if (failed)
         {
             collector.AddText(source, name, string.Empty, offset, compressed.Length, "compressed text is corrupt", unusual: true);
         }
         else if (capped)
         {
-            collector.AddBytes(source, name, inflated, offset, Invariant($"decompressed output capped at {collector.Options.MaxDecompressedBytes} bytes (possible zlib bomb)"), unusual: true);
+            collector.AddBytes(source, name, inflated, offset, Invariant($"decompressed output capped at {limit} bytes (possible zlib bomb)"), unusual: true);
         }
         else if (isXmp)
         {

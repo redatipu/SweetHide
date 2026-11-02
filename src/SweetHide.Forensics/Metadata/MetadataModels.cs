@@ -21,8 +21,11 @@ public sealed record MetadataOptions
     /// <summary>Longer values are cut for display; <see cref="MetadataField.Length"/> keeps the real size.</summary>
     public int MaxValueChars { get; init; } = 64 * 1024;
 
-    /// <summary>Cap for zTXt/iTXt decompression (protects against zlib bombs).</summary>
+    /// <summary>Cap for one zTXt/iTXt decompression (protects against zlib bombs).</summary>
     public int MaxDecompressedBytes { get; init; } = 1024 * 1024;
+
+    /// <summary>Cap for all decompression in one read, so many small bombs cannot add up.</summary>
+    public long MaxTotalDecompressedBytes { get; init; } = 8L * 1024 * 1024;
 
     public int MaxFields { get; init; } = 1000;
 

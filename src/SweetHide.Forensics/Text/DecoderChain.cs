@@ -33,8 +33,8 @@ public sealed record DecoderOptions
 
     public int MaxResults { get; init; } = 16;
 
-    /// <summary>Inputs longer than this are not decoded at all.</summary>
-    public int MaxInputChars { get; init; } = 4 * 1024 * 1024;
+    /// <summary>Inputs longer than this are not decoded at all (each step copies the text, up to <see cref="MaxNodes"/> times).</summary>
+    public int MaxInputChars { get; init; } = 1024 * 1024;
 
     public static DecoderOptions Default { get; } = new();
 }

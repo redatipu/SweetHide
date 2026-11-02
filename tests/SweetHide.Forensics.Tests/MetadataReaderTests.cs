@@ -175,6 +175,22 @@ public class MetadataReaderTests
     }
 
     [Fact]
+    public void Many_small_bombs_share_one_decompression_budget()
+    {
+        var bomb = Deflate(new byte[1024 * 1024]);
+        var chunks = Enumerable.Range(0, 40).Select(i => ("zTXt", (byte[])[.. Utf8($"Bomb{i}"), 0, 0, .. bomb])).ToArray();
+        var png = Png(8, 8, chunks);
+
+        var allocated = HostileInputTests.Allocated(() => MetadataReader.Read(png, new MetadataOptions { MaxTotalDecompressedBytes = 3 * 1024 * 1024 }, Ct), out var fields);
+
+        Assert.Equal(40, fields.Count);
+        Assert.All(fields, f => Assert.True(f.IsUnusual));
+        Assert.Equal(3, fields.Count(f => f.Value.Length > 0));
+        Assert.Contains("budget", fields[^1].Note, StringComparison.Ordinal);
+        Assert.InRange(allocated, 0, 48L * 1024 * 1024);
+    }
+
+    [Fact]
     public void Survives_exif_loops_and_absurd_counts()
     {
         var tiff = new TiffBuilder()
