@@ -21,5 +21,7 @@
     <PackageVersion Include="xunit.v3" Version="4.0.2" />
     <PackageVersion Include="FsCheck.Xunit.v3" Version="3.6.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.14" />
+    <!-- Local fuzzing harness only (tests/SweetHide.Fuzz), never shipped. -->
+    <PackageVersion Include="SharpFuzz" Version="2.3.0" />
   </ItemGroup>
 </Project>

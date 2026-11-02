@@ -66,6 +66,14 @@ Container image (web server only)
   the texts are in the image under /usr/share/doc/<package>/copyright.
   https://github.com/dotnet/dotnet-docker
 
+SharpFuzz and SharpFuzz.Common (local fuzzing harness only, not shipped)
+  MIT License. Copyright (c) 2018-2025 Nemanja Mijailovic.
+  https://github.com/Metalnem/sharpfuzz
+
+dnlib (dependency of SharpFuzz; local fuzzing harness only, not shipped)
+  MIT License. Copyright (c) 2012-2019 de4dot@gmail.com.
+  https://github.com/0xd4d/dnlib
+
 Windows App SDK / WinUI 3 (desktop app only)
   Microsoft Software License Terms; files placed in the app by the Windows App
   SDK NuGet packages may be redistributed with it.
