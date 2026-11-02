@@ -100,7 +100,7 @@ public class PublicKeyModeTests
         foreach (var friend in new[] { alice, bob, carol })
         {
             var result = engine.Reveal(stego, friend);
-            Assert.Equal("for my friends", result.Payload.Entries[0].GetText());
+            Assert.Equal("for my friends", result.Payload!.Entries[0].GetText());
             Assert.Equal(new HiddenDataInfo(2, HidingMode.Recipients, 1, false, null), result.Info);
         }
 
@@ -116,7 +116,7 @@ public class PublicKeyModeTests
         var engine = TestImages.Engine();
         var stego = engine.Embed(TestImages.Photo(120, 90), Payload.FromText("adaptive for alice"), [alice.Recipient], new EmbedOptions { Adaptive = true, BitsPerChannel = 2 });
         var result = engine.Reveal(stego, alice);
-        Assert.Equal("adaptive for alice", result.Payload.Entries[0].GetText());
+        Assert.Equal("adaptive for alice", result.Payload!.Entries[0].GetText());
         Assert.True(result.Info.Adaptive);
     }
 

@@ -30,7 +30,7 @@ public class FormatV2Tests
 
         var result = TestImages.Engine().Reveal(stego, Password);
 
-        Assert.Equal(data, result.Payload.Entries[0].Content.ToArray());
+        Assert.Equal(data, result.Payload!.Entries[0].Content.ToArray());
         Assert.Equal(new HiddenDataInfo(1, HidingMode.Password, bits, false, KdfProfile.Normal), result.Info);
     }
 
@@ -45,7 +45,7 @@ public class FormatV2Tests
         var stego = engine.Embed(TestImages.Photo(80, 60), Payload.FromText("profiles"), Password, null, options);
 
         var result = engine.Reveal(stego, Password);
-        Assert.Equal("profiles", result.Payload.Entries[0].GetText());
+        Assert.Equal("profiles", result.Payload!.Entries[0].GetText());
         Assert.Equal(profile, result.Info.KdfProfile);
 
         // Proof that the profile's own parameters were used: an engine where only that profile differs fails.
@@ -124,7 +124,7 @@ public class FormatV2Tests
         var stego = engine.Embed(cover, Payload.FromText(text), Password, null, options);
 
         var result = engine.Reveal(stego, Password);
-        Assert.Equal(text, result.Payload.Entries[0].GetText());
+        Assert.Equal(text, result.Payload!.Entries[0].GetText());
         Assert.True(result.Info.Adaptive);
         Assert.Equal(bits, result.Info.BitsPerChannel);
 

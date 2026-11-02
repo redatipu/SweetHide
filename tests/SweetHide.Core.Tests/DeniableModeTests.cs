@@ -21,8 +21,8 @@ public class DeniableModeTests
         var decoy = engine.Reveal(stego, Decoy.Password);
         var secret = engine.Reveal(stego, Secret.Password);
 
-        Assert.Equal("shopping list: rice, eggs", Assert.Single(decoy.Payload.Entries).GetText());
-        Assert.Equal("the real secret", Assert.Single(secret.Payload.Entries).GetText());
+        Assert.Equal("shopping list: rice, eggs", Assert.Single(decoy.Payload!.Entries).GetText());
+        Assert.Equal("the real secret", Assert.Single(secret.Payload!.Entries).GetText());
         Assert.Equal(new HiddenDataInfo(2, HidingMode.Deniable, bits, false, KdfProfile.Normal), decoy.Info);
         Assert.Equal(decoy.Info, secret.Info);
         Assert.Equal(StegoError.NotFoundOrWrongPassword, Assert.Throws<StegoException>(() => engine.Extract(stego, "neither")).Error);

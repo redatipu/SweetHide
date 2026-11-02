@@ -102,6 +102,18 @@ public class FormatCompatibilityTests
         Assert.Equal(new HiddenDataInfo(2, HidingMode.Recipients, 2, false, null), result.Info);
     }
 
+    [Fact]
+    public void Combines_any_two_of_the_three_v2_share_images()
+    {
+        var engine = new StegoEngine(TestImages.FastKdf);
+        var shares = Enumerable.Range(1, 3).Select(i => engine.Reveal(Fixture($"v2-share-{i}-of-3.png"), "v2 shares").Share!).ToList();
+        Assert.Equal([1, 2, 3], shares.Select(s => s.Index));
+        foreach (var pair in new[] { (0, 1), (0, 2), (1, 2) })
+        {
+            AssertKnownPayload(StegoEngine.CombineShares([shares[pair.Item1], shares[pair.Item2]]), "v2 split two of three");
+        }
+    }
+
     internal static string FixtureText(string name)
     {
         using var stream = typeof(FormatCompatibilityTests).Assembly.GetManifestResourceStream($"Fixtures/{name}")
@@ -116,8 +128,9 @@ public class FormatCompatibilityTests
         return new SkiaImageCodec().Decode(stream, applyOrientation: false);
     }
 
-    private static void AssertKnownPayload(Payload payload, string text = "SweetHide v1 known answer: ทดสอบ 123")
+    private static void AssertKnownPayload(Payload? payload, string text = "SweetHide v1 known answer: ทดสอบ 123")
     {
+        Assert.NotNull(payload);
         Assert.Equal(2, payload.Entries.Count);
         Assert.Equal(text, payload.Entries[0].GetText());
         Assert.Equal("kat.bin", payload.Entries[1].Name);

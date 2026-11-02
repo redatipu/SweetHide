@@ -278,7 +278,7 @@ public sealed class StegoEngine
 
     /// <summary>Reveals data hidden for <paramref name="identity"/>'s public key.</summary>
     /// <inheritdoc cref="Extract(PixelBuffer, ReadOnlySpan{char})"/>
-    public Payload Extract(PixelBuffer image, Identity identity) => Reveal(image, identity).Payload;
+    public Payload Extract(PixelBuffer image, Identity identity) => PayloadOf(Reveal(image, identity));
 
     /// <inheritdoc cref="Extract(PixelBuffer, Identity)"/>
     public RevealResult Reveal(PixelBuffer image, Identity identity)
@@ -290,15 +290,90 @@ public sealed class StegoEngine
         return FromContainer(reader.Carrier, container, HidingMode.Recipients, profile: null);
     }
 
+    /// <summary>Bytes each image of a split must hold (see <see cref="EmbedShares"/>).</summary>
+    public static long GetShareContainerSize(Payload payload)
+    {
+        ArgumentNullException.ThrowIfNull(payload);
+        return ContainerOverhead + ShamirShare.EncodedSize(PayloadSerializer.Serialize(payload).LongLength);
+    }
+
+    /// <summary>
+    /// Splits a payload across <paramref name="covers"/> (one share each, Shamir over GF(256)) so that any
+    /// <paramref name="threshold"/> of the images, with the password, rebuild it and fewer reveal nothing about it.
+    /// </summary>
+    /// <remarks>
+    /// Every image holds a full-size share (<see cref="GetShareContainerSize"/>) under its own salt. Revealing one
+    /// image gives a <see cref="ShamirShare"/> (its number, the threshold and the payload's size, but none of its
+    /// content); <see cref="CombineShares"/> rebuilds the payload.
+    /// </remarks>
+    /// <param name="covers">One cover per share; 2 to 255 of them.</param>
+    /// <param name="payload">What to split.</param>
+    /// <param name="threshold">Shares needed to rebuild, 2 to the number of covers.</param>
+    /// <param name="password">Protects every image.</param>
+    /// <param name="keyFile">Optional second factor for every image.</param>
+    /// <param name="options">Embedding options for every image.</param>
+    /// <exception cref="StegoException"><see cref="StegoError.InsufficientCapacity"/> if any cover is too small.</exception>
+    public IReadOnlyList<PixelBuffer> EmbedShares(
+        IReadOnlyList<PixelBuffer> covers, Payload payload, int threshold, ReadOnlySpan<char> password, KeyFile? keyFile = null, EmbedOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(covers);
+        ArgumentNullException.ThrowIfNull(payload);
+        if (covers.Count is < 2 or > 255 || covers.Any(c => c is null))
+        {
+            throw new ArgumentException("Split across 2 to 255 cover images.", nameof(covers));
+        }
+
+        ArgumentOutOfRangeException.ThrowIfLessThan(threshold, 2);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(threshold, covers.Count);
+        options ??= EmbedOptions.Default;
+        options.Validate();
+        RequirePassword(password);
+
+        var payloadBytes = PayloadSerializer.Serialize(payload);
+        var shareSize = ShamirShare.EncodedSize(payloadBytes.LongLength);
+        foreach (var cover in covers)
+        {
+            RequireCapacity(ContainerBytes(new V2Layout(new RgbLsbCarrier(cover)), V2Layout.PublicSlots, ContainerPlacement.Whole, options), shareSize, options);
+        }
+
+        var shares = ShamirShare.Split(payloadBytes, threshold, covers.Count, _random);
+        try
+        {
+            var images = new PixelBuffer[covers.Count];
+            for (var i = 0; i < covers.Count; i++)
+            {
+                images[i] = EmbedPassword(covers[i], shares[i], ContentKind.Share, password, keyFile, options);
+            }
+
+            return images;
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(payloadBytes);
+            Array.ForEach(shares, share => CryptographicOperations.ZeroMemory(share));
+        }
+    }
+
+    /// <summary>Rebuilds a split payload from the shares revealed from its images (at least the threshold).</summary>
     /// <exception cref="StegoException">
-    /// <see cref="StegoError.NotFoundOrWrongPassword"/>, <see cref="StegoError.Corrupted"/> or
-    /// <see cref="StegoError.UnsupportedFormat"/>.
+    /// <see cref="StegoError.NotEnoughShares"/>, <see cref="StegoError.SharesDoNotMatch"/> or
+    /// <see cref="StegoError.Corrupted"/> (a share was altered).
+    /// </exception>
+    public static Payload CombineShares(IEnumerable<ShamirShare> shares)
+    {
+        ArgumentNullException.ThrowIfNull(shares);
+        return ShamirShare.Combine(shares);
+    }
+
+    /// <exception cref="StegoException">
+    /// <see cref="StegoError.NotFoundOrWrongPassword"/>, <see cref="StegoError.Corrupted"/>,
+    /// <see cref="StegoError.UnsupportedFormat"/> or <see cref="StegoError.SplitShare"/> (use <see cref="Reveal(PixelBuffer, ReadOnlySpan{char}, KeyFile?)"/>).
     /// </exception>
     public Payload Extract(PixelBuffer image, ReadOnlySpan<char> password) => Extract(image, password, keyFile: null);
 
     /// <inheritdoc cref="Extract(PixelBuffer, ReadOnlySpan{char})"/>
     public Payload Extract(PixelBuffer image, ReadOnlySpan<char> password, KeyFile? keyFile) =>
-        Reveal(image, password, keyFile).Payload;
+        PayloadOf(Reveal(image, password, keyFile));
 
     /// <summary>Like <see cref="Extract(PixelBuffer, ReadOnlySpan{char}, KeyFile?)"/>, and also says how the data was hidden.</summary>
     /// <inheritdoc cref="Extract(PixelBuffer, ReadOnlySpan{char})"/>
@@ -314,7 +389,7 @@ public sealed class StegoEngine
             var body = V1Format.ReadBody(v1);
             try
             {
-                return new RevealResult(new HiddenDataInfo(1, HidingMode.Password, v1.BitsPerSlot, false, KdfProfile.Normal), Deserialize(body));
+                return new RevealResult(new HiddenDataInfo(1, HidingMode.Password, v1.BitsPerSlot, false, KdfProfile.Normal), Deserialize(body), null);
             }
             finally
             {
@@ -394,8 +469,8 @@ public sealed class StegoEngine
         try
         {
             return header.Kind == ContentKind.Payload
-                ? new RevealResult(info, Deserialize(content))
-                : throw new StegoException(StegoError.UnsupportedFormat, "This version cannot read this kind of hidden data.");
+                ? new RevealResult(info, Deserialize(content), null)
+                : new RevealResult(info, null, ShamirShare.Decode(content));
         }
         finally
         {
@@ -452,6 +527,11 @@ public sealed class StegoEngine
         _random.Fill(bytes);
         return bytes;
     }
+
+    private static Payload PayloadOf(RevealResult result) =>
+        result.Payload ?? throw new StegoException(
+            StegoError.SplitShare,
+            $"This image holds share {result.Share!.Index} of a {result.Share.Threshold}-of-{result.Share.ShareCount} split. Reveal at least {result.Share.Threshold} of the images and combine their shares.");
 
     private static StegoException NotFound() =>
         new(StegoError.NotFoundOrWrongPassword, "No hidden data found, or the password is wrong.");

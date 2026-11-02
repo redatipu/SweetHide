@@ -18,6 +18,18 @@ public enum StegoError
 
     /// <summary>The password was right but the data was written by a newer version of SweetHide.</summary>
     UnsupportedFormat,
+
+    /// <summary>
+    /// The image holds one share of a payload split across several images. Use <see cref="StegoEngine.Reveal(Imaging.PixelBuffer, ReadOnlySpan{char}, Crypto.KeyFile?)"/>
+    /// on enough of them and <see cref="StegoEngine.CombineShares"/>.
+    /// </summary>
+    SplitShare,
+
+    /// <summary>Fewer shares than the split's threshold were given.</summary>
+    NotEnoughShares,
+
+    /// <summary>The shares come from different splits (or two different shares claim the same number).</summary>
+    SharesDoNotMatch,
 }
 
 public sealed class StegoException : Exception

@@ -23,17 +23,21 @@ public enum HidingMode
 /// <param name="KdfProfile">The Argon2id profile, for password modes.</param>
 public sealed record HiddenDataInfo(int FormatVersion, HidingMode Mode, int BitsPerChannel, bool Adaptive, KdfProfile? KdfProfile);
 
-/// <summary>What an image revealed.</summary>
+/// <summary>What an image revealed: a payload, or one share of a split payload.</summary>
 public sealed class RevealResult
 {
-    internal RevealResult(HiddenDataInfo info, Payload payload)
+    internal RevealResult(HiddenDataInfo info, Payload? payload, ShamirShare? share)
     {
         Info = info;
         Payload = payload;
+        Share = share;
     }
 
     public HiddenDataInfo Info { get; }
 
-    /// <summary>The hidden payload.</summary>
-    public Payload Payload { get; }
+    /// <summary>The hidden payload, or null when the image holds a <see cref="Share"/>.</summary>
+    public Payload? Payload { get; }
+
+    /// <summary>One share of a split payload; combine enough of them with <see cref="StegoEngine.CombineShares"/>.</summary>
+    public ShamirShare? Share { get; }
 }
