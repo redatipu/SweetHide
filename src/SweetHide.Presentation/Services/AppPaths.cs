@@ -22,6 +22,9 @@ public sealed class AppPaths
 
     public string VaultFile => Path.Combine(DataDirectory, "vault.dat");
 
+    /// <summary>My key and friends' public keys, encrypted like the vault.</summary>
+    public string KeyringFile => Path.Combine(DataDirectory, "keys.dat");
+
     public string CrashLog => Path.Combine(DataDirectory, "crash.log");
 
     public static AppPaths Resolve(string appDirectory, string? localAppData = null)
