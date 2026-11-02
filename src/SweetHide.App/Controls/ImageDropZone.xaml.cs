@@ -100,7 +100,7 @@ public sealed partial class ImageDropZone : UserControl
 
         e.AcceptedOperation = DataPackageOperation.Copy;
         e.DragUIOverride.Caption = Strings.DropToUse;
-        Outline.Stroke = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
+        DragOutline.Opacity = 1;
     }
 
     private void OnDragLeave(object sender, DragEventArgs e) => ResetOutline();
@@ -127,8 +127,7 @@ public sealed partial class ImageDropZone : UserControl
         }
     }
 
-    private void ResetOutline() =>
-        Outline.Stroke = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ControlStrongStrokeColorDefaultBrush"];
+    private void ResetOutline() => DragOutline.Opacity = 0;
 }
 
 /// <summary>Turns image bytes into something an Image element can show.</summary>

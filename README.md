@@ -11,10 +11,23 @@
 
 > ⚠️ **ต้องส่งรูปแบบ "ไฟล์" เสมอ** แอปแชต (LINE, Messenger, Facebook) จะบีบอัดรูปใหม่ และข้อมูลที่ซ่อนไว้จะหายหมด
 
+## ดาวน์โหลด
+
+ไฟล์ทั้งหมดอยู่ที่ [Releases](https://github.com/redatipu/SweetHide/releases) ทุกไฟล์รวม .NET และ Windows App SDK มาในตัวแล้ว จึงไม่ต้องติดตั้งอะไรเพิ่ม
+
+- **แอป Windows:** `SweetHide-<เวอร์ชัน>-win-x64.zip` แตกไฟล์แล้วเปิด `SweetHide.exe` (ถ้าเป็นเครื่อง ARM ให้ใช้ `-win-arm64`)
+- **CLI:** `sweethide-<เวอร์ชัน>-<ระบบ>.zip` หรือ `.tar.gz`
+- **ตรวจไฟล์:** เทียบ checksum กับ `SHA256SUMS.txt` ก่อนเปิดใช้ เพราะไฟล์ไม่ได้เซ็นด้วย code signing ครั้งแรกที่เปิด SmartScreen จะเตือน ให้กด **More info → Run anyway**
+
+```powershell
+Get-FileHash .\SweetHide-0.2.0-win-x64.zip -Algorithm SHA256
+```
+
+ถ้าต้องการเวอร์ชันระหว่างพัฒนา ให้ดาวน์โหลด artifact `release-assets` จาก CI run ล่าสุดของ PR
+
 ## แอป Windows (GUI)
 
-ดาวน์โหลด `SweetHide-win-x64` (หรือ `SweetHide-win-arm64`) จาก artifact ของ GitHub Actions แล้วแตกไฟล์ไว้ที่ไหนก็ได้ จากนั้นเปิด `SweetHide.exe` ได้ทันที ไม่ต้องติดตั้ง .NET หรือ Windows App SDK เพิ่ม
-ไฟล์ยังไม่ได้เซ็นด้วย code signing ครั้งแรกที่เปิด SmartScreen จะเตือน ให้กด **More info → Run anyway**
+แอปเริ่มต้นด้วย **ธีมมืด** เปลี่ยนเป็นสว่างหรือให้ตาม Windows ได้ที่หน้าตั้งค่า
 
 | หน้า | ใช้ทำอะไร |
 |---|---|
@@ -121,4 +134,6 @@ dotnet build src/SweetHide.App -p:Platform=x64
 | `src/SweetHide.App` | แอป WinUI 3: XAML, file picker, clipboard, drag & drop |
 | `tests/` | xUnit v3 + FsCheck (property-based) |
 | `docs/PLAN.md` | แผนงานและ tech stack |
+| `.github/workflows/` | `test.yml` และ `package.yml` (เรียกใช้ซ้ำได้), `ci.yml` (PR), `release.yml` (tag `v*`) |
 | `docs/FORMAT.md` | สเปกรูปแบบข้อมูลในภาพ (เวอร์ชัน v1) |
+| `docs/RELEASING.md` | วิธีออก release (push tag แล้ว GitHub Actions ทำที่เหลือให้) |

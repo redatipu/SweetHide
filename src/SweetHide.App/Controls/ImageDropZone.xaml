@@ -19,6 +19,15 @@
             Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
             StrokeDashArray="4,3"
             StrokeThickness="1.5" />
+        <Rectangle
+            x:Name="DragOutline"
+            Fill="{ThemeResource SubtleFillColorSecondaryBrush}"
+            Opacity="0"
+            RadiusX="8"
+            RadiusY="8"
+            Stroke="{ThemeResource AccentFillColorDefaultBrush}"
+            StrokeDashArray="4,3"
+            StrokeThickness="2" />
 
         <!-- Empty state -->
         <StackPanel

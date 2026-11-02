@@ -34,6 +34,7 @@
 ### ✅ Phase 2: GUI สำหรับ Windows 11 (WinUI 3)
 - **สถาปัตยกรรม:** ใช้ MVVM โดยแยก ViewModel ไว้ใน `SweetHide.Presentation` (net10.0) ซึ่งไม่ผูกกับ WinUI จึงเทสต์บน Linux ได้ ส่วน `SweetHide.App` มีแค่ XAML กับ service ที่ต้องเรียก Windows API
 - **หน้าจอ:** ซ่อน, ถอด, วิเคราะห์, ตั้งค่า อยู่ใน NavigationView ร่วมกับ TitleBar control และพื้นหลัง Mica
+- **ธีม:** ธีมมืดเป็นค่าเริ่มต้น ผู้ใช้เลือกสว่างหรือให้ตาม Windows ได้ และเปลี่ยนได้ทันทีโดยไม่ต้องเปิดแอปใหม่
 - **รับรูป:** ลากรูปมาวาง, กด Ctrl+V (ระบบไม่ดักไว้ถ้ากำลังพิมพ์ในช่องข้อความ) หรือใช้ file picker ตัวใหม่ของ Windows App SDK ซึ่งคืนค่าเป็น path ตรง ๆ
 - **ฟีดแบ็ก:**
   - แถบความจุอัปเดตแบบ real-time (หน่วง 300 ms) โดยคำนวณขนาดหลังบีบอัดจริง แถบเปลี่ยนเป็นสีเหลืองเมื่อใช้เกิน 50% และสีแดงเมื่อใส่ไม่พอ
@@ -43,10 +44,13 @@
 - **ความปลอดภัย:** ไฟล์ที่ถอดออกมาจะไม่ถูกเปิดอัตโนมัติ ปุ่ม "เปิดโฟลเดอร์" เปิดแค่ Explorer ชื่อไฟล์ผ่าน `SafeFileWriter` และรหัสผ่านถูกล้างหลังซ่อนหรือถอดสำเร็จ
 - **รูปจากคลิปบอร์ด:** แก้ปัญหา DIB ที่ alpha เป็น 0 ทั้งภาพ (Windows clipboard มักให้มาแบบนี้) โดยถือว่ารูปทึบ เพราะถ้าไม่แก้ ความจุจะเป็น 0
 
-### ⏭️ Phase 3: Release สำหรับใช้กับเพื่อน
-- push tag `v*` แล้ว GitHub Actions จะสร้าง GitHub Release ที่มี `sweethide.exe`, GUI แบบ portable zip และ SHA-256
+### ✅ Phase 3: Release สำหรับใช้กับเพื่อน
+- push tag `vX.Y.Z` แล้ว `release.yml` จะทำ test → package → GitHub Release ให้เอง (ดู [RELEASING.md](RELEASING.md))
+- ไฟล์แจก: GUI zip (x64/arm64), CLI (win/linux × x64/arm64) และ `SHA256SUMS.txt` ส่วนเวอร์ชันจาก tag จะถูกฝังลงใน binary
+- ขั้นตอนแพ็กไฟล์แยกเป็น workflow ที่เรียกใช้ซ้ำได้ (`package.yml`) และรันในทุก PR ด้วย release จึงไม่ใช่ครั้งแรกที่โค้ดชุดนี้ถูกรัน
+- smoke test เปิดแอปจริงก่อนแจกทุกครั้ง (ภาษาไทย/ธีมมืด และภาษาอังกฤษ/ธีมสว่าง)
 - **ไม่ซื้อ code signing** เพราะใช้กันเอง ครั้งแรกที่เปิด Windows SmartScreen จะเตือน ให้กด More info → Run anyway และแจก checksum ให้เพื่อนตรวจสอบไฟล์
-- GUI เลือกแบบ unpackaged + self-contained (`WindowsAppSDKSelfContained`) แทน MSIX เพราะ MSIX ต้องใช้ cert ที่เครื่องเพื่อนเชื่อถือ ตอนนี้ CI สร้าง artifact `SweetHide-win-x64` และ `SweetHide-win-arm64` ไว้แล้ว เหลือผูกเข้ากับ GitHub Release
+- GUI เลือกแบบ unpackaged + self-contained (`WindowsAppSDKSelfContained`) แทน MSIX เพราะ MSIX ต้องใช้ cert ที่เครื่องเพื่อนเชื่อถือ
 
 ### 💡 Phase 4: ทำเพิ่มถ้าสนใจ
 - **Robust mode** ให้ข้อมูลรอดการส่งผ่าน LINE หรือ Facebook: ฝังใน DCT coefficient ร่วมกับ Reed–Solomon ECC แต่จะเก็บข้อมูลได้น้อยลงมาก

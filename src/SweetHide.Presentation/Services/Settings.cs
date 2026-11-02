@@ -17,7 +17,9 @@ public enum AppTheme
     Dark = 2,
 }
 
-public sealed record AppSettings(AppLanguage Language = AppLanguage.Default, AppTheme Theme = AppTheme.Default);
+/// <param name="Language">UI language; <see cref="AppLanguage.Default"/> follows Windows.</param>
+/// <param name="Theme">Colour theme; SweetHide starts in <see cref="AppTheme.Dark"/>.</param>
+public sealed record AppSettings(AppLanguage Language = AppLanguage.Default, AppTheme Theme = AppTheme.Dark);
 
 public interface ISettingsStore
 {
@@ -64,7 +66,7 @@ public sealed class JsonSettingsStore(string path) : ISettingsStore
 
     private static AppSettings Sanitize(AppSettings settings) => new(
         Enum.IsDefined(settings.Language) ? settings.Language : AppLanguage.Default,
-        Enum.IsDefined(settings.Theme) ? settings.Theme : AppTheme.Default);
+        Enum.IsDefined(settings.Theme) ? settings.Theme : new AppSettings().Theme);
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, UseStringEnumConverter = true)]

@@ -41,13 +41,15 @@ public class SettingsViewModelTests
         var theme = new FakeTheme();
         var vm = new SettingsViewModel(store, theme, new AppSettings());
 
-        vm.ThemeIndex = (int)AppTheme.Dark;
-        Assert.Equal([AppTheme.Dark], theme.Applied);
+        Assert.Equal((int)AppTheme.Dark, vm.ThemeIndex); // dark by default
+
+        vm.ThemeIndex = (int)AppTheme.Light;
+        Assert.Equal([AppTheme.Light], theme.Applied);
         Assert.False(vm.ShowRestartHint);
 
         vm.LanguageIndex = (int)AppLanguage.Thai;
         Assert.True(vm.ShowRestartHint);
-        Assert.Equal(new AppSettings(AppLanguage.Thai, AppTheme.Dark), store.Current);
+        Assert.Equal(new AppSettings(AppLanguage.Thai, AppTheme.Light), store.Current);
 
         vm.LanguageIndex = 99; // ignored
         Assert.Equal(AppLanguage.Thai, store.Current.Language);
@@ -67,7 +69,7 @@ public sealed class JsonSettingsStoreTests : IDisposable
     {
         var path = Path.Combine(_dir.FullName, "nested", "settings.json");
         var store = new JsonSettingsStore(path);
-        Assert.Equal(new AppSettings(), store.Load());
+        Assert.Equal(new AppSettings(AppLanguage.Default, AppTheme.Dark), store.Load());
 
         store.Save(new AppSettings(AppLanguage.English, AppTheme.Light));
         Assert.Equal(new AppSettings(AppLanguage.English, AppTheme.Light), new JsonSettingsStore(path).Load());
@@ -76,8 +78,11 @@ public sealed class JsonSettingsStoreTests : IDisposable
         File.WriteAllText(path, "{ not json");
         Assert.Equal(new AppSettings(), store.Load());
 
-        File.WriteAllText(path, """{ "Language": 42, "Theme": "Dark" }""");
-        Assert.Equal(new AppSettings(AppLanguage.Default, AppTheme.Dark), store.Load());
+        File.WriteAllText(path, """{ "Language": 42, "Theme": "Light" }""");
+        Assert.Equal(new AppSettings(AppLanguage.Default, AppTheme.Light), store.Load());
+
+        File.WriteAllText(path, """{ "Theme": 9 }""");
+        Assert.Equal(AppTheme.Dark, store.Load().Theme);
     }
 }
 

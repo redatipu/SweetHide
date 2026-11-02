@@ -11,13 +11,30 @@ public partial class App : Application
 {
     private MainWindow? _window;
 
+    private readonly JsonSettingsStore _store;
+    private readonly AppSettings _settings;
+
     public App()
     {
         SmokeTest.ParseArguments(Environment.GetCommandLineArgs());
+        _store = new JsonSettingsStore(SmokeTest.IsEnabled
+            ? Path.Combine(SmokeTest.OutputDirectory!, "settings.json")
+            : JsonSettingsStore.DefaultPath);
+        _settings = _store.Load();
+        if (SmokeTest.Language is { } language)
+        {
+            _settings = _settings with { Language = language == "th" ? AppLanguage.Thai : AppLanguage.English };
+        }
+
         if (SmokeTest.Theme is { } theme)
         {
-            // Only settable in the constructor; makes theme resources resolve for the screenshots.
-            RequestedTheme = theme == "dark" ? ApplicationTheme.Dark : ApplicationTheme.Light;
+            _settings = _settings with { Theme = theme == "light" ? AppTheme.Light : AppTheme.Dark };
+        }
+
+        // RequestedTheme can only be set here. "Follow Windows" leaves it unset.
+        if (_settings.Theme != AppTheme.Default)
+        {
+            RequestedTheme = _settings.Theme == AppTheme.Light ? ApplicationTheme.Light : ApplicationTheme.Dark;
         }
 
         InitializeComponent();
@@ -29,20 +46,11 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        var store = new JsonSettingsStore(SmokeTest.IsEnabled
-            ? Path.Combine(SmokeTest.OutputDirectory!, "settings.json")
-            : JsonSettingsStore.DefaultPath);
-        var settings = store.Load();
-        if (SmokeTest.Language is { } language)
-        {
-            settings = settings with { Language = language == "th" ? AppLanguage.Thai : AppLanguage.English };
-        }
-
-        Strings.ApplyLanguage(settings.Language); // before any page builds its text
+        Strings.ApplyLanguage(_settings.Language); // before any page builds its text
 
         _window = new MainWindow();
-        Services = new AppServices(_window, store, settings);
-        Services.Theme.Apply(settings.Theme);
+        Services = new AppServices(_window, _store, _settings);
+        Services.Theme.Apply(_settings.Theme);
         _window.ShowStartPage();
 
         if (SmokeTest.IsEnabled)
