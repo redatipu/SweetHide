@@ -177,10 +177,10 @@ dotnet build src/SweetHide.App -p:Platform=x64
 | `src/SweetHide.App` | แอป WinUI 3: XAML, file picker, clipboard, drag & drop |
 | `src/SweetHide.Server` | เว็บเซิร์ฟเวอร์ (ASP.NET Core minimal API) และหน้าเว็บที่ฝังอยู่ในโปรแกรม (`web/`) |
 | `Dockerfile`, `docker-compose.yml` | image ของเว็บเซิร์ฟเวอร์ (amd64/arm64) และตัวอย่างการรัน |
-| `tests/` | xUnit v3 + FsCheck (property-based) |
+| `tests/` | xUnit v3 + FsCheck (property-based) และภาพ fixture ของทุก format version ส่วน `tests/SweetHide.Fuzz` ไว้ fuzz ในเครื่องด้วย SharpFuzz (CI แค่ build) |
 | `docs/PLAN.md` | แผนงานและ tech stack |
 | `.github/workflows/` | `test.yml`, `package.yml` และ `docker.yml` (เรียกใช้ซ้ำได้), `ci.yml` (PR), `release.yml` (tag `v*`) |
-| `docs/FORMAT.md` | สเปกรูปแบบข้อมูลในภาพ (เวอร์ชัน v1) |
+| `docs/FORMAT.md` | สเปกรูปแบบข้อมูลในภาพ (v2 และ v1 ที่ยังถอดได้) พร้อมหมายเหตุด้านความปลอดภัย |
 | `docs/SERVER.md` | วิธีรันเว็บเซิร์ฟเวอร์, การตั้งค่า, HTTPS และ API |
 | `docs/RELEASING.md` | วิธีออก release (push tag แล้ว GitHub Actions ทำที่เหลือให้) |
 

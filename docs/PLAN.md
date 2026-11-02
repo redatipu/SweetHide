@@ -52,9 +52,19 @@
 - **ไม่ซื้อ code signing** เพราะใช้กันเอง ครั้งแรกที่เปิด Windows SmartScreen จะเตือน ให้กด More info → Run anyway และแจก checksum ให้เพื่อนตรวจสอบไฟล์
 - GUI เลือกแบบ unpackaged + self-contained (`WindowsAppSDKSelfContained`) แทน MSIX เพราะ MSIX ต้องใช้ cert ที่เครื่องเพื่อนเชื่อถือ
 
+### ✅ Phase 4a: Format v2 ใน Core (CLI และ GUI ยังต้องต่อสาย)
+- รายละเอียดทั้งหมดอยู่ใน [FORMAT.md](FORMAT.md) ภาพ v1 จาก v0.1.0 ยังถอดได้ ส่วน v0.1.0 ถอดภาพ v2 ไม่ได้
+- **Carrier abstraction:** container ทำงานผ่าน `IStegoCarrier` ตอนนี้มี RGB-LSB และเตรียมไว้ให้ JPEG-coefficient กับ palette carrier
+- **KDF profile** Fast / Normal / Paranoid ที่ตัวถอดรู้จาก salt โดยไม่มี plaintext, **key file** เป็นปัจจัยที่สอง
+- **Public key mode** (X25519 ผ่าน NSec/libsodium): ซ่อนให้เพื่อนได้สูงสุด 16 คนต่อภาพโดยไม่ต้องตกลงรหัสผ่านกัน, public key แบบ `sweethide1…` และไฟล์ private key ที่เข้ารหัสด้วย passphrase
+- **Deniable mode:** payload สองชุด รหัสผ่านคนละอัน, **Shamir k-of-n** ข้ามหลายภาพ, **adaptive embedding** ที่เลือกบริเวณที่มี texture
+- ตัวช่วยสำหรับ UI: คะแนนความเหมาะสมของ cover (0–100), `RecommendBitsPerChannel`, `PasswordProbe` สำหรับทดสอบรหัสผ่านของภาพตัวเองกับ wordlist
+- อ่านเขียน slot หลาย core, PNG ใช้ zlib level 6, test แบบ mutation/fuzz และ harness สำหรับ SharpFuzz
+
 ### 💡 Phase 4: ทำเพิ่มถ้าสนใจ
 - **Robust mode** ให้ข้อมูลรอดการส่งผ่าน LINE หรือ Facebook: ฝังใน DCT coefficient ร่วมกับ Reed–Solomon ECC แต่จะเก็บข้อมูลได้น้อยลงมาก
-- Adaptive embedding (เช่น HUGO/S-UNIWARD) ให้ฝังเฉพาะบริเวณที่มี texture เพื่อให้ตรวจจับยากขึ้น
+- Adaptive embedding ขั้นกว่า (HUGO/S-UNIWARD ร่วมกับ syndrome-trellis codes) แทนการเลือกด้วย threshold ที่มีใน v2
+- Elligator 2 สำหรับ ephemeral key ในโหมด public key เพื่อปิดหลักฐาน 1 บิตที่เหลืออยู่
 - เมนูคลิกขวาใน Explorer ("Reveal with SweetHide"), batch mode
 - เพิ่ม analyzer แบบ RS analysis และ SPA เพื่อแข่งกันซ่อนและตรวจจับในกลุ่ม
 
