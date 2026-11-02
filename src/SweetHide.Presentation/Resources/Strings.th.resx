@@ -11,7 +11,7 @@
   <data name="NavAnalyze" xml:space="preserve"><value>วิเคราะห์</value></data>
   <data name="NavSettings" xml:space="preserve"><value>ตั้งค่า</value></data>
   <data name="DropZoneTitle" xml:space="preserve"><value>ลากรูปมาวางที่นี่</value></data>
-  <data name="DropZoneHint" xml:space="preserve"><value>PNG, JPEG, BMP, GIF หรือ WebP · หรือวางด้วย Ctrl+V</value></data>
+  <data name="DropZoneHint" xml:space="preserve"><value>PNG, JPEG, HEIC, WebP, BMP, GIF, TIFF… · หรือวางด้วย Ctrl+V</value></data>
   <data name="BrowseImage" xml:space="preserve"><value>เลือกรูป…</value></data>
   <data name="PasteImage" xml:space="preserve"><value>วาง</value></data>
   <data name="ChangeImage" xml:space="preserve"><value>เปลี่ยนรูป</value></data>

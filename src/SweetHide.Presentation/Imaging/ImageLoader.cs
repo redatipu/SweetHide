@@ -44,12 +44,22 @@ public enum ImagePurpose
     Inspect,
 }
 
+/// <summary>
+/// A second decoder for formats SkiaSharp can't read (HEIC/HEIF from iPhones, AVIF, TIFF, JPEG XR). On Windows this is
+/// WIC, which uses whatever codecs the PC has installed.
+/// </summary>
+public interface IFallbackImageDecoder
+{
+    /// <returns>Unpremultiplied RGBA pixels, or null if this decoder can't read the bytes either.</returns>
+    Task<PixelBuffer?> TryDecodeAsync(byte[] bytes, bool applyOrientation);
+}
+
 /// <summary>Reads and decodes images on a background thread.</summary>
-public sealed class ImageLoader(IImageCodec codec)
+public sealed class ImageLoader(IImageCodec codec, IFallbackImageDecoder? fallback = null)
 {
     public const long MaxFileBytes = 256L * 1024 * 1024;
 
-    public Task<LoadedImage> LoadFileAsync(string path, ImagePurpose purpose) => Task.Run(() =>
+    public async Task<LoadedImage> LoadFileAsync(string path, ImagePurpose purpose)
     {
         var info = new FileInfo(path);
         if (info.Length > MaxFileBytes)
@@ -57,22 +67,35 @@ public sealed class ImageLoader(IImageCodec codec)
             throw new InvalidImageException(Strings.Format(Strings.FileTooLarge, info.Name, ByteSize.Format(MaxFileBytes)));
         }
 
-        return Decode(info.Name, info.FullName, File.ReadAllBytes(info.FullName), purpose);
-    });
+        var bytes = await File.ReadAllBytesAsync(info.FullName);
+        return await DecodeAsync(info.Name, info.FullName, bytes, purpose);
+    }
 
-    public Task<LoadedImage> LoadBytesAsync(string name, byte[] bytes, ImagePurpose purpose) =>
-        Task.Run(() => Decode(name, null, bytes, purpose));
+    public Task<LoadedImage> LoadBytesAsync(string name, byte[] bytes, ImagePurpose purpose) => DecodeAsync(name, null, bytes, purpose);
 
-    private LoadedImage Decode(string name, string? path, byte[] bytes, ImagePurpose purpose)
+    private async Task<LoadedImage> DecodeAsync(string name, string? path, byte[] bytes, ImagePurpose purpose)
     {
+        var applyOrientation = purpose == ImagePurpose.Cover;
         PixelBuffer pixels;
-        using (var stream = new MemoryStream(bytes, writable: false))
+        try
         {
-            pixels = codec.Decode(stream, applyOrientation: purpose == ImagePurpose.Cover);
+            pixels = await Task.Run(() =>
+            {
+                using var stream = new MemoryStream(bytes, writable: false);
+                return codec.Decode(stream, applyOrientation);
+            });
+        }
+        catch (InvalidImageException) when (fallback is not null)
+        {
+            pixels = await fallback.TryDecodeAsync(bytes, applyOrientation)
+                ?? throw new InvalidImageException(Strings.Format(Strings.ImageLoadFailed, name));
         }
 
-        MakeOpaqueIfFullyTransparent(pixels);
-        return new LoadedImage(name, path, bytes, pixels);
+        return await Task.Run(() =>
+        {
+            MakeOpaqueIfFullyTransparent(pixels);
+            return new LoadedImage(name, path, bytes, pixels);
+        });
     }
 
     /// <summary>

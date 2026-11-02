@@ -25,7 +25,7 @@ internal sealed class AppServices : IDisposable
         _window = window;
         Codec = new SkiaImageCodec();
         var engine = new StegoEngine();
-        var loader = new ImageLoader(Codec);
+        var loader = new ImageLoader(Codec, new WicImageDecoder());
         var dialogs = new FileDialogService(window);
         var clipboard = new ClipboardService();
         var shell = new ShellService();

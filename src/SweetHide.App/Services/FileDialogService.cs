@@ -8,7 +8,8 @@ namespace SweetHide.App.Services;
 /// <summary>Windows App SDK pickers: they take the window id and return plain paths, which suits an unpackaged app.</summary>
 internal sealed class FileDialogService(Window window) : IFileDialogService
 {
-    internal static readonly string[] ImageExtensions = [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"];
+    internal static readonly string[] ImageExtensions =
+        [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".heic", ".heif", ".avif", ".tif", ".tiff", ".jxr"];
 
     public async Task<string?> PickImageAsync()
     {
