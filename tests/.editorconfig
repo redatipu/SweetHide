@@ -1,0 +1,5 @@
+[*.cs]
+# Test method names use underscores for readability.
+dotnet_diagnostic.CA1707.severity = none
+# Tests deliberately use literal arrays and small helpers inline.
+dotnet_diagnostic.CA1861.severity = none

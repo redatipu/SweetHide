@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Magi.Cli/Magi.Cli.csproj" />
+    <Project Path="src/Magi.Core/Magi.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Magi.Cli.Tests/Magi.Cli.Tests.csproj" />
+    <Project Path="tests/Magi.Core.Tests/Magi.Core.Tests.csproj" />
+  </Folder>
+</Solution>

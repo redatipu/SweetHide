@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Magi.Core</RootNamespace>
+    <Description>Steganography engine: hides encrypted text and files in the low bits of lossless images.</Description>
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <!-- Lets the CLI run on Linux homelab servers (x64/arm64) without system libs. -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+    <PackageReference Include="Konscious.Security.Cryptography.Argon2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Magi.Core.Tests" />
+    <InternalsVisibleTo Include="Magi.Cli.Tests" />
+  </ItemGroup>
+
+</Project>
