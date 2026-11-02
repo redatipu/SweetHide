@@ -20,4 +20,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Images made by released versions; they must keep revealing (see FormatCompatibilityTests). -->
+    <EmbeddedResource Include="Fixtures\*.png" LogicalName="Fixtures/%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>
