@@ -15,7 +15,8 @@ internal sealed record HideOptions(
     IReadOnlyList<string> Files,
     int Bits,
     bool Force,
-    bool PasswordFromStdin);
+    bool PasswordFromStdin,
+    LosslessFormat Format = LosslessFormat.Png);
 
 internal sealed class HideCommand(CliContext context)
 {
@@ -50,12 +51,12 @@ internal sealed class HideCommand(CliContext context)
             {
                 // Not disposed: closing the process's stdout is the runtime's job.
                 var stdout = context.OpenStandardOutput();
-                context.Codec.EncodePng(stego, stdout);
+                LosslessFormats.Encode(context.Codec, stego, options.Format, stdout);
                 stdout.Flush();
             }
             else
             {
-                context.Codec.SavePng(stego, output, options.Force);
+                context.Codec.SaveImage(stego, output, options.Force);
             }
 
             var capacity = StegoEngine.GetCapacity(pixels, options.Bits);
@@ -96,7 +97,7 @@ internal sealed class HideCommand(CliContext context)
             context.Error.WriteLine("warning: 3-4 bits per channel can leave visible noise in smooth areas such as sky.");
         }
 
-        context.Error.WriteLine("note: send the PNG as a file/document. Chat apps re-compress photos, which destroys hidden data.");
+        context.Error.WriteLine("note: send the image as a file/document. Chat apps re-compress photos, which destroys hidden data.");
         return ExitCodes.Success;
     }
 
@@ -135,10 +136,9 @@ internal sealed class HideCommand(CliContext context)
             throw new CliException("Give --output (a .png file, or - for stdout) or --output-dir.");
         }
 
-        if (options.Output is not null && !Inputs.IsStandardStream(options.Output)
-            && !string.Equals(Path.GetExtension(options.Output), ".png", StringComparison.OrdinalIgnoreCase))
+        if (options.Output is not null && !Inputs.IsStandardStream(options.Output) && LosslessFormats.FromPath(options.Output) is null)
         {
-            throw new CliException("Output must be a .png file. Lossy formats such as JPEG destroy the hidden bits.");
+            throw new CliException("Output must be a lossless image: .png, .webp, .bmp or .tiff. Lossy formats such as JPEG destroy the hidden bits.");
         }
 
         if (options.Output is not null && Inputs.IsStandardStream(options.Output) && context.Json)
@@ -170,7 +170,7 @@ internal sealed class HideCommand(CliContext context)
 
     private static string OutputPathFor(HideOptions options, string input) =>
         options.OutputDirectory is { } directory
-            ? Path.Combine(directory, SafeFileName.Sanitize(Inputs.Stem(input) + ".png"))
+            ? Path.Combine(directory, SafeFileName.Sanitize(Inputs.Stem(input) + LosslessFormats.Extension(options.Format)))
             : options.Output!;
 
     private Payload BuildPayload(HideOptions options)

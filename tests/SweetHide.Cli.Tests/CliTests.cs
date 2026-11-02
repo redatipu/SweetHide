@@ -109,11 +109,32 @@ public sealed class CliTests : IDisposable
     [Theory]
     [InlineData("out.jpg")]
     [InlineData("out.jpeg")]
-    [InlineData("out.webp")]
-    public void Refuses_lossy_or_non_png_output(string name)
+    [InlineData("out.gif")]
+    public void Refuses_lossy_output(string name)
     {
         Assert.Equal(1, Run("hide", "-i", WriteCover("c.png", 50, 50), "-o", Path(_dir, name), "-t", "x"));
-        Assert.Contains(".png", _err.ToString(), StringComparison.Ordinal);
+        Assert.Contains("lossless", _err.ToString(), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("out.webp")]
+    [InlineData("out.bmp")]
+    [InlineData("out.tiff")]
+    public void Writes_and_reveals_every_lossless_format(string name)
+    {
+        var output = Path(_dir, name);
+        Assert.Equal(0, Run("hide", "-i", WriteCover("c.png", 90, 70), "-o", output, "-t", "lossless"));
+        ResetOutput();
+        Assert.Equal(0, Run("reveal", "-i", output));
+        Assert.Equal("lossless", _out.ToString().TrimEnd());
+    }
+
+    [Fact]
+    public void Batch_format_option_picks_the_extension()
+    {
+        var outDir = _dir.CreateSubdirectory("webp");
+        Assert.Equal(0, Run("hide", "-i", WriteCover("a.png", 60, 60), "--output-dir", outDir.FullName, "--format", "WebP", "-t", "x"));
+        Assert.True(File.Exists(Path(outDir, "a.webp")));
     }
 
     [Fact]

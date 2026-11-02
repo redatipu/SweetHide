@@ -23,6 +23,11 @@ public sealed class SkiaImageCodec : IImageCodec
         ArgumentNullException.ThrowIfNull(input);
 
         using var data = SKData.Create(input) ?? throw new InvalidImageException("The file is empty or could not be read.");
+        if (TiffCodec.IsTiff(data.AsSpan()))
+        {
+            return TiffCodec.Read(data.AsSpan(), _maxPixels); // Skia has no TIFF decoder
+        }
+
         using var codec = SKCodec.Create(data) ?? throw new InvalidImageException("Unsupported or corrupt image file.");
 
         var width = codec.Info.Width;

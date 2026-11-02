@@ -516,9 +516,9 @@ public sealed partial class HideViewModel : PageViewModel, IDisposable
             return;
         }
 
-        if (!path.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+        if (LosslessFormats.FromPath(path) is null)
         {
-            path += ".png";
+            path += ".png"; // never write a lossy format by accident
         }
 
         IsBusy = true;
@@ -531,7 +531,7 @@ public sealed partial class HideViewModel : PageViewModel, IDisposable
             var difference = await Task.Run(() =>
             {
                 var stego = _engine.Embed(cover.Pixels, payload, password, bits);
-                _codec.SavePng(stego, path, overwrite: true); // the save dialog already asked about overwriting
+                _codec.SaveImage(stego, path, overwrite: true); // the save dialog already asked about overwriting
                 return ImageMetrics.Compare(cover.Pixels, stego);
             });
 

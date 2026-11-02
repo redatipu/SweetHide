@@ -44,6 +44,9 @@ internal sealed class FileDialogService(Window window) : IFileDialogService
             DefaultFileExtension = ".png",
         };
         picker.FileTypeChoices.Add("PNG", [".png"]);
+        picker.FileTypeChoices.Add("WebP (lossless)", [".webp"]);
+        picker.FileTypeChoices.Add("TIFF", [".tiff", ".tif"]);
+        picker.FileTypeChoices.Add("BMP", [".bmp"]);
         var result = await picker.PickSaveFileAsync();
         return result?.Path;
     }

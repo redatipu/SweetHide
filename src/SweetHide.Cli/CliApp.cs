@@ -42,7 +42,12 @@ internal static class CliApp
     private static Command HideCommand(CliContext context, Option<bool> json)
     {
         var input = InputOption("Cover image(s): PNG, JPEG, BMP, GIF or WebP. Repeatable for batch mode (needs --output-dir).");
-        var output = new Option<string>("--output", "-o") { Description = "Where to write the stego image (.png), or - for stdout." };
+        var output = new Option<string>("--output", "-o") { Description = "Where to write the stego image (.png, .webp, .bmp or .tiff; lossless only), or - for stdout." };
+        var format = new Option<LosslessFormat>("--format")
+        {
+            Description = "Image format for --output-dir and stdout: Png (default), WebP (lossless), Bmp or Tiff.",
+            DefaultValueFactory = _ => LosslessFormat.Png,
+        };
         var outputDir = new Option<DirectoryInfo>("--output-dir") { Description = "Folder for batch output: one <cover name>.png per cover." };
         var text = new Option<string[]>("--text", "-t") { Description = "A text message to hide. Repeatable." };
         var textFile = new Option<string[]>("--text-file") { Description = "Hide the contents of a UTF-8 text file (or - for stdin) as a message. Repeatable." };
@@ -53,7 +58,7 @@ internal static class CliApp
 
         var command = new Command("hide", "Hide text and/or files in one or more images.")
         {
-            input, output, outputDir, text, textFile, file, bits, force, passwordStdin,
+            input, output, outputDir, format, text, textFile, file, bits, force, passwordStdin,
         };
 
         command.SetAction(parse => Run(context, parse.GetValue(json), () => new HideCommand(context).Execute(new HideOptions(
@@ -65,7 +70,8 @@ internal static class CliApp
             parse.GetValue(file) ?? [],
             parse.GetValue(bits),
             parse.GetValue(force),
-            parse.GetValue(passwordStdin)))));
+            parse.GetValue(passwordStdin),
+            parse.GetValue(format)))));
         return command;
     }
 
