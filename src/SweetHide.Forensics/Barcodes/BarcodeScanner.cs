@@ -20,11 +20,11 @@ public sealed record BarcodeScanOptions
     public IReadOnlyList<int> BitPlanes { get; init; } = [0, 1, 2, 3, 4, 5, 6, 7];
 
     /// <summary>
-    /// Total pixels decoded across bit-plane renderings. Planes are scanned bit 0 of every channel first, then bit 1,
-    /// and so on, until the budget is spent: a 1-megapixel image gets every plane, a 12-megapixel photo the few most
-    /// likely ones. ZXing needs roughly 40 ms per megapixel of noise.
+    /// Bit 0 of every channel is always scanned. Higher bit levels follow, one whole level (all channels) at a time,
+    /// while their pixels fit in this budget: a 1-megapixel image gets every plane, a 12-megapixel photo only bit 0.
+    /// ZXing needs roughly 40 ms per megapixel of noise.
     /// </summary>
-    public long PlanePixelBudget { get; init; } = 64L * 1024 * 1024;
+    public long PlanePixelBudget { get; init; } = 24L * 1024 * 1024;
 
     /// <summary>ZXing's slower, more thorough search (rotations, smaller codes).</summary>
     public bool TryHarder { get; init; } = true;
@@ -65,16 +65,24 @@ public static class BarcodeScanner
             var channels = image.IsOpaque ? 3 : 4;
             var plane = new byte[image.PixelCount];
             var budget = options.PlanePixelBudget;
-            foreach (var bit in options.BitPlanes)
+            foreach (var bit in options.BitPlanes.Order())
             {
                 ArgumentOutOfRangeException.ThrowIfNegative(bit);
                 ArgumentOutOfRangeException.ThrowIfGreaterThan(bit, 7);
-                for (var channel = 0; channel < channels && budget >= image.PixelCount; channel++)
+                if (bit > 0)
+                {
+                    budget -= image.PixelCount * channels;
+                    if (budget < 0)
+                    {
+                        break;
+                    }
+                }
+
+                for (var channel = 0; channel < channels; channel++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     if (RenderPlane(image, channel, bit, plane))
                     {
-                        budget -= image.PixelCount;
                         Decode(plane, image, TwoDimensional, options, string.Create(CultureInfo.InvariantCulture, $"{ChannelNames[channel]} bit {bit}"), multiple: false, results, seen);
                     }
                 }

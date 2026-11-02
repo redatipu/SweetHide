@@ -85,13 +85,15 @@ public class BarcodeScannerTests
     }
 
     [Fact]
-    public void Plane_budget_limits_the_search()
+    public void Plane_budget_limits_the_higher_bits_only()
     {
-        var image = HiddenInBit(Qr("flag{budget}"), 4, 0, 0);
+        var inBit1 = HiddenInBit(Qr("flag{budget}"), 4, 0, 1);
+        var inBit0 = HiddenInBit(Qr("flag{budget}"), 4, 0, 0);
 
-        Assert.Empty(BarcodeScanner.Scan(image, new BarcodeScanOptions { PlanePixelBudget = 0 }, Ct));
-        Assert.Empty(BarcodeScanner.Scan(image, new BarcodeScanOptions { ScanBitPlanes = false }, Ct));
-        Assert.Single(BarcodeScanner.Scan(image, new BarcodeScanOptions { PlanePixelBudget = image.PixelCount }, Ct)); // R bit 0 comes first
+        Assert.Empty(BarcodeScanner.Scan(inBit1, new BarcodeScanOptions { PlanePixelBudget = 0 }, Ct));
+        Assert.Single(BarcodeScanner.Scan(inBit1, new BarcodeScanOptions { PlanePixelBudget = inBit1.PixelCount * 4 }, Ct)); // one whole level, RGBA
+        Assert.Single(BarcodeScanner.Scan(inBit0, new BarcodeScanOptions { PlanePixelBudget = 0 }, Ct)); // bit 0 is always scanned
+        Assert.Empty(BarcodeScanner.Scan(inBit0, new BarcodeScanOptions { ScanBitPlanes = false }, Ct));
     }
 
     [Fact]
