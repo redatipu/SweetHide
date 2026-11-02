@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="{{lang}}" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#16101f">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <title>SweetHide</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials">
+  <link rel="stylesheet" href="app.css">
+  <script src="app.js"></script>
+</head>
+<body data-version="{{version}}" data-max-request-bytes="{{maxRequestBytes}}" data-max-image-pixels="{{maxImagePixels}}">
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="brand-gradient" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ff7eb6"/>
+        <stop offset="0.55" stop-color="#c77dff"/>
+        <stop offset="1" stop-color="#8b5cf6"/>
+      </linearGradient>
+      <symbol id="i-logo" viewBox="0 0 48 48">
+        <rect width="48" height="48" rx="14" fill="url(#brand-gradient)"/>
+        <path d="M24 36.5 14.3 26.2A6 6 0 1 1 24 19.6a6 6 0 1 1 9.7 6.6Z" fill="#fff" fill-opacity=".96"/>
+        <circle cx="24" cy="25.4" r="2.3" fill="#9b5cf0"/>
+        <path d="M22.9 26.6h2.2l.8 4.4h-3.8Z" fill="#9b5cf0"/>
+      </symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+      <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 7.6-1.7"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 20h18"/><rect x="5" y="12" width="3" height="5" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="16" y="9" width="3" height="8" rx="1"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m20 15-4.5-4.5L7 19"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4m-4.5 4.5L12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11m-4.5-4.5L12 15l4.5-4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2m0 15v2M4.6 4.6 6 6m12 12 1.4 1.4M2.5 12h2m15 0h2M4.6 19.4 6 18M18 6l1.4-1.4"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.6A8.5 8.5 0 1 1 9.4 4a6.6 6.6 0 0 0 10.6 10.6Z"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5m0 3.5v.01"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5.5c0 4.4 3 8 7 9.5 4-1.5 7-5.1 7-9.5V6Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="./">
+        <svg class="brand-logo" aria-hidden="true"><use href="#i-logo"/></svg>
+        <span class="brand-text">
+          <span class="brand-name">SweetHide</span>
+          <span class="brand-tagline" data-i18n="tagline">Hide text and files in images</span>
+        </span>
+      </a>
+      <div class="toolbar">
+        <button type="button" class="pill-button" id="lang-toggle" data-i18n-aria="switchLanguage" aria-label="Switch language">
+          <span class="lang-option" data-lang-option="th">ไทย</span>
+          <span class="lang-option" data-lang-option="en">EN</span>
+        </button>
+        <button type="button" class="icon-button" id="theme-toggle" data-i18n-aria="switchTheme" aria-label="Switch theme">
+          <svg class="icon icon-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="icon icon-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist" data-i18n-aria="tabsLabel" aria-label="Mode">
+      <button type="button" role="tab" class="tab" id="tab-hide" data-tab="hide" aria-controls="panel-hide" aria-selected="true">
+        <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><span data-i18n="tabHide">Hide</span>
+      </button>
+      <button type="button" role="tab" class="tab" id="tab-reveal" data-tab="reveal" aria-controls="panel-reveal" aria-selected="false" tabindex="-1">
+        <svg class="icon" aria-hidden="true"><use href="#i-unlock"/></svg><span data-i18n="tabReveal">Reveal</span>
+      </button>
+      <button type="button" role="tab" class="tab" id="tab-analyze" data-tab="analyze" aria-controls="panel-analyze" aria-selected="false" tabindex="-1">
+        <svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg><span data-i18n="tabAnalyze">Analyze</span>
+      </button>
+    </nav>
+
+    <main>
+      <!-- Hide -->
+      <section class="panel" id="panel-hide" role="tabpanel" aria-labelledby="tab-hide">
+        <form id="hide-form" class="stack" novalidate>
+          <div class="card">
+            <h2 class="card-title"><span class="step">1</span><span data-i18n="coverTitle">Cover image</span></h2>
+            <div class="dropzone" id="hide-cover-zone">
+              <div class="dropzone-empty">
+                <svg class="dropzone-icon" aria-hidden="true"><use href="#i-image"/></svg>
+                <p class="dropzone-title" data-i18n="dropImage">Drop an image here</p>
+                <p class="dropzone-hint" data-i18n="dropImageHint">PNG, JPEG, BMP, GIF or WebP · or paste with Ctrl+V</p>
+                <button type="button" class="button secondary" data-pick="hide-cover-input">
+                  <svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-i18n="chooseImage">Choose image…</span>
+                </button>
+              </div>
+              <div class="dropzone-filled" hidden>
+                <img class="preview" alt="" data-i18n-alt="previewAlt">
+                <div class="preview-meta">
+                  <span class="preview-name"></span>
+                  <span class="preview-info"></span>
+                  <button type="button" class="link-button" data-pick="hide-cover-input" data-i18n="changeImage">Change</button>
+                </div>
+              </div>
+              <input type="file" id="hide-cover-input" class="file-input" accept="image/png,image/jpeg,image/bmp,image/gif,image/webp,image/*">
+            </div>
+            <div class="capacity" id="hide-capacity" hidden>
+              <div class="capacity-head">
+                <span class="capacity-label" data-i18n="capacityTitle">Capacity</span>
+                <span class="capacity-text" id="hide-capacity-text"></span>
+              </div>
+              <div class="meter" id="hide-meter"><div class="meter-fill"></div></div>
+              <p class="capacity-hint" id="hide-capacity-hint" hidden></p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title"><span class="step">2</span><span data-i18n="secretTitle">What to hide</span></h2>
+            <label class="field-label" for="hide-text" data-i18n="messageLabel">Message</label>
+            <textarea id="hide-text" class="input textarea" rows="4" data-i18n-placeholder="messagePlaceholder" placeholder="Type a secret message (optional if you attach files)"></textarea>
+
+            <div class="field-label-row">
+              <span class="field-label" data-i18n="filesLabel">Files</span>
+              <button type="button" class="link-button" data-pick="hide-files-input">
+                <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span data-i18n="addFiles">Add files…</span>
+              </button>
+            </div>
+            <div class="file-drop" id="hide-files-zone">
+              <ul class="file-list" id="hide-file-list"></ul>
+              <p class="file-drop-empty" id="hide-files-empty" data-i18n="noFiles">No files yet. Drop files here or choose Add files.</p>
+              <input type="file" id="hide-files-input" class="file-input" multiple>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title"><span class="step">3</span><span data-i18n="passwordTitle">Password</span></h2>
+            <div class="password-grid">
+              <div class="password-field">
+                <label class="field-label" for="hide-password" data-i18n="passwordLabel">Password</label>
+                <div class="input-with-button">
+                  <input type="password" id="hide-password" class="input" autocomplete="new-password" spellcheck="false">
+                  <button type="button" class="reveal-toggle" data-toggle-password="hide-password hide-password-confirm" data-i18n-aria="showPassword" aria-label="Show password" aria-pressed="false">
+                    <svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="password-field">
+                <label class="field-label" for="hide-password-confirm" data-i18n="confirmLabel">Confirm password</label>
+                <input type="password" id="hide-password-confirm" class="input" autocomplete="new-password" spellcheck="false">
+              </div>
+            </div>
+            <div class="strength" id="hide-strength" data-level="0">
+              <div class="strength-bars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+              <span class="strength-text" id="hide-strength-text"></span>
+            </div>
+            <p class="hint" data-i18n="passwordHint">A forgotten password cannot be recovered. A long passphrase is best.</p>
+
+            <details class="advanced">
+              <summary data-i18n="advanced">Advanced</summary>
+              <fieldset class="bits">
+                <legend class="field-label" data-i18n="bitsLabel">Bits per colour channel</legend>
+                <label class="bit-option"><input type="radio" name="bits" value="1" checked><span class="bit-number">1</span><span data-i18n="bits1">invisible (recommended)</span></label>
+                <label class="bit-option"><input type="radio" name="bits" value="2"><span class="bit-number">2</span><span data-i18n="bits2">twice the room, still invisible to the eye</span></label>
+                <label class="bit-option"><input type="radio" name="bits" value="3"><span class="bit-number">3</span><span data-i18n="bits3">may show in smooth areas such as sky</span></label>
+                <label class="bit-option"><input type="radio" name="bits" value="4"><span class="bit-number">4</span><span data-i18n="bits4">visible noise</span></label>
+              </fieldset>
+            </details>
+          </div>
+
+          <div class="alert" id="hide-alert" hidden></div>
+
+          <div class="actions">
+            <button type="submit" class="button primary" id="hide-submit">
+              <span class="spinner" aria-hidden="true"></span>
+              <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><span data-i18n="hideButton">Hide &amp; download</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Reveal -->
+      <section class="panel" id="panel-reveal" role="tabpanel" aria-labelledby="tab-reveal" hidden>
+        <form id="reveal-form" class="stack" novalidate>
+          <div class="card">
+            <h2 class="card-title"><span class="step">1</span><span data-i18n="revealImageTitle">Image with a secret</span></h2>
+            <div class="dropzone" id="reveal-zone">
+              <div class="dropzone-empty">
+                <svg class="dropzone-icon" aria-hidden="true"><use href="#i-image"/></svg>
+                <p class="dropzone-title" data-i18n="dropImage">Drop an image here</p>
+                <p class="dropzone-hint" data-i18n="dropStegoHint">The PNG you received as a file</p>
+                <button type="button" class="button secondary" data-pick="reveal-input">
+                  <svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-i18n="chooseImage">Choose image…</span>
+                </button>
+              </div>
+              <div class="dropzone-filled" hidden>
+                <img class="preview" alt="" data-i18n-alt="previewAlt">
+                <div class="preview-meta">
+                  <span class="preview-name"></span>
+                  <span class="preview-info"></span>
+                  <button type="button" class="link-button" data-pick="reveal-input" data-i18n="changeImage">Change</button>
+                </div>
+              </div>
+              <input type="file" id="reveal-input" class="file-input" accept="image/png,image/*">
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title"><span class="step">2</span><span data-i18n="passwordTitle">Password</span></h2>
+            <label class="field-label" for="reveal-password" data-i18n="passwordLabel">Password</label>
+            <div class="input-with-button">
+              <input type="password" id="reveal-password" class="input" autocomplete="current-password" spellcheck="false">
+              <button type="button" class="reveal-toggle" data-toggle-password="reveal-password" data-i18n-aria="showPassword" aria-label="Show password" aria-pressed="false">
+                <svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="alert" id="reveal-alert" hidden></div>
+
+          <div class="actions">
+            <button type="submit" class="button primary" id="reveal-submit">
+              <span class="spinner" aria-hidden="true"></span>
+              <svg class="icon" aria-hidden="true"><use href="#i-unlock"/></svg><span data-i18n="revealButton">Reveal</span>
+            </button>
+          </div>
+
+          <div class="card results" id="reveal-results" hidden>
+            <div class="results-head">
+              <h2 class="card-title"><svg class="icon title-icon" aria-hidden="true"><use href="#i-check"/></svg><span id="reveal-results-title"></span></h2>
+              <button type="button" class="button secondary small" id="reveal-zip" hidden>
+                <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="downloadZip">Download all (.zip)</span>
+              </button>
+            </div>
+            <div class="message-list" id="reveal-messages"></div>
+            <ul class="file-list result-files" id="reveal-files"></ul>
+            <p class="hint" id="reveal-file-note" data-i18n="fileSafetyNote" hidden>Files come from whoever made the image and are never opened automatically.</p>
+          </div>
+        </form>
+      </section>
+
+      <!-- Analyze -->
+      <section class="panel" id="panel-analyze" role="tabpanel" aria-labelledby="tab-analyze" hidden>
+        <div class="stack">
+          <div class="card">
+            <h2 class="card-title"><svg class="icon title-icon" aria-hidden="true"><use href="#i-chart"/></svg><span data-i18n="analyzeTitle">Analyze an image</span></h2>
+            <p class="hint" data-i18n="analyzeIntro">Simple steganalysis: LSB statistics and the chi-square attack. Try it on images from friends.</p>
+            <div class="dropzone" id="analyze-zone">
+              <div class="dropzone-empty">
+                <svg class="dropzone-icon" aria-hidden="true"><use href="#i-image"/></svg>
+                <p class="dropzone-title" data-i18n="dropImage">Drop an image here</p>
+                <p class="dropzone-hint" data-i18n="dropImageHint">PNG, JPEG, BMP, GIF or WebP · or paste with Ctrl+V</p>
+                <button type="button" class="button secondary" data-pick="analyze-input">
+                  <svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-i18n="chooseImage">Choose image…</span>
+                </button>
+              </div>
+              <div class="dropzone-filled" hidden>
+                <img class="preview" alt="" data-i18n-alt="previewAlt">
+                <div class="preview-meta">
+                  <span class="preview-name"></span>
+                  <span class="preview-info"></span>
+                  <button type="button" class="link-button" data-pick="analyze-input" data-i18n="changeImage">Change</button>
+                </div>
+              </div>
+              <input type="file" id="analyze-input" class="file-input" accept="image/*">
+            </div>
+          </div>
+
+          <div class="alert" id="analyze-alert" hidden></div>
+
+          <div class="card" id="analyze-results" hidden>
+            <div class="table-wrap">
+              <table class="stats">
+                <thead>
+                  <tr>
+                    <th scope="col" data-i18n="colChannel">Channel</th>
+                    <th scope="col" data-i18n="colOnes">LSB = 1</th>
+                    <th scope="col" data-i18n="colChi">Chi-square</th>
+                    <th scope="col" data-i18n="colDof">dof</th>
+                    <th scope="col" data-i18n="colP">p (LSB replacement)</th>
+                  </tr>
+                </thead>
+                <tbody id="analyze-rows"></tbody>
+              </table>
+            </div>
+            <p class="hint" data-i18n="analyzeExplanation">p close to 1 on every channel suggests heavy LSB replacement. SweetHide uses LSB matching, which this test is not designed to catch.</p>
+
+            <div class="field-label-row">
+              <label class="field-label" for="analyze-bit" data-i18n="bitPlaneLabel">Bit plane</label>
+              <select id="analyze-bit" class="input select">
+                <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                <option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option>
+              </select>
+            </div>
+            <p class="hint" data-i18n="bitPlaneHint">0 = least significant bit. Hidden data looks like noise; natural photos usually show shapes.</p>
+            <figure class="bitplane">
+              <img id="analyze-plane" alt="" data-i18n-alt="bitPlaneAlt">
+            </figure>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p class="footer-note">
+        <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+        <span data-i18n="footerPrivacy">Everything happens in this server's memory and nothing is stored. Your password travels to the server, so only use it on a network you trust or over HTTPS.</span>
+      </p>
+      <p class="footer-meta"><span class="footer-version"></span> · <span data-i18n="sendAsFileShort">Always send the PNG as a file: chat apps re-compress photos.</span></p>
+    </footer>
+  </div>
+</body>
+</html>

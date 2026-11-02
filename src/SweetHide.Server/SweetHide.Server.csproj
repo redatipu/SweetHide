@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>SweetHide.Server</RootNamespace>
+    <Description>Self-hosted web server and browser UI for SweetHide, meant for trusted home networks.</Description>
+    <!--
+      Passwords are normalized to NFC before key derivation (docs/FORMAT.md), which needs ICU. Saying "false" here
+      (instead of leaving it unset) makes the app refuse to start without ICU rather than silently skipping
+      normalization, which would produce images whose Thai or accented passwords don't open in the other apps.
+    -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Ship only what the container needs: no .pdb/.xml next to the app. -->
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
+    <PublishDocumentationFile>false</PublishDocumentationFile>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The browser UI is compiled into the assembly, so the server never reads its own files from disk. -->
+    <EmbeddedResource Include="web/**" LogicalName="web/%(RecursiveDir)%(Filename)%(Extension)" WithCulture="false" />
+    <None Remove="web/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Already transitive via Core; referenced here only to locate its notice file (build/Licenses.targets). -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <Import Project="..\..\build\Licenses.targets" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\SweetHide.Core\SweetHide.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SweetHide.Server.Tests" />
+  </ItemGroup>
+
+</Project>

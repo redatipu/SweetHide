@@ -6,6 +6,7 @@
     <Project Path="src/SweetHide.Cli/SweetHide.Cli.csproj" />
     <Project Path="src/SweetHide.Core/SweetHide.Core.csproj" />
     <Project Path="src/SweetHide.Presentation/SweetHide.Presentation.csproj" />
+    <Project Path="src/SweetHide.Server/SweetHide.Server.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SweetHide.Cli.Tests/SweetHide.Cli.Tests.csproj" />

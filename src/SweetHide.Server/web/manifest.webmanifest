@@ -1,0 +1,18 @@
+{
+  "name": "SweetHide",
+  "short_name": "SweetHide",
+  "description": "Hide text and files in images",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#120d1a",
+  "theme_color": "#16101f",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

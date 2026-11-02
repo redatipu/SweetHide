@@ -13,6 +13,10 @@ Published builds also carry the longer notices in a "licenses" folder:
   MIT License. Copyright (c) .NET Foundation and Contributors.
   https://github.com/dotnet/runtime
 
+ASP.NET Core (web server only)
+  MIT License. Copyright (c) .NET Foundation and Contributors.
+  https://github.com/dotnet/aspnetcore
+
 SkiaSharp
   MIT License. Copyright (c) Microsoft Corporation.
   https://github.com/mono/SkiaSharp
