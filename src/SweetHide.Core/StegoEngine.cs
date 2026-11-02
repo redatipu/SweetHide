@@ -419,7 +419,13 @@ public sealed partial class StegoEngine
         ArgumentNullException.ThrowIfNull(image);
         RequirePassword(password);
 
-        var reader = new StegoImageReader(new RgbLsbCarrier(image), _profiles);
+        return RevealPassword(new RgbLsbCarrier(image), password, keyFile);
+    }
+
+    /// <summary>Password mode from any carrier (v1 is only ever found in RGB carriers).</summary>
+    private RevealResult RevealPassword(IStegoCarrier carrier, ReadOnlySpan<char> password, KeyFile? keyFile)
+    {
+        var reader = new StegoImageReader(carrier, _profiles);
         using var match = reader.TryPassword(password, keyFile) ?? throw NotFound();
         if (match.V1 is { } v1)
         {
@@ -518,7 +524,14 @@ public sealed partial class StegoEngine
     private PixelBuffer EmbedPassword(PixelBuffer cover, byte[] content, ContentKind kind, ReadOnlySpan<char> password, KeyFile? keyFile, EmbedOptions options)
     {
         var stego = cover.Clone();
-        var layout = new V2Layout(new RgbLsbCarrier(stego));
+        EmbedPasswordInto(new RgbLsbCarrier(stego), content, kind, password, keyFile, options);
+        return stego;
+    }
+
+    /// <summary>Password mode into any carrier; the carrier writes straight into its image.</summary>
+    private void EmbedPasswordInto(IStegoCarrier carrier, byte[] content, ContentKind kind, ReadOnlySpan<char> password, KeyFile? keyFile, EmbedOptions options)
+    {
+        var layout = new V2Layout(carrier);
         RequireCapacity(ContainerBytes(layout, V2Layout.PublicSlots, ContainerPlacement.Whole, options), content.Length, options);
 
         var publicBytes = NewPasswordPublicBytes(options.KdfProfile);
@@ -528,7 +541,6 @@ public sealed partial class StegoEngine
             layout.WriteRanks(0, publicBytes, new RandomBits(_random));
             V2Container.Write(
                 layout, V2Layout.PublicSlots, ContainerPlacement.Whole, root, kind, content, options.BitsPerChannel, options.Adaptive, fill: false, _random);
-            return stego;
         }
         finally
         {
