@@ -36,6 +36,8 @@ public sealed partial class MainWindow : Window
 
     public void ShowStartPage() => Navigation.SelectedItem = Navigation.MenuItems[0];
 
+    internal Page? CurrentPage => ContentFrame.Content as Page;
+
     /// <summary>Selects the navigation item with the given tag ("hide", "reveal", "analyze" or "settings").</summary>
     internal void NavigateTo(string tag) =>
         Navigation.SelectedItem = Navigation.MenuItems.Concat(Navigation.FooterMenuItems)

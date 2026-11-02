@@ -14,9 +14,20 @@ public sealed partial class RevealPage : Page
     {
         ViewModel = App.Services.Reveal;
         InitializeComponent();
+        Loaded += (_, _) => ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        Unloaded += (_, _) => ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
     }
 
     public RevealViewModel ViewModel { get; }
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // On smaller windows the results land below the fold; bring them into view once revealing finishes.
+        if (e.PropertyName == nameof(RevealViewModel.IsBusy) && !ViewModel.IsBusy && ViewModel.HasResults)
+        {
+            DispatcherQueue.TryEnqueue(() => ResultsColumn.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = true, VerticalAlignmentRatio = 0 }));
+        }
+    }
 
     private void OnPasteAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
         args.Handled = PageHelpers.PasteImageUnlessTyping(XamlRoot, ViewModel.PasteImageCommand);

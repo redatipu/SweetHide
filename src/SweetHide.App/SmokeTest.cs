@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices.WindowsRuntime;
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 using SweetHide.Core;
@@ -154,12 +155,25 @@ internal static class SmokeTest
 
     private static byte Clamp(double value) => (byte)Math.Clamp((int)value, 0, 255);
 
-    private static async Task CaptureAsync(Window window, string dir, string name)
+    /// <summary>Saves the window as seen, plus "-full" with the whole scrollable page.</summary>
+    private static async Task CaptureAsync(MainWindow window, string dir, string name)
     {
         await Task.Delay(1200); // let layout, bindings and image decoding settle
+        await RenderToFileAsync(window.Content, Path.Combine(dir, name));
 
+        if (window.CurrentPage?.Content is ScrollViewer { Content: Panel page })
+        {
+            var background = page.Background;
+            page.Background = window.Content is Panel root ? root.Background : null;
+            await RenderToFileAsync(page, Path.Combine(dir, Path.GetFileNameWithoutExtension(name) + "-full.png"));
+            page.Background = background;
+        }
+    }
+
+    private static async Task RenderToFileAsync(UIElement element, string path)
+    {
         var target = new RenderTargetBitmap();
-        await target.RenderAsync(window.Content);
+        await target.RenderAsync(element);
         var pixels = (await target.GetPixelsAsync()).ToArray();
 
         using var stream = new InMemoryRandomAccessStream();
@@ -175,7 +189,7 @@ internal static class SmokeTest
         await encoder.FlushAsync();
 
         stream.Seek(0);
-        await using var file = File.Create(Path.Combine(dir, name));
+        await using var file = File.Create(path);
         await stream.AsStreamForRead().CopyToAsync(file);
     }
 }
