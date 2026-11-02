@@ -11,8 +11,11 @@ namespace SweetHide.Forensics.Containers;
 internal sealed class EmbeddedLength
 {
     private const int ZipEndRecordSize = 22;
+    private const long BaseWorkBudget = 16 * 1024 * 1024;
 
     private readonly ReadOnlyMemory<byte> _file;
+    private readonly long _workBudget;
+    private long _work;
     private int _eocdSearchedFrom = -1;
     private int _eocdFoundAt = -1;
     private int? _lastPdfEnd;
@@ -20,6 +23,10 @@ internal sealed class EmbeddedLength
     public EmbeddedLength(ReadOnlyMemory<byte> file)
     {
         _file = file;
+
+        // Walking formats read up to the end of the file per hit. A hostile file with hundreds of fake headers would
+        // make that quadratic, so the walks of one scan share a budget of a few passes over the file.
+        _workBudget = (4L * file.Length) + BaseWorkBudget;
     }
 
     /// <summary>Length of the file of <paramref name="type"/> starting at <paramref name="data"/>[0], when knowable.</summary>
@@ -29,6 +36,12 @@ internal sealed class EmbeddedLength
     public long? EstimateAt(FileType type, int offset)
     {
         var data = _file.Span[offset..];
+        var walks = type is FileType.Png or FileType.Jpeg or FileType.Gif or FileType.Bmp or FileType.Pem;
+        if (walks && _work > _workBudget)
+        {
+            return null; // budget spent: the hit is still reported, it just carves to the end
+        }
+
         var length = type switch
         {
             FileType.Png => PngWalker.MeasureLength(data),
@@ -44,6 +57,11 @@ internal sealed class EmbeddedLength
             FileType.Pem => Pem(data),
             _ => null,
         };
+
+        if (walks)
+        {
+            _work += length ?? data.Length;
+        }
 
         return length is > 0 && length <= data.Length ? length : null;
     }

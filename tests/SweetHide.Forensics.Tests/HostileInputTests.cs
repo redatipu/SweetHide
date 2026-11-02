@@ -102,6 +102,30 @@ public class HostileInputTests
     }
 
     [Fact]
+    public void Many_fake_jpeg_headers_do_not_each_rescan_the_file()
+    {
+        // 256 JPEG starts, each opening a scan whose "entropy-coded data" (stuffed FF 00 pairs) runs to the end of
+        // a 16 MiB file: measuring every one of them separately would read 4 GiB.
+        var file = new byte[16 * 1024 * 1024];
+        for (var i = 0; i < file.Length; i += 2)
+        {
+            file[i] = 0xFF;
+        }
+
+        byte[] header = [0xFF, 0xD8, 0xFF, 0xDA, 0x00, 0x02];
+        for (var i = 0; i < 256; i++)
+        {
+            header.CopyTo(file, i * 1024);
+        }
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var found = SignatureScanner.Scan(file, cancellationToken: Ct);
+
+        Assert.Equal(256, found.Count);
+        Assert.True(watch.Elapsed < TimeSpan.FromSeconds(3), $"took {watch.Elapsed}");
+    }
+
+    [Fact]
     public void Random_mutations_never_throw()
     {
         var seeds = Seeds().ToArray();
