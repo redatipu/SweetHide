@@ -37,6 +37,18 @@ internal static class DataViewReader
         return null;
     }
 
+    /// <summary>Paths of the image files being dropped (files without a path on disk are skipped).</summary>
+    public static async Task<IReadOnlyList<string>> ReadImagePathsAsync(DataPackageView view)
+    {
+        if (!view.Contains(StandardDataFormats.StorageItems))
+        {
+            return [];
+        }
+
+        var items = await view.GetStorageItemsAsync();
+        return [.. items.OfType<StorageFile>().Where(IsImage).Select(file => file.Path).Where(path => !string.IsNullOrEmpty(path))];
+    }
+
     public static async Task<IReadOnlyList<string>> ReadFilePathsAsync(DataPackageView view)
     {
         if (!view.Contains(StandardDataFormats.StorageItems))

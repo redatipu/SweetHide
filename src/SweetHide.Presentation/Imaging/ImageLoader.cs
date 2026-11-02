@@ -8,12 +8,14 @@ public sealed class LoadedImage
 {
     private readonly long[] _capacity;
 
-    internal LoadedImage(string name, string? filePath, byte[] encodedBytes, PixelBuffer pixels)
+    internal LoadedImage(string name, string? filePath, byte[] encodedBytes, PixelBuffer pixels, IndexedImage? indexed = null)
     {
         Name = name;
         FilePath = filePath;
         EncodedBytes = encodedBytes;
         Pixels = pixels;
+        Indexed = indexed;
+        HasExif = ExifMetadata.Extract(encodedBytes) is not null;
         _capacity = [.. StegoEngine.SupportedBitsPerChannel.Select(bits => StegoEngine.GetCapacity(pixels, bits).ContainerBytes)];
     }
 
@@ -26,6 +28,14 @@ public sealed class LoadedImage
     public ReadOnlyMemory<byte> EncodedBytes { get; }
 
     public PixelBuffer Pixels { get; }
+
+    /// <summary>The palette version of a 256-colour PNG (hiding keeps it a palette image), or null.</summary>
+    public IndexedImage? Indexed { get; }
+
+    public bool IsPalette => Indexed is not null;
+
+    /// <summary>The file has EXIF (camera, date, maybe location) that hiding could carry over without GPS.</summary>
+    public bool HasExif { get; }
 
     public int Width => Pixels.Width;
 
@@ -94,8 +104,26 @@ public sealed class ImageLoader(IImageCodec codec, IFallbackImageDecoder? fallba
         return await Task.Run(() =>
         {
             MakeOpaqueIfFullyTransparent(pixels);
-            return new LoadedImage(name, path, bytes, pixels);
+            return new LoadedImage(name, path, bytes, pixels, ReadPalette(bytes));
         });
+    }
+
+    /// <summary>The palette image inside a 256-colour PNG, or null (also for palette PNGs we can't read, e.g. interlaced).</summary>
+    private static IndexedImage? ReadPalette(byte[] bytes)
+    {
+        if (!IndexedPng.IsIndexed(bytes))
+        {
+            return null;
+        }
+
+        try
+        {
+            return IndexedPng.Read(bytes);
+        }
+        catch (Exception ex) when (ex is InvalidImageException or ArgumentException)
+        {
+            return null; // the full-colour pixels still work
+        }
     }
 
     /// <summary>

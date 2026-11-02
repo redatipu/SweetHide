@@ -18,9 +18,25 @@ internal sealed class FakeDialogs : IFileDialogService
 
     public string? LastSuggestedName { get; private set; }
 
+    /// <summary>What <see cref="PickImagesAsync"/> returns.</summary>
+    public List<string> Images { get; } = [];
+
+    /// <summary>What <see cref="PickFileAsync"/> returns.</summary>
+    public string? FilePath { get; set; }
+
+    public IReadOnlyList<string>? LastFileTypes { get; private set; }
+
     public Task<string?> PickImageAsync() => Task.FromResult(ImagePath);
 
+    public Task<IReadOnlyList<string>> PickImagesAsync() => Task.FromResult<IReadOnlyList<string>>([.. Images]);
+
     public Task<IReadOnlyList<string>> PickFilesAsync() => Task.FromResult<IReadOnlyList<string>>(Files);
+
+    public Task<string?> PickFileAsync(IReadOnlyList<string> extensions)
+    {
+        LastFileTypes = extensions;
+        return Task.FromResult(FilePath);
+    }
 
     public Task<string?> PickSavePngAsync(string suggestedFileName)
     {

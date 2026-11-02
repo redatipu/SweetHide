@@ -27,12 +27,45 @@ internal sealed class FileDialogService(Window window) : IFileDialogService
         return result?.Path;
     }
 
+    public async Task<IReadOnlyList<string>> PickImagesAsync()
+    {
+        var picker = new FileOpenPicker(window.AppWindow.Id)
+        {
+            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+            ViewMode = PickerViewMode.Thumbnail,
+        };
+        foreach (var extension in ImageExtensions)
+        {
+            picker.FileTypeFilter.Add(extension);
+        }
+
+        var results = await picker.PickMultipleFilesAsync();
+        return results is null ? [] : [.. results.Select(result => result.Path)];
+    }
+
     public async Task<IReadOnlyList<string>> PickFilesAsync()
     {
         var picker = new FileOpenPicker(window.AppWindow.Id) { SuggestedStartLocation = PickerLocationId.DocumentsLibrary };
         picker.FileTypeFilter.Add("*");
         var results = await picker.PickMultipleFilesAsync();
         return results is null ? [] : [.. results.Select(result => result.Path)];
+    }
+
+    public async Task<string?> PickFileAsync(IReadOnlyList<string> extensions)
+    {
+        var picker = new FileOpenPicker(window.AppWindow.Id) { SuggestedStartLocation = PickerLocationId.DocumentsLibrary };
+        if (extensions.Count == 0)
+        {
+            picker.FileTypeFilter.Add("*");
+        }
+
+        foreach (var extension in extensions)
+        {
+            picker.FileTypeFilter.Add(extension);
+        }
+
+        var result = await picker.PickSingleFileAsync();
+        return result?.Path;
     }
 
     public async Task<string?> PickSavePngAsync(string suggestedFileName)

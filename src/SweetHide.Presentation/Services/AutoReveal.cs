@@ -7,7 +7,8 @@ namespace SweetHide.Presentation.Services;
 /// <param name="Image">The decoded image.</param>
 /// <param name="Payload">What was hidden in it.</param>
 /// <param name="VaultName">Name of the vault entry whose password worked.</param>
-public sealed record AutoRevealResult(LoadedImage Image, Payload Payload, string VaultName);
+/// <param name="Info">How the data was hidden.</param>
+public sealed record AutoRevealResult(LoadedImage Image, Payload Payload, string VaultName, HiddenDataInfo? Info = null);
 
 /// <summary>Tries every remembered password on an image, newest first. Used by Reveal and the watched folder.</summary>
 public sealed class AutoRevealer(StegoEngine engine, ImageLoader loader, IPasswordVault vault)
@@ -29,20 +30,42 @@ public sealed class AutoRevealer(StegoEngine engine, ImageLoader loader, IPasswo
             cancellationToken.ThrowIfCancellationRequested();
             progress?.Report((i, entries.Count));
             var entry = entries[i];
-            try
+            var result = await Task.Run(() => TryPassword(image, entry.Password), cancellationToken);
+            if (result?.Payload is { } payload)
             {
-                var payload = await Task.Run(() => engine.Extract(image.Pixels, entry.Password), cancellationToken);
                 Vault.Touch(entry.Name);
-                return new AutoRevealResult(image, payload, entry.Name);
-            }
-            catch (StegoException ex) when (ex.Error == StegoError.NotFoundOrWrongPassword)
-            {
-                // Not this one; keep trying.
+                return new AutoRevealResult(image, payload, entry.Name, result.Info);
             }
         }
 
         progress?.Report((entries.Count, entries.Count));
         return null;
+    }
+
+    /// <summary>
+    /// The palette path first for 256-colour PNGs, then the full-colour one. Anything but a complete payload (a
+    /// share of a split, damaged or too-new data) is left for the Reveal page to explain.
+    /// </summary>
+    private RevealResult? TryPassword(LoadedImage image, string password)
+    {
+        if (image.Indexed is { } palette && TryReveal(() => engine.Reveal(palette, password)) is { } fromPalette)
+        {
+            return fromPalette;
+        }
+
+        return TryReveal(() => engine.Reveal(image.Pixels, password));
+    }
+
+    private static RevealResult? TryReveal(Func<RevealResult> reveal)
+    {
+        try
+        {
+            return reveal();
+        }
+        catch (StegoException)
+        {
+            return null;
+        }
     }
 }
 

@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
+using SweetHide.Presentation.Imaging;
 using SweetHide.Presentation.ViewModels;
 
 using Windows.System;
@@ -61,6 +62,9 @@ public sealed partial class RevealPage : Page
 
     private void OnSaveClick(object sender, RoutedEventArgs e) =>
         ViewModel.SaveFileCommand.Execute(ItemOf(sender));
+
+    private void OnRemoveAdditionalImageClick(object sender, RoutedEventArgs e) =>
+        ViewModel.RemoveAdditionalImageCommand.Execute((sender as FrameworkElement)?.DataContext as LoadedImage);
 
     private static RevealedItemViewModel? ItemOf(object sender) =>
         (sender as FrameworkElement)?.DataContext as RevealedItemViewModel;

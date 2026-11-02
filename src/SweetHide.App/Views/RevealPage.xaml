@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:SweetHide.App.Controls"
+    xmlns:imaging="using:SweetHide.Presentation.Imaging"
     xmlns:local="using:SweetHide.App"
     xmlns:p="using:SweetHide.Presentation"
     xmlns:vm="using:SweetHide.Presentation.ViewModels"
@@ -66,7 +67,48 @@
                             DropCommand="{x:Bind ViewModel.LoadDroppedImageCommand}"
                             Image="{x:Bind ViewModel.Image, Mode=OneWay}"
                             ImageInfo="{x:Bind ViewModel.ImageInfo, Mode=OneWay}"
+                            MultipleDropCommand="{x:Bind ViewModel.LoadDroppedImagesCommand}"
                             PasteCommand="{x:Bind ViewModel.PasteImageCommand}" />
+                        <StackPanel Spacing="4" Visibility="{x:Bind ViewModel.HasAdditionalImages, Mode=OneWay}">
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{x:Bind p:Strings.AdditionalImagesLabel}" />
+                            <ItemsRepeater ItemsSource="{x:Bind ViewModel.AdditionalImages}">
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="imaging:LoadedImage">
+                                        <Grid Padding="0,2" ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon FontSize="16" Glyph="&#xEB9F;" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Text="{x:Bind Name}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <Button
+                                                Grid.Column="2"
+                                                AutomationProperties.Name="{x:Bind p:Strings.Remove}"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Click="OnRemoveAdditionalImageClick"
+                                                ToolTipService.ToolTip="{x:Bind p:Strings.Remove}">
+                                                <FontIcon FontSize="12" Glyph="&#xE711;" />
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </StackPanel>
+                        <Button Command="{x:Bind ViewModel.AddImagesCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="14" Glyph="&#xE710;" />
+                                <TextBlock Text="{x:Bind p:Strings.AddImages}" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Border>
 
@@ -77,11 +119,48 @@
                             KeyDown="OnPasswordKeyDown"
                             Password="{x:Bind ViewModel.Password, Mode=TwoWay}"
                             PlaceholderText="{x:Bind p:Strings.PasswordPlaceholder}" />
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{x:Bind p:Strings.KeyFileLabel}" />
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon FontSize="14" Glyph="&#xE8D7;" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind ViewModel.KeyFileText, Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <Button
+                                    Grid.Column="2"
+                                    Command="{x:Bind ViewModel.ChooseKeyFileCommand}"
+                                    Content="{x:Bind p:Strings.ChooseKeyFile}" />
+                                <Button
+                                    Grid.Column="3"
+                                    Command="{x:Bind ViewModel.ClearKeyFileCommand}"
+                                    Content="{x:Bind p:Strings.ClearKeyFile}"
+                                    Visibility="{x:Bind ViewModel.HasKeyFile, Mode=OneWay}" />
+                            </Grid>
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{x:Bind p:Strings.KeyFileRevealHint}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <Button Command="{x:Bind ViewModel.RevealCommand}" Style="{StaticResource AccentButtonStyle}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon FontSize="14" Glyph="&#xE785;" />
                                     <TextBlock Text="{x:Bind p:Strings.RevealButton}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{x:Bind ViewModel.RevealWithMyKeyCommand}" Visibility="{x:Bind ViewModel.HasMyKey, Mode=OneWay}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="14" Glyph="&#xE192;" />
+                                    <TextBlock Text="{x:Bind p:Strings.RevealWithMyKey}" />
                                 </StackPanel>
                             </Button>
                             <Button Command="{x:Bind ViewModel.TryVaultCommand}" Visibility="{x:Bind ViewModel.HasVault, Mode=OneWay}">
@@ -113,6 +192,32 @@
                     </StackPanel>
                 </Border>
 
+                <Border Style="{StaticResource CardStyle}" Visibility="{x:Bind ViewModel.HasShares, Mode=OneWay}">
+                    <StackPanel Spacing="8">
+                        <Grid>
+                            <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind p:Strings.SharesSection}" />
+                            <Button
+                                HorizontalAlignment="Right"
+                                Command="{x:Bind ViewModel.ClearSharesCommand}"
+                                Content="{x:Bind p:Strings.ClearShares}" />
+                        </Grid>
+                        <TextBlock Text="{x:Bind ViewModel.SharesText, Mode=OneWay}" TextWrapping="Wrap" />
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Shares}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CollectedShare">
+                                    <StackPanel
+                                        Padding="0,2"
+                                        Orientation="Horizontal"
+                                        Spacing="12">
+                                        <FontIcon FontSize="14" Glyph="&#xE73E;" />
+                                        <TextBlock Text="{x:Bind Text}" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </StackPanel>
+                </Border>
+
                 <InfoBar
                     IsOpen="{x:Bind ViewModel.StatusIsOpen, Mode=TwoWay}"
                     Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
@@ -124,6 +229,17 @@
                             Content="{x:Bind p:Strings.ShowInFolder}"
                             Visibility="{x:Bind ViewModel.HasStatusAction, Mode=OneWay}" />
                     </InfoBar.ActionButton>
+                    <InfoBar.Content>
+                        <Button
+                            Margin="0,0,0,12"
+                            Command="{x:Bind ViewModel.ScanWithFinderCommand}"
+                            Visibility="{x:Bind ViewModel.CanScanWithFinder, Mode=OneWay}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="14" Glyph="&#xE721;" />
+                                <TextBlock Text="{x:Bind p:Strings.ScanWithFinder}" />
+                            </StackPanel>
+                        </Button>
+                    </InfoBar.Content>
                 </InfoBar>
             </StackPanel>
 
@@ -144,6 +260,32 @@
                         </StackPanel>
                     </Button>
                 </Grid>
+
+                <Border Style="{StaticResource CardStyle}" Visibility="{x:Bind ViewModel.HasDetails, Mode=OneWay}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="{x:Bind p:Strings.DetailsSection}" />
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Details}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:DetailRow">
+                                    <Grid Padding="0,2" ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="200" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{x:Bind Label}"
+                                            TextWrapping="Wrap" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Text="{x:Bind Value}"
+                                            TextWrapping="Wrap" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </StackPanel>
+                </Border>
 
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.Items}">
                     <ItemsRepeater.Layout>

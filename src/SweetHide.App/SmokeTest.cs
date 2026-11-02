@@ -88,6 +88,7 @@ internal static class SmokeTest
             services.Reveal.Password = Password;
             await services.Reveal.RevealCommand.ExecuteAsync(null);
             Require(services.Reveal.Items.Count == 2, $"Reveal found {services.Reveal.Items.Count} items, expected 2");
+            Require(services.Reveal.HasDetails, "Reveal should say how the data was hidden");
             await CaptureAsync(window, dir, "2-reveal.png");
 
             // Analyze page.

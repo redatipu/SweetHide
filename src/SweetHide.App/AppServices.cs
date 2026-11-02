@@ -28,13 +28,17 @@ internal sealed class AppServices : IDisposable
         var dialogs = new FileDialogService(window);
         var clipboard = new ClipboardService();
         var shell = new ShellService();
-        var vault = new ProtectedFileVault(paths.VaultFile, new DpapiProtector());
+        var protector = new DpapiProtector();
+        var vault = new ProtectedFileVault(paths.VaultFile, protector);
+
+        // The smoke test creates a key; keep it away from the real keyring.
+        Keyring = new ProtectedKeyring(SmokeTest.IsEnabled ? Path.Combine(SmokeTest.OutputDirectory!, "keys.dat") : paths.KeyringFile, protector);
         _autoRevealer = new AutoRevealer(engine, loader, vault);
         Explorer = new ExplorerIntegration();
 
         Theme = new ThemeService(window);
         Hide = new HideViewModel(engine, Codec, loader, dialogs, clipboard, shell, vault: vault);
-        Reveal = new RevealViewModel(engine, loader, dialogs, clipboard, shell, _autoRevealer);
+        Reveal = new RevealViewModel(engine, loader, dialogs, clipboard, shell, _autoRevealer, keyring: Keyring);
         Analyze = new AnalyzeViewModel(Codec, loader, dialogs, clipboard, shell);
         var updates = new GitHubUpdateService(
             new HttpClient { Timeout = TimeSpan.FromSeconds(60) },
@@ -58,6 +62,8 @@ internal sealed class AppServices : IDisposable
     public ThemeService Theme { get; }
 
     public ExplorerIntegration Explorer { get; }
+
+    public ProtectedKeyring Keyring { get; }
 
     public Notifications Notifications { get; } = new();
 
