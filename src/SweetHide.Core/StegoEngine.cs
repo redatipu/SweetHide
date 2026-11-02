@@ -28,6 +28,9 @@ public sealed class StegoEngine
     /// <summary>Header (11 bytes + tag) plus body tag.</summary>
     public const int ContainerOverhead = V2Container.Overhead;
 
+    /// <summary>Most recipients one image can be hidden for.</summary>
+    public const int MaxRecipients = RecipientStanza.MaxRecipients;
+
     private readonly KdfProfiles _profiles;
     private readonly IRandomSource _random;
 
@@ -53,9 +56,6 @@ public sealed class StegoEngine
         _profiles = profiles;
         _random = random;
     }
-
-    /// <summary>Most recipients one image can be hidden for.</summary>
-    public const int MaxRecipients = RecipientStanza.MaxRecipients;
 
     /// <summary>Bits per channel values the engine can write.</summary>
     public static IReadOnlyList<int> SupportedBitsPerChannel { get; } = [1, 2, 3, 4];
