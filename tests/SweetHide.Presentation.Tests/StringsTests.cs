@@ -6,6 +6,14 @@ using SweetHide.Presentation.Services;
 
 namespace SweetHide.Presentation.Tests;
 
+/// <summary>
+/// These tests switch <see cref="Strings.Culture"/>, which is global, so they run on their own: otherwise a view model
+/// in a parallel test can pick up Thai text while its test expects English.
+/// </summary>
+[CollectionDefinition(nameof(CultureSwitching), DisableParallelization = true)]
+public sealed class CultureSwitching;
+
+[Collection(nameof(CultureSwitching))]
 public class StringsTests
 {
     private static readonly PropertyInfo[] Properties = typeof(Strings)

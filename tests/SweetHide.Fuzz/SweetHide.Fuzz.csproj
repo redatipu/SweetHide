@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Fuzzing harness for local use with SharpFuzz (AFL or libFuzzer); built in CI so it keeps compiling, never run there
+    and never shipped. Usage is in Program.cs.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>SweetHide.Fuzz</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpFuzz" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SweetHide.Core\SweetHide.Core.csproj" />
+  </ItemGroup>
+
+</Project>

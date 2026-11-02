@@ -1,0 +1,34 @@
+# SweetHide web server. Start with `docker compose up -d`, then open http://<this machine>:8080
+# All settings are described in docs/SERVER.md.
+#
+# To require a password for the whole site, put a token in a .env file next to this one:
+#   SWEETHIDE_ACCESSTOKEN=<long random string, e.g. from `openssl rand -base64 24`>
+# Browsers then show a login prompt: any user name, the token as the password.
+
+services:
+  sweethide:
+    image: ghcr.io/redatipu/sweethide:latest
+    # Or build it from this repository instead:
+    # build: .
+    container_name: sweethide
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SWEETHIDE__ACCESSTOKEN: "${SWEETHIDE_ACCESSTOKEN:-}"
+      # SWEETHIDE__MAXREQUESTBYTES: "67108864"   # largest upload (64 MiB)
+      # SWEETHIDE__MAXIMAGEPIXELS: "67108864"    # largest image (64 megapixels)
+      # SWEETHIDE__MAXCONCURRENTJOBS: "2"        # Argon2 jobs at once (64 MiB each)
+      # SWEETHIDE__RATELIMITPERMINUTE: "120"     # requests per minute per IP
+      # Behind a reverse proxy on a Docker network, trust its X-Forwarded-For:
+      # SWEETHIDE__TRUSTEDPROXIES__0: "172.16.0.0/12"
+    # The server keeps everything in memory, so the filesystem can be read-only.
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # Each job needs about 30 bytes per pixel at its peak: ~0.4 GiB for a 12-megapixel phone photo, ~2 GiB at the
+    # 64-megapixel limit. On a small board, lower SWEETHIDE__MAXIMAGEPIXELS and SWEETHIDE__MAXCONCURRENTJOBS too.
+    mem_limit: 2g
+    pids_limit: 256

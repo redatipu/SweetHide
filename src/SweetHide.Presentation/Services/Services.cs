@@ -8,7 +8,14 @@ public interface IFileDialogService
 {
     Task<string?> PickImageAsync();
 
+    /// <summary>Several images at once (e.g. the images of a split).</summary>
+    Task<IReadOnlyList<string>> PickImagesAsync();
+
     Task<IReadOnlyList<string>> PickFilesAsync();
+
+    /// <summary>One file of any kind, such as a key file or a wordlist.</summary>
+    /// <param name="extensions">File types to offer, like ".txt"; empty for any file.</param>
+    Task<string?> PickFileAsync(IReadOnlyList<string> extensions);
 
     Task<string?> PickSavePngAsync(string suggestedFileName);
 

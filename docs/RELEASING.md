@@ -31,10 +31,12 @@ git push origin v0.2.0
 tag v1.2.0 ──► version  (ตรวจรูปแบบ tag แล้วแยกได้ 1.2.0)
           ──► test     (build + format check + test บน Windows และ Ubuntu)      .github/workflows/test.yml
           ──► package  (ไฟล์แจกทั้งหมด + smoke test ของแอป + SHA256SUMS.txt)   .github/workflows/package.yml
+          ──► docker   (image เว็บเซิร์ฟเวอร์ amd64/arm64 + smoke test → ghcr.io)  .github/workflows/docker.yml
           ──► release  (ตรวจ checksum แล้วสร้าง GitHub Release พร้อมแนบไฟล์)   .github/workflows/release.yml
 ```
 
-- `test.yml` และ `package.yml` เป็น workflow ที่เรียกใช้ซ้ำได้ CI ของทุก PR ก็รันชุดเดียวกันนี้ (โดยตั้ง `version: dev`) ไฟล์ที่ได้จาก release จึงผ่านการทดสอบมาก่อนตั้งแต่ขั้น PR
+- `test.yml`, `package.yml` และ `docker.yml` เป็น workflow ที่เรียกใช้ซ้ำได้ CI ของทุก PR ก็รันชุดเดียวกันนี้ (โดยตั้ง `version: dev`) ไฟล์ที่ได้จาก release จึงผ่านการทดสอบมาก่อนตั้งแต่ขั้น PR ต่างกันแค่ตอน release จะ push image ขึ้น `ghcr.io/redatipu/sweethide:<v>` และขยับ `latest` ให้ด้วย (ยกเว้น pre-release)
+- ถ้า repo ยังเป็น private, package บน ghcr.io จะเป็น private ด้วย เปลี่ยนเป็น public ได้ที่หน้า Packages → sweethide → Package settings
 - เลขเวอร์ชันจาก tag ถูกฝังลงใน binary ผ่าน `-p:Version=…` และไปแสดงในหน้าตั้งค่า → เกี่ยวกับ
 - ข้อความ release มาจาก `.github/RELEASE_NOTES.md` (มีวิธีดาวน์โหลดและวิธีตรวจ checksum) ต่อด้วยรายการ PR ที่ GitHub สร้างให้อัตโนมัติ
 

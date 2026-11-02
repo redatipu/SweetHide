@@ -4,77 +4,43 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using SweetHide.Core;
+using SweetHide.Core.Crypto;
 using SweetHide.Core.Imaging;
 using SweetHide.Core.Payloads;
+using SweetHide.Core.Robust;
 using SweetHide.Presentation.Imaging;
 using SweetHide.Presentation.Services;
 
 namespace SweetHide.Presentation.ViewModels;
 
-/// <summary>One revealed message or file.</summary>
-public sealed class RevealedItemViewModel
+/// <summary>One share of a split, collected from an image that was revealed earlier.</summary>
+public sealed class CollectedShare
 {
-    private const int MaxPreviewBytes = 64 * 1024;
-    private static readonly string[] ImageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp"];
-    private static readonly string[] TextExtensions = [".txt", ".md", ".csv", ".json", ".log", ".xml", ".yaml", ".yml", ".ini", ".conf", ".cfg", ".srt"];
-
-    internal RevealedItemViewModel(PayloadEntry entry, int messageNumber)
+    internal CollectedShare(ShamirShare share, string imageName, HiddenDataInfo info)
     {
-        IsText = entry.Kind == PayloadEntryKind.Text;
-        Content = entry.Content;
-        Text = IsText ? entry.GetText() : string.Empty;
-        FileName = IsText ? string.Empty : SafeFileName.Sanitize(entry.Name);
-        Title = IsText ? Strings.Format(Strings.MessageItemFormat, messageNumber) : FileName;
-        SizeText = ByteSize.Format(entry.Length);
-
-        var extension = Path.GetExtension(FileName);
-        IsImagePreview = !IsText && ImageExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
-        PreviewText = !IsText && TextExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase) ? TextPreview(entry.Content.Span) : string.Empty;
+        Share = share;
+        ImageName = imageName;
+        Info = info;
     }
 
-    /// <summary>The file is an image the UI may preview (decoded in-app, never opened externally).</summary>
-    public bool IsImagePreview { get; }
+    public string ImageName { get; }
 
-    /// <summary>The start of a text file, or empty when it isn't valid UTF-8 text.</summary>
-    public string PreviewText { get; }
+    public int Threshold => Share.Threshold;
 
-    public bool HasTextPreview => PreviewText.Length > 0;
+    public int ShareCount => Share.ShareCount;
 
-    /// <summary>Bytes for the in-app image preview (empty unless <see cref="IsImagePreview"/>).</summary>
-    public byte[] PreviewImageBytes => IsImagePreview ? Content.ToArray() : [];
+    public string Text => Strings.Format(Strings.ShareItemFormat, Share.Index, Share.ShareCount, ImageName);
 
-    public bool IsText { get; }
+    internal ShamirShare Share { get; }
 
-    public bool IsFile => !IsText;
-
-    public string Title { get; }
-
-    /// <summary>Sanitized file name (empty for messages).</summary>
-    public string FileName { get; }
-
-    public string Text { get; }
-
-    public string SizeText { get; }
-
-    public ReadOnlyMemory<byte> Content { get; }
-
-    private static string TextPreview(ReadOnlySpan<byte> content)
-    {
-        var slice = content.Length > MaxPreviewBytes ? content[..MaxPreviewBytes] : content;
-        try
-        {
-            var text = new System.Text.UTF8Encoding(false, true).GetString(slice);
-            return content.Length > MaxPreviewBytes ? text + "\n…" : text;
-        }
-        catch (System.Text.DecoderFallbackException)
-        {
-            // Cut mid-character, or not text at all: no preview.
-            return string.Empty;
-        }
-    }
+    internal HiddenDataInfo Info { get; }
 }
 
-/// <summary>The "Reveal" page: stego image + password → messages and files.</summary>
+/// <summary>
+/// The "Reveal" page: one or more images plus a password, key file or my key → messages and files. Falls back to
+/// robust mode for photos that went through LINE or Telegram, and collects the shares of split images until enough
+/// are there to rebuild the secret.
+/// </summary>
 public sealed partial class RevealViewModel : PageViewModel
 {
     private readonly StegoEngine _engine;
@@ -82,11 +48,13 @@ public sealed partial class RevealViewModel : PageViewModel
     private readonly IFileDialogService _dialogs;
     private readonly IClipboardService _clipboard;
     private readonly AutoRevealer? _autoRevealer;
+    private readonly IKeyring? _keyring;
     private string? _lastPassword;
+    private ChosenKeyFile? _keyFile;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasImage), nameof(ImageInfo))]
-    [NotifyCanExecuteChangedFor(nameof(RevealCommand), nameof(TryVaultCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RevealCommand), nameof(TryVaultCommand), nameof(RevealWithMyKeyCommand), nameof(ScanWithFinderCommand))]
     private LoadedImage? _image;
 
     [ObservableProperty]
@@ -100,6 +68,14 @@ public sealed partial class RevealViewModel : PageViewModel
     [NotifyCanExecuteChangedFor(nameof(RevealCommand))]
     private string _password = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasKeyFile), nameof(KeyFileText))]
+    private string? _keyFileName;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ScanWithFinderCommand))]
+    private bool _canScanWithFinder;
+
     public RevealViewModel(
         StegoEngine engine,
         ImageLoader loader,
@@ -107,7 +83,8 @@ public sealed partial class RevealViewModel : PageViewModel
         IClipboardService clipboard,
         IShellService shell,
         AutoRevealer? autoRevealer = null,
-        TimeSpan? clipboardClearDelay = null)
+        TimeSpan? clipboardClearDelay = null,
+        IKeyring? keyring = null)
         : base(shell)
     {
         _engine = engine;
@@ -115,6 +92,7 @@ public sealed partial class RevealViewModel : PageViewModel
         _dialogs = dialogs;
         _clipboard = clipboard;
         _autoRevealer = autoRevealer;
+        _keyring = keyring;
         ClipboardClearDelay = clipboardClearDelay ?? TimeSpan.FromSeconds(30);
         Items.CollectionChanged += (_, _) =>
         {
@@ -122,9 +100,36 @@ public sealed partial class RevealViewModel : PageViewModel
             OnPropertyChanged(nameof(HasFiles));
             SaveAllFilesCommand.NotifyCanExecuteChanged();
         };
+        AdditionalImages.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasAdditionalImages));
+        Shares.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasShares));
+            OnPropertyChanged(nameof(SharesText));
+        };
+        Details.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasDetails));
+        if (keyring is not null)
+        {
+            keyring.Changed += (_, _) =>
+            {
+                OnPropertyChanged(nameof(HasMyKey));
+                RevealWithMyKeyCommand.NotifyCanExecuteChanged();
+            };
+        }
     }
 
+    /// <summary>Raised by "Scan with Stego Finder" with the original bytes of the image, so the app can open the Scan page.</summary>
+    public event EventHandler<ImageInput>? ScanRequested;
+
     public ObservableCollection<RevealedItemViewModel> Items { get; } = [];
+
+    /// <summary>More images revealed together with <see cref="Image"/> (the other images of a split).</summary>
+    public ObservableCollection<LoadedImage> AdditionalImages { get; } = [];
+
+    /// <summary>Shares of a split collected so far; kept across images until the secret is rebuilt.</summary>
+    public ObservableCollection<CollectedShare> Shares { get; } = [];
+
+    /// <summary>How the revealed data was hidden.</summary>
+    public ObservableCollection<DetailRow> Details { get; } = [];
 
     public TimeSpan ClipboardClearDelay { get; }
 
@@ -133,24 +138,88 @@ public sealed partial class RevealViewModel : PageViewModel
 
     public bool HasVault => _autoRevealer is not null && _autoRevealer.Vault.Entries.Count > 0;
 
+    public bool HasMyKey => _keyring?.HasIdentity == true;
+
     public bool HasImage => Image is not null;
 
     public string ImageInfo => Image is null ? string.Empty : Strings.Format(Strings.ImageInfoFormat, Image.Width, Image.Height, Image.Name);
+
+    public bool HasAdditionalImages => AdditionalImages.Count > 0;
 
     public bool HasResults => Items.Count > 0;
 
     public bool HasFiles => Items.Any(item => item.IsFile);
 
+    public bool HasDetails => Details.Count > 0;
+
+    public bool HasShares => Shares.Count > 0;
+
+    public string SharesText => Shares.Count == 0
+        ? string.Empty
+        : Strings.Format(Strings.ShareProgress, Shares.Count, Shares[0].Threshold, Shares[0].ShareCount);
+
+    public bool HasKeyFile => KeyFileName is not null;
+
+    public string KeyFileText => KeyFileName ?? Strings.KeyFileNone;
+
     public async Task LoadImageFromPathAsync(string path) => await LoadAsync(() => _loader.LoadFileAsync(path, ImagePurpose.Inspect));
 
     public async Task LoadImageFromBytesAsync(string name, byte[] bytes) => await LoadAsync(() => _loader.LoadBytesAsync(name, bytes, ImagePurpose.Inspect));
+
+    /// <summary>Loads several images to reveal together; the first replaces the current image unless <paramref name="append"/>.</summary>
+    public async Task LoadImagesFromPathsAsync(IReadOnlyList<string> paths, bool append = false)
+    {
+        ArgumentNullException.ThrowIfNull(paths);
+        IsBusy = true;
+        ClearStatus();
+        try
+        {
+            var loaded = new List<LoadedImage>();
+            foreach (var path in paths)
+            {
+                try
+                {
+                    loaded.Add(await _loader.LoadFileAsync(path, ImagePurpose.Inspect));
+                }
+                catch (Exception ex) when (ex is InvalidImageException or IOException or UnauthorizedAccessException)
+                {
+                    ShowStatus(StatusSeverity.Error, Strings.ErrorTitle, Strings.Format(Strings.ImageLoadFailed, ex.Message));
+                }
+            }
+
+            if (loaded.Count == 0)
+            {
+                return;
+            }
+
+            if (!append || Image is null)
+            {
+                AdditionalImages.Clear();
+                Image = loaded[0];
+                loaded.RemoveAt(0);
+            }
+
+            loaded.ForEach(AdditionalImages.Add);
+            ResetResults();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
     /// <summary>Shows what the watched folder (or anything else) already revealed with a vault password.</summary>
     public void ShowAutoRevealed(AutoRevealResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
+        AdditionalImages.Clear();
         Image = result.Image;
-        ShowPayload(result.Payload, Strings.Format(Strings.RevealedWithVault, result.VaultName));
+        ResetResults();
+        ShowPayload(result.Payload.Entries, Strings.Format(Strings.RevealedWithVault, result.VaultName));
+        if (result.Info is { } info)
+        {
+            ShowDetails(StegoText.InfoRows(info));
+        }
     }
 
     /// <summary>Loads the built-in sample for the first-run tour; its password is <see cref="SampleFactory.Password"/>.</summary>
@@ -164,20 +233,46 @@ public sealed partial class RevealViewModel : PageViewModel
     protected override void OnBusyChanged()
     {
         RevealCommand.NotifyCanExecuteChanged();
+        RevealWithMyKeyCommand.NotifyCanExecuteChanged();
         SaveAllFilesCommand.NotifyCanExecuteChanged();
         TryVaultCommand.NotifyCanExecuteChanged();
     }
 
-    private void ShowPayload(Payload payload, string detail)
+    private static RevealOutcome Outcome(string imageName, RevealResult result) =>
+        new(imageName, result.Info, result.Payload, result.Share, null, null);
+
+    private void ResetResults()
+    {
+        Items.Clear();
+        Details.Clear();
+        CanScanWithFinder = false;
+    }
+
+    private void ShowPayload(IEnumerable<PayloadEntry> entries, string detail)
     {
         Items.Clear();
         var messageNumber = 0;
-        foreach (var entry in payload.Entries)
+        foreach (var entry in entries)
         {
             Items.Add(new RevealedItemViewModel(entry, entry.Kind == PayloadEntryKind.Text ? ++messageNumber : 0));
         }
 
         ShowStatus(StatusSeverity.Success, Strings.Format(Strings.RevealSuccessTitle, Items.Count), detail);
+    }
+
+    private void ShowDetails(IEnumerable<DetailRow> rows)
+    {
+        Details.Clear();
+        foreach (var row in rows)
+        {
+            Details.Add(row);
+        }
+    }
+
+    private void ShowError(StegoException error)
+    {
+        var (severity, title, message) = StegoText.ForError(error);
+        ShowStatus(severity, title, message);
     }
 
     private bool CanTryVault() => Image is not null && !IsBusy && HasVault;
@@ -187,7 +282,7 @@ public sealed partial class RevealViewModel : PageViewModel
     {
         IsBusy = true;
         ClearStatus();
-        Items.Clear();
+        ResetResults();
         try
         {
             var progress = new Progress<(int Tried, int Total)>(p => StatusMessage = Strings.Format(Strings.TryingVault, p.Tried, p.Total));
@@ -198,7 +293,11 @@ public sealed partial class RevealViewModel : PageViewModel
             }
             else
             {
-                ShowPayload(result.Payload, Strings.Format(Strings.RevealedWithVault, result.VaultName));
+                ShowPayload(result.Payload.Entries, Strings.Format(Strings.RevealedWithVault, result.VaultName));
+                if (result.Info is { } info)
+                {
+                    ShowDetails(StegoText.InfoRows(info));
+                }
             }
         }
         finally
@@ -224,7 +323,11 @@ public sealed partial class RevealViewModel : PageViewModel
 
     private bool CanReveal() => Image is not null && Password.Length > 0 && !IsBusy;
 
+    private bool CanRevealWithMyKey() => Image is not null && !IsBusy && HasMyKey;
+
     private bool CanSaveAll() => HasFiles && !IsBusy;
+
+    private bool CanScan() => CanScanWithFinder && Image is not null;
 
     private async Task LoadAsync(Func<Task<LoadedImage>> load)
     {
@@ -232,8 +335,10 @@ public sealed partial class RevealViewModel : PageViewModel
         ClearStatus();
         try
         {
-            Image = await load();
-            Items.Clear();
+            var image = await load();
+            AdditionalImages.Clear();
+            Image = image;
+            ResetResults();
         }
         catch (Exception ex) when (ex is InvalidImageException or IOException or UnauthorizedAccessException)
         {
@@ -255,6 +360,25 @@ public sealed partial class RevealViewModel : PageViewModel
     }
 
     [RelayCommand]
+    private async Task AddImagesAsync()
+    {
+        var paths = await _dialogs.PickImagesAsync();
+        if (paths.Count > 0)
+        {
+            await LoadImagesFromPathsAsync(paths, append: true);
+        }
+    }
+
+    [RelayCommand]
+    private void RemoveAdditionalImage(LoadedImage? image)
+    {
+        if (image is not null)
+        {
+            AdditionalImages.Remove(image);
+        }
+    }
+
+    [RelayCommand]
     private async Task PasteImageAsync()
     {
         var image = await _clipboard.GetImageAsync();
@@ -271,34 +395,234 @@ public sealed partial class RevealViewModel : PageViewModel
     private Task LoadDroppedImageAsync(ImageInput? input) =>
         input is null ? Task.CompletedTask : LoadImageFromBytesAsync(input.Name, input.Bytes);
 
+    /// <summary>Several image files dropped at once: reveal them together (the images of a split).</summary>
+    [RelayCommand]
+    private Task LoadDroppedImagesAsync(IReadOnlyList<string>? paths) =>
+        paths is { Count: > 0 } ? LoadImagesFromPathsAsync(paths) : Task.CompletedTask;
+
+    [RelayCommand]
+    private async Task ChooseKeyFileAsync()
+    {
+        if (await _dialogs.PickFileAsync([]) is not { } path)
+        {
+            return;
+        }
+
+        var (keyFile, error) = await KeyFiles.LoadAsync(path);
+        if (keyFile is null)
+        {
+            ShowStatus(StatusSeverity.Error, Strings.ErrorTitle, error!);
+            return;
+        }
+
+        _keyFile = keyFile;
+        KeyFileName = keyFile.Name;
+    }
+
+    [RelayCommand]
+    private void ClearKeyFile()
+    {
+        _keyFile = null;
+        KeyFileName = null;
+    }
+
+    [RelayCommand]
+    private void ClearShares()
+    {
+        Shares.Clear();
+        ClearStatus();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanScan))]
+    private void ScanWithFinder() => ScanRequested?.Invoke(this, new ImageInput(Image!.Name, Image.EncodedBytes.ToArray()));
+
     [RelayCommand(CanExecute = nameof(CanReveal))]
     private async Task RevealAsync()
     {
-        var pixels = Image!.Pixels;
         var password = Password;
-        IsBusy = true;
-        ClearStatus();
-        Items.Clear();
-        try
+        var keyFile = _keyFile?.KeyFile;
+        if (await RunRevealAsync(image => RevealWithPassword(image, password, keyFile), byMyKey: false))
         {
-            var payload = await Task.Run(() => _engine.Extract(pixels, password));
-            ShowPayload(payload, Strings.FileSafetyNote);
             Password = string.Empty;
             _lastPassword = password;
-            CanRemember = _autoRevealer is not null && !_autoRevealer.Vault.Entries.Any(e => e.Password == password);
+
+            // A password that also needs a key file could never open anything on its own, so don't offer to keep it.
+            CanRemember = keyFile is null && _autoRevealer is not null && !_autoRevealer.Vault.Entries.Any(e => e.Password == password);
         }
-        catch (StegoException ex) when (ex.Error == StegoError.Corrupted)
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRevealWithMyKey))]
+    private async Task RevealWithMyKeyAsync()
+    {
+        using var identity = _keyring!.OpenIdentity();
+        if (identity is null)
         {
-            ShowStatus(StatusSeverity.Error, Strings.ErrorTitle, Strings.RevealCorrupted);
+            ShowStatus(StatusSeverity.Error, Strings.ErrorTitle, Strings.MyKeyUnreadable);
+            return;
         }
-        catch (StegoException)
+
+        await RunRevealAsync(image => RevealWithIdentity(image, identity), byMyKey: true);
+    }
+
+    /// <summary>Reveals every loaded image and shows what was found.</summary>
+    /// <returns>True when a payload is shown.</returns>
+    private async Task<bool> RunRevealAsync(Func<LoadedImage, RevealOutcome> reveal, bool byMyKey)
+    {
+        LoadedImage[] images = [Image!, .. AdditionalImages];
+        IsBusy = true;
+        ClearStatus();
+        ResetResults();
+        try
         {
-            ShowStatus(StatusSeverity.Warning, Strings.RevealNotFoundTitle, Strings.RevealNotFound);
+            var outcomes = await Task.Run(() => images.Select(reveal).ToList());
+            var found = outcomes.Where(o => o.Payload is not null).ToList();
+            if (found.Count > 0)
+            {
+                ShowPayload(found.SelectMany(o => o.Payload!.Entries), Strings.FileSafetyNote);
+                ShowDetails(found[0].Robust is { } robust ? StegoText.RobustRows(robust) : StegoText.InfoRows(found[0].Info!));
+                return true;
+            }
+
+            var shares = outcomes.Where(o => o.Share is not null).ToList();
+            if (shares.Count > 0)
+            {
+                shares.ForEach(AddShare);
+                return await TryCombineSharesAsync();
+            }
+
+            ShowNothingFound(outcomes, byMyKey);
+            return false;
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    private RevealOutcome RevealWithPassword(LoadedImage image, string password, KeyFile? keyFile)
+    {
+        if (image.Indexed is { } palette)
+        {
+            // A 256-colour PNG is most likely a palette stego image; if not, it may still hold full-colour data.
+            try
+            {
+                return Outcome(image.Name, _engine.Reveal(palette, password, keyFile));
+            }
+            catch (StegoException ex) when (ex.Error != StegoError.NotFoundOrWrongPassword)
+            {
+                return new RevealOutcome(image.Name, null, null, null, null, ex);
+            }
+            catch (Exception ex) when (ex is StegoException or ArgumentException)
+            {
+                // Nothing in the palette: carry on with the full-colour pixels.
+            }
+        }
+
+        try
+        {
+            return Outcome(image.Name, _engine.Reveal(image.Pixels, password, keyFile));
+        }
+        catch (StegoException ex) when (ex.Error == StegoError.NotFoundOrWrongPassword)
+        {
+            // Not hidden the normal way with this password; it may be a photo that went through LINE or Telegram.
+            try
+            {
+                var robust = _engine.RevealRobust(image.Pixels, password, keyFile);
+                return robust.Status == RobustStatus.NotFound
+                    ? new RevealOutcome(image.Name, null, null, null, null, ex)
+                    : new RevealOutcome(image.Name, null, robust.Payload, null, robust, null);
+            }
+            catch (StegoException robustError)
+            {
+                return new RevealOutcome(image.Name, null, null, null, null, robustError);
+            }
+        }
+        catch (StegoException ex)
+        {
+            return new RevealOutcome(image.Name, null, null, null, null, ex);
+        }
+        catch (ArgumentException)
+        {
+            // Not valid Unicode (a lone surrogate): no image could have been hidden with it.
+            return new RevealOutcome(image.Name, null, null, null, null, new StegoException(StegoError.NotFoundOrWrongPassword, string.Empty));
+        }
+    }
+
+    private RevealOutcome RevealWithIdentity(LoadedImage image, Identity identity)
+    {
+        try
+        {
+            return Outcome(image.Name, _engine.Reveal(image.Pixels, identity));
+        }
+        catch (StegoException ex)
+        {
+            return new RevealOutcome(image.Name, null, null, null, null, ex);
+        }
+    }
+
+    private void AddShare(RevealOutcome outcome)
+    {
+        var share = outcome.Share!;
+        if (Shares.Count > 0 && Shares[0].Share.SplitId != share.SplitId)
+        {
+            Shares.Clear(); // an image of another split: collect that one instead
+        }
+
+        if (Shares.Any(s => s.Share.Index == share.Index))
+        {
+            return;
+        }
+
+        var position = Shares.TakeWhile(s => s.Share.Index < share.Index).Count();
+        Shares.Insert(position, new CollectedShare(share, outcome.ImageName, outcome.Info!));
+    }
+
+    private async Task<bool> TryCombineSharesAsync()
+    {
+        var first = Shares[0];
+        if (Shares.Count < first.Threshold)
+        {
+            ShowStatus(StatusSeverity.Informational, Strings.ShareFoundTitle, SharesText);
+            return false;
+        }
+
+        try
+        {
+            var shares = Shares.Select(s => s.Share).ToList();
+            var payload = await Task.Run(() => StegoEngine.CombineShares(shares));
+            var used = Shares.Count;
+            Shares.Clear();
+            ShowPayload(payload.Entries, Strings.Format(Strings.SharesCombined, used, first.ShareCount));
+            ShowDetails(StegoText.InfoRows(first.Info, Strings.Format(Strings.ModeSplit, first.Threshold, first.ShareCount)));
+            return true;
+        }
+        catch (StegoException ex)
+        {
+            ShowError(ex);
+            return false;
+        }
+    }
+
+    private void ShowNothingFound(IReadOnlyList<RevealOutcome> outcomes, bool byMyKey)
+    {
+        // The most useful explanation wins: damaged or too new beats "nothing here".
+        if (outcomes.Select(o => o.Error).FirstOrDefault(e => e is { Error: not StegoError.NotFoundOrWrongPassword }) is { } error)
+        {
+            ShowError(error);
+            return;
+        }
+
+        if (outcomes.Select(o => o.Robust).FirstOrDefault(r => r is { Status: RobustStatus.Damaged }) is { } damaged)
+        {
+            ShowStatus(
+                StatusSeverity.Error,
+                Strings.RobustDamagedTitle,
+                Strings.Format(Strings.RobustDamaged, StegoText.ProfileName(damaged.Profile), StegoText.Percent(damaged.RawBitErrorRate)));
+            return;
+        }
+
+        ShowStatus(StatusSeverity.Warning, Strings.RevealNotFoundTitle, byMyKey ? Strings.RevealNotForMyKey : Strings.RevealNotFound);
+        CanScanWithFinder = true;
     }
 
     [RelayCommand]
@@ -376,4 +700,13 @@ public sealed partial class RevealViewModel : PageViewModel
             ShowStatus(StatusSeverity.Error, Strings.ErrorTitle, ex.Message);
         }
     }
+
+    /// <summary>What revealing one image gave: a payload, a share, a robust result, or an error.</summary>
+    private sealed record RevealOutcome(
+        string ImageName,
+        HiddenDataInfo? Info,
+        Payload? Payload,
+        ShamirShare? Share,
+        RobustRevealResult? Robust,
+        StegoException? Error);
 }

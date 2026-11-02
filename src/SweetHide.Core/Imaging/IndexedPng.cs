@@ -260,7 +260,7 @@ public static class IndexedPng
         return pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
     }
 
-    private static void WriteChunk(Stream output, ReadOnlySpan<byte> type, ReadOnlySpan<byte> data)
+    internal static void WriteChunk(Stream output, ReadOnlySpan<byte> type, ReadOnlySpan<byte> data)
     {
         Span<byte> header = stackalloc byte[8];
         BinaryPrimitives.WriteUInt32BigEndian(header, (uint)data.Length);

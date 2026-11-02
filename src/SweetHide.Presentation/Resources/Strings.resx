@@ -161,4 +161,54 @@ Always send the PNG as a file; chat apps re-compress photos.</value></data>
   <data name="AboutVersion" xml:space="preserve"><value>Version {0}</value></data>
   <data name="AboutLicense" xml:space="preserve"><value>Released under the MIT License. Notices for the third-party software it uses are in THIRD-PARTY-NOTICES.txt next to SweetHide.exe.</value></data>
   <data name="AboutText" xml:space="preserve"><value>Encryption: AES-256-GCM with Argon2id. Embedding: LSB matching spread over the image by a password-derived permutation. Everything stays on this computer.</value></data>
+  <data name="KeyFileLabel" xml:space="preserve"><value>Key file</value></data>
+  <data name="KeyFileRevealHint" xml:space="preserve"><value>Only needed if the image was hidden with a key file.</value></data>
+  <data name="KeyFileNone" xml:space="preserve"><value>No key file</value></data>
+  <data name="ChooseKeyFile" xml:space="preserve"><value>Choose key file…</value></data>
+  <data name="ClearKeyFile" xml:space="preserve"><value>Don't use</value></data>
+  <data name="KeyFileEmpty" xml:space="preserve"><value>That file is empty, so it can't be a key file. Choose another one.</value></data>
+  <data name="RevealWithMyKey" xml:space="preserve"><value>Open with my key</value></data>
+  <data name="MyKeyUnreadable" xml:space="preserve"><value>Your key couldn't be opened. You can create a new one in Settings.</value></data>
+  <data name="RevealNotForMyKey" xml:space="preserve"><value>Nothing in this image was hidden for your key.</value></data>
+  <data name="RevealCorruptedTitle" xml:space="preserve"><value>Damaged</value></data>
+  <data name="RevealNewerVersionTitle" xml:space="preserve"><value>Made with a newer SweetHide</value></data>
+  <data name="RevealNewerVersion" xml:space="preserve"><value>The password is right, but this image was made with a newer version of SweetHide. Update SweetHide and try again.</value></data>
+  <data name="ShareFoundTitle" xml:space="preserve"><value>One part of a split secret</value></data>
+  <data name="SplitShareHint" xml:space="preserve"><value>This image holds only one part of a secret that was split across several images. Add the other images and reveal again.</value></data>
+  <data name="NotEnoughShares" xml:space="preserve"><value>Not enough images yet to put the secret back together. Add more images from the same set.</value></data>
+  <data name="SharesDoNotMatchTitle" xml:space="preserve"><value>The images don't belong together</value></data>
+  <data name="SharesDoNotMatch" xml:space="preserve"><value>These images come from different splits, so they can't be put together.</value></data>
+  <data name="ShareItemFormat" xml:space="preserve"><value>Part {0} of {1} · {2}</value></data>
+  <data name="ShareProgress" xml:space="preserve"><value>{0} of the {1} images needed (the set has {2}). Add the others, keep the same password and press Reveal again.</value></data>
+  <data name="SharesCombined" xml:space="preserve"><value>Put back together from {0} of the {1} images.</value></data>
+  <data name="KdfFast" xml:space="preserve"><value>Fast</value></data>
+  <data name="KdfNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="KdfParanoid" xml:space="preserve"><value>Paranoid</value></data>
+  <data name="ModePassword" xml:space="preserve"><value>Password</value></data>
+  <data name="ModeDeniable" xml:space="preserve"><value>Password, with room for a second message (deniable)</value></data>
+  <data name="ModeRecipients" xml:space="preserve"><value>Public key (hidden for friends)</value></data>
+  <data name="ModeRobust" xml:space="preserve"><value>Robust photo for {0}</value></data>
+  <data name="ModeSplit" xml:space="preserve"><value>Password, split: any {0} of {1} images</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="DetailsSection" xml:space="preserve"><value>How it was hidden</value></data>
+  <data name="DetailFormat" xml:space="preserve"><value>Format</value></data>
+  <data name="DetailFormatValue" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="DetailProtection" xml:space="preserve"><value>Protection</value></data>
+  <data name="DetailKdf" xml:space="preserve"><value>Password hardening</value></data>
+  <data name="DetailBits" xml:space="preserve"><value>Bits per colour channel</value></data>
+  <data name="DetailAdaptive" xml:space="preserve"><value>Textured areas only (adaptive)</value></data>
+  <data name="DetailBitErrors" xml:space="preserve"><value>Bits damaged on the way</value></data>
+  <data name="DetailBitErrorsValue" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="DamageNone" xml:space="preserve"><value>barely touched</value></data>
+  <data name="DamageSome" xml:space="preserve"><value>some, all repaired</value></data>
+  <data name="DamageHeavy" xml:space="preserve"><value>a lot, but still repaired</value></data>
+  <data name="DetailRepaired" xml:space="preserve"><value>Bytes repaired</value></data>
+  <data name="RobustDamagedTitle" xml:space="preserve"><value>Too damaged to recover</value></data>
+  <data name="RobustDamaged" xml:space="preserve"><value>Found a message made to survive {0}, but the photo was compressed too hard ({1} of the bits were wrong). Ask for it again, or ask for it as a file.</value></data>
+  <data name="AddImages" xml:space="preserve"><value>Add images…</value></data>
+  <data name="AdditionalImagesLabel" xml:space="preserve"><value>Revealed together</value></data>
+  <data name="SharesSection" xml:space="preserve"><value>Parts collected</value></data>
+  <data name="ClearShares" xml:space="preserve"><value>Start over</value></data>
+  <data name="ScanWithFinder" xml:space="preserve"><value>Scan with Stego Finder</value></data>
 </root>

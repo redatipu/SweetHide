@@ -161,4 +161,54 @@
   <data name="AboutVersion" xml:space="preserve"><value>เวอร์ชัน {0}</value></data>
   <data name="AboutLicense" xml:space="preserve"><value>เผยแพร่ภายใต้ MIT License ส่วนข้อความลิขสิทธิ์ของซอฟต์แวร์อื่นที่ใช้ อยู่ในไฟล์ THIRD-PARTY-NOTICES.txt ข้าง ๆ SweetHide.exe</value></data>
   <data name="AboutText" xml:space="preserve"><value>เข้ารหัสด้วย AES-256-GCM และ Argon2id ฝังข้อมูลแบบ LSB matching กระจายตำแหน่งตามรหัสผ่าน ทุกอย่างทำงานในเครื่องนี้เท่านั้น</value></data>
+  <data name="KeyFileLabel" xml:space="preserve"><value>ไฟล์กุญแจ</value></data>
+  <data name="KeyFileRevealHint" xml:space="preserve"><value>ใช้เฉพาะเมื่อรูปถูกซ่อนไว้พร้อมไฟล์กุญแจ</value></data>
+  <data name="KeyFileNone" xml:space="preserve"><value>ไม่ได้ใช้ไฟล์กุญแจ</value></data>
+  <data name="ChooseKeyFile" xml:space="preserve"><value>เลือกไฟล์กุญแจ…</value></data>
+  <data name="ClearKeyFile" xml:space="preserve"><value>ไม่ใช้</value></data>
+  <data name="KeyFileEmpty" xml:space="preserve"><value>ไฟล์นี้ว่างเปล่า ใช้เป็นไฟล์กุญแจไม่ได้ ลองเลือกไฟล์อื่น</value></data>
+  <data name="RevealWithMyKey" xml:space="preserve"><value>เปิดด้วยกุญแจของฉัน</value></data>
+  <data name="MyKeyUnreadable" xml:space="preserve"><value>เปิดกุญแจของคุณไม่ได้ สร้างกุญแจใหม่ได้ในหน้าตั้งค่า</value></data>
+  <data name="RevealNotForMyKey" xml:space="preserve"><value>ไม่มีอะไรในรูปนี้ที่ซ่อนไว้ให้กุญแจของคุณ</value></data>
+  <data name="RevealCorruptedTitle" xml:space="preserve"><value>ข้อมูลเสียหาย</value></data>
+  <data name="RevealNewerVersionTitle" xml:space="preserve"><value>สร้างด้วย SweetHide เวอร์ชันใหม่กว่า</value></data>
+  <data name="RevealNewerVersion" xml:space="preserve"><value>รหัสผ่านถูกต้อง แต่รูปนี้สร้างด้วย SweetHide เวอร์ชันที่ใหม่กว่า อัปเดตโปรแกรมแล้วลองอีกครั้ง</value></data>
+  <data name="ShareFoundTitle" xml:space="preserve"><value>เป็นชิ้นส่วนหนึ่งของข้อมูลที่แบ่งไว้</value></data>
+  <data name="SplitShareHint" xml:space="preserve"><value>รูปนี้มีข้อมูลลับแค่ส่วนเดียว ข้อมูลถูกแบ่งไว้ในหลายรูป เพิ่มรูปที่เหลือแล้วกดถอดอีกครั้ง</value></data>
+  <data name="NotEnoughShares" xml:space="preserve"><value>รูปยังไม่พอที่จะประกอบข้อมูลลับกลับมา เพิ่มรูปจากชุดเดียวกันอีก</value></data>
+  <data name="SharesDoNotMatchTitle" xml:space="preserve"><value>รูปไม่ได้มาจากชุดเดียวกัน</value></data>
+  <data name="SharesDoNotMatch" xml:space="preserve"><value>รูปเหล่านี้มาจากคนละชุด เลยประกอบเข้าด้วยกันไม่ได้</value></data>
+  <data name="ShareItemFormat" xml:space="preserve"><value>ส่วนที่ {0} จาก {1} · {2}</value></data>
+  <data name="ShareProgress" xml:space="preserve"><value>ได้แล้ว {0} จาก {1} รูปที่ต้องใช้ (ทั้งชุดมี {2} รูป) เพิ่มรูปที่เหลือ ใช้รหัสผ่านเดิม แล้วกดถอดอีกครั้ง</value></data>
+  <data name="SharesCombined" xml:space="preserve"><value>ประกอบกลับมาจาก {0} ใน {1} รูป</value></data>
+  <data name="KdfFast" xml:space="preserve"><value>เร็ว</value></data>
+  <data name="KdfNormal" xml:space="preserve"><value>ปกติ</value></data>
+  <data name="KdfParanoid" xml:space="preserve"><value>แน่นหนาที่สุด</value></data>
+  <data name="ModePassword" xml:space="preserve"><value>รหัสผ่าน</value></data>
+  <data name="ModeDeniable" xml:space="preserve"><value>รหัสผ่าน แบบปฏิเสธได้ (อาจมีข้อความที่สองซ่อนอยู่)</value></data>
+  <data name="ModeRecipients" xml:space="preserve"><value>กุญแจสาธารณะ (ซ่อนให้เพื่อน)</value></data>
+  <data name="ModeRobust" xml:space="preserve"><value>รูปแบบทนการบีบอัดสำหรับ {0}</value></data>
+  <data name="ModeSplit" xml:space="preserve"><value>รหัสผ่าน แบ่งไว้หลายรูป: ใช้ {0} จาก {1} รูป</value></data>
+  <data name="Yes" xml:space="preserve"><value>ใช่</value></data>
+  <data name="No" xml:space="preserve"><value>ไม่ใช่</value></data>
+  <data name="DetailsSection" xml:space="preserve"><value>ซ่อนไว้แบบไหน</value></data>
+  <data name="DetailFormat" xml:space="preserve"><value>รูปแบบข้อมูล</value></data>
+  <data name="DetailFormatValue" xml:space="preserve"><value>เวอร์ชัน {0}</value></data>
+  <data name="DetailProtection" xml:space="preserve"><value>การป้องกัน</value></data>
+  <data name="DetailKdf" xml:space="preserve"><value>ความแข็งแรงในการกันเดารหัส</value></data>
+  <data name="DetailBits" xml:space="preserve"><value>จำนวนบิตต่อ channel สี</value></data>
+  <data name="DetailAdaptive" xml:space="preserve"><value>ซ่อนเฉพาะส่วนที่มีพื้นผิว (adaptive)</value></data>
+  <data name="DetailBitErrors" xml:space="preserve"><value>บิตที่เพี้ยนระหว่างทาง</value></data>
+  <data name="DetailBitErrorsValue" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="DamageNone" xml:space="preserve"><value>แทบไม่เสียหาย</value></data>
+  <data name="DamageSome" xml:space="preserve"><value>เสียบ้าง แต่ซ่อมได้หมด</value></data>
+  <data name="DamageHeavy" xml:space="preserve"><value>เสียเยอะ แต่ยังซ่อมได้</value></data>
+  <data name="DetailRepaired" xml:space="preserve"><value>จำนวนไบต์ที่ซ่อมคืน</value></data>
+  <data name="RobustDamagedTitle" xml:space="preserve"><value>เสียหายเกินกว่าจะกู้ได้</value></data>
+  <data name="RobustDamaged" xml:space="preserve"><value>เจอข้อความที่ทำไว้ให้รอดการส่งผ่าน {0} แต่รูปถูกบีบอัดหนักเกินไป (บิตเพี้ยนไป {1}) ขอให้เพื่อนส่งมาใหม่ หรือส่งเป็นไฟล์แทน</value></data>
+  <data name="AddImages" xml:space="preserve"><value>เพิ่มรูป…</value></data>
+  <data name="AdditionalImagesLabel" xml:space="preserve"><value>ถอดพร้อมกัน</value></data>
+  <data name="SharesSection" xml:space="preserve"><value>ชิ้นส่วนที่รวบรวมไว้</value></data>
+  <data name="ClearShares" xml:space="preserve"><value>เริ่มใหม่</value></data>
+  <data name="ScanWithFinder" xml:space="preserve"><value>สแกนด้วย Stego Finder</value></data>
 </root>

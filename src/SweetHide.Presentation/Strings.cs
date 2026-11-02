@@ -327,6 +327,106 @@ public static class Strings
 
     public static string AboutText => Get();
 
+    public static string KeyFileLabel => Get();
+
+    public static string KeyFileRevealHint => Get();
+
+    public static string KeyFileNone => Get();
+
+    public static string ChooseKeyFile => Get();
+
+    public static string ClearKeyFile => Get();
+
+    public static string KeyFileEmpty => Get();
+
+    public static string RevealWithMyKey => Get();
+
+    public static string MyKeyUnreadable => Get();
+
+    public static string RevealNotForMyKey => Get();
+
+    public static string RevealCorruptedTitle => Get();
+
+    public static string RevealNewerVersionTitle => Get();
+
+    public static string RevealNewerVersion => Get();
+
+    public static string ShareFoundTitle => Get();
+
+    public static string SplitShareHint => Get();
+
+    public static string NotEnoughShares => Get();
+
+    public static string SharesDoNotMatchTitle => Get();
+
+    public static string SharesDoNotMatch => Get();
+
+    public static string ShareItemFormat => Get();
+
+    public static string ShareProgress => Get();
+
+    public static string SharesCombined => Get();
+
+    public static string KdfFast => Get();
+
+    public static string KdfNormal => Get();
+
+    public static string KdfParanoid => Get();
+
+    public static string ModePassword => Get();
+
+    public static string ModeDeniable => Get();
+
+    public static string ModeRecipients => Get();
+
+    public static string ModeRobust => Get();
+
+    public static string ModeSplit => Get();
+
+    public static string Yes => Get();
+
+    public static string No => Get();
+
+    public static string DetailsSection => Get();
+
+    public static string DetailFormat => Get();
+
+    public static string DetailFormatValue => Get();
+
+    public static string DetailProtection => Get();
+
+    public static string DetailKdf => Get();
+
+    public static string DetailBits => Get();
+
+    public static string DetailAdaptive => Get();
+
+    public static string DetailBitErrors => Get();
+
+    public static string DetailBitErrorsValue => Get();
+
+    public static string DamageNone => Get();
+
+    public static string DamageSome => Get();
+
+    public static string DamageHeavy => Get();
+
+    public static string DetailRepaired => Get();
+
+    public static string RobustDamagedTitle => Get();
+
+    public static string RobustDamaged => Get();
+
+    public static string AddImages => Get();
+
+    public static string AdditionalImagesLabel => Get();
+
+    public static string SharesSection => Get();
+
+    public static string ClearShares => Get();
+
+    public static string ScanWithFinder => Get();
+
     /// <summary>Selects the UI language for the rest of the process (takes effect for pages created afterwards).</summary>
     public static void ApplyLanguage(AppLanguage language)
     {

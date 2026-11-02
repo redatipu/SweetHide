@@ -31,6 +31,9 @@ public sealed partial class ImageDropZone : UserControl
     public static readonly DependencyProperty DropCommandProperty = DependencyProperty.Register(
         nameof(DropCommand), typeof(ICommand), typeof(ImageDropZone), new PropertyMetadata(null));
 
+    public static readonly DependencyProperty MultipleDropCommandProperty = DependencyProperty.Register(
+        nameof(MultipleDropCommand), typeof(ICommand), typeof(ImageDropZone), new PropertyMetadata(null));
+
     private int _previewVersion;
 
     public ImageDropZone()
@@ -68,6 +71,16 @@ public sealed partial class ImageDropZone : UserControl
     {
         get => (ICommand?)GetValue(DropCommandProperty);
         set => SetValue(DropCommandProperty, value);
+    }
+
+    /// <summary>
+    /// Optional: executed with the file paths (an <c>IReadOnlyList&lt;string&gt;</c>) when several image files are dropped
+    /// at once. Without it only the first image is used.
+    /// </summary>
+    public ICommand? MultipleDropCommand
+    {
+        get => (ICommand?)GetValue(MultipleDropCommandProperty);
+        set => SetValue(MultipleDropCommandProperty, value);
     }
 
     private static void OnImageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
@@ -111,6 +124,20 @@ public sealed partial class ImageDropZone : UserControl
         var deferral = e.GetDeferral();
         try
         {
+            if (MultipleDropCommand is { } multiple)
+            {
+                var paths = await DataViewReader.ReadImagePathsAsync(e.DataView);
+                if (paths.Count > 1)
+                {
+                    if (multiple.CanExecute(paths))
+                    {
+                        multiple.Execute(paths);
+                    }
+
+                    return;
+                }
+            }
+
             var input = await DataViewReader.ReadImageAsync(e.DataView);
             if (input is not null && DropCommand?.CanExecute(input) == true)
             {

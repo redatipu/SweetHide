@@ -1,0 +1,6 @@
+-----BEGIN SWEETHIDE PRIVATE KEY-----
+Public-Key: sweethide1euce7lq9n40f0vwzewc8kdmakdjtjy8pxl846k5xjc7y5wc62ejqxym453
+U0hLWQFAAAAAAQAAAAEAAABzIlGD+LP9hnCBYluaL8nBzzGffAWdXpexwsuwezd9
+s2S5EOE3z11ahpY8SjsaVmTtZZ/DRAqEzaWsKwPvHoT3xmDlaVh3sSnvpslrd1YQ
+QaHdSbh7Wnzv3hLOPGESnE8=
+-----END SWEETHIDE PRIVATE KEY-----

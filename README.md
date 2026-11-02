@@ -5,7 +5,7 @@
 
 ข้อมูลที่ซ่อนจะถูกเข้ารหัสด้วย AES-256-GCM โดยใช้กุญแจที่สร้างจากรหัสผ่านผ่าน Argon2id แล้วกระจายลงในบิตต่ำสุดของพิกเซลตามลำดับที่สุ่มจากรหัสผ่าน ไม่มีส่วนไหนของรูปที่บอกได้ว่ามีอะไรซ่อนอยู่ ถ้าอยากรู้รายละเอียดดูได้ที่ [docs/FORMAT.md](docs/FORMAT.md)
 
-มีให้ใช้สองแบบ คือแอปบน Windows 10/11 และ CLI ที่ใช้ได้ทั้ง Windows และ Linux
+มีให้ใช้สามแบบ คือแอปบน Windows 10/11, CLI ที่ใช้ได้ทั้ง Windows และ Linux และเว็บเซิร์ฟเวอร์สำหรับ homelab ที่เปิดใช้จากเบราว์เซอร์ได้ทุกเครื่องในบ้าน
 
 > ⚠️ ส่งรูปที่ซ่อนข้อมูลแล้วเป็น **ไฟล์** เสมอ เพราะ LINE, Messenger และแอปแชตอื่น ๆ จะบีบอัดรูปใหม่ และข้อมูลจะหายหมด
 
@@ -137,6 +137,16 @@ sweethide capacity -i photo.jpg --json | jq '.[0].capacity[0].payloadBytes'
 | 3 | รูปเล็กเกินไปสำหรับข้อมูลที่จะซ่อน |
 | 4 | รหัสผ่านถูก แต่ข้อมูลเสียหาย (รูปถูกแก้ไขหรือบีบอัดใหม่) |
 
+## เว็บเซิร์ฟเวอร์ (homelab)
+
+รันไว้บน Raspberry Pi, Proxmox หรือเครื่องไหนก็ได้ที่มี Docker แล้วเปิดใช้จากมือถือหรือคอมในบ้านผ่านเบราว์เซอร์ มีหน้า ซ่อน, ถอด และวิเคราะห์ เหมือนแอป ทั้งภาษาไทยและอังกฤษ
+
+```bash
+docker run -d --name sweethide --restart unless-stopped -p 8080:8080 --read-only --cap-drop ALL ghcr.io/redatipu/sweethide:latest
+```
+
+แล้วเปิด `http://<IP ของเครื่อง>:8080` รหัสผ่านและไฟล์จะถูกส่งไปที่เซิร์ฟเวอร์ จึงควรใช้ในเครือข่ายที่ไว้ใจได้ หรือวางไว้หลัง reverse proxy ที่มี HTTPS วิธีตั้ง access token, docker compose, Caddy/Traefik/Nginx และ API สำหรับสคริปต์ อยู่ใน [docs/SERVER.md](docs/SERVER.md)
+
 ## พัฒนา
 
 `SweetHide.slnx` รวมทุกโปรเจกต์ (เปิดด้วย Visual Studio บน Windows) ส่วน `SweetHide.Portable.slnf` รวมทุกอย่างยกเว้นแอป WinUI ใช้ได้ทั้ง Linux และ macOS
@@ -163,12 +173,17 @@ dotnet build src/SweetHide.App -p:Platform=x64
 |---|---|
 | `src/SweetHide.Core` | Engine: ซ่อนและถอดข้อมูล, crypto, payload format, codec ภาพ (SkiaSharp), steganalysis |
 | `src/SweetHide.Cli` | คำสั่ง `sweethide` |
+| `src/SweetHide.Forensics` | Stego Finder: หาข้อมูลที่เครื่องมืออื่นซ่อนไว้ในรูปและไฟล์ WAV (อ่านอย่างเดียว) ยังไม่ได้ต่อเข้ากับ CLI และแอป |
 | `src/SweetHide.Presentation` | ViewModel (MVVM), ข้อความ UI ภาษาไทย/อังกฤษ (`Resources/Strings*.resx`), interface ของ service ทั้งหมดอยู่ที่นี่ ไม่ผูกกับ WinUI จึงเทสต์บน Linux ได้ |
 | `src/SweetHide.App` | แอป WinUI 3: XAML, file picker, clipboard, drag & drop |
-| `tests/` | xUnit v3 + FsCheck (property-based) |
+| `src/SweetHide.Server` | เว็บเซิร์ฟเวอร์ (ASP.NET Core minimal API) และหน้าเว็บที่ฝังอยู่ในโปรแกรม (`web/`) |
+| `Dockerfile`, `docker-compose.yml` | image ของเว็บเซิร์ฟเวอร์ (amd64/arm64) และตัวอย่างการรัน |
+| `tests/` | xUnit v3 + FsCheck (property-based) และภาพ fixture ของทุก format version ส่วน `tests/SweetHide.Fuzz` ไว้ fuzz ในเครื่องด้วย SharpFuzz (CI แค่ build) |
 | `docs/PLAN.md` | แผนงานและ tech stack |
-| `.github/workflows/` | `test.yml` และ `package.yml` (เรียกใช้ซ้ำได้), `ci.yml` (PR), `release.yml` (tag `v*`) |
-| `docs/FORMAT.md` | สเปกรูปแบบข้อมูลในภาพ (เวอร์ชัน v1) |
+| `.github/workflows/` | `test.yml`, `package.yml` และ `docker.yml` (เรียกใช้ซ้ำได้), `ci.yml` (PR), `release.yml` (tag `v*`) |
+| `docs/FORMAT.md` | สเปกรูปแบบข้อมูลในภาพ (v2 และ v1 ที่ยังถอดได้) พร้อมหมายเหตุด้านความปลอดภัย |
+| `docs/SERVER.md` | วิธีรันเว็บเซิร์ฟเวอร์, การตั้งค่า, HTTPS และ API |
+| `docs/FORENSICS.md` | Stego Finder ตรวจอะไรได้บ้าง และข้อจำกัด |
 | `docs/RELEASING.md` | วิธีออก release (push tag แล้ว GitHub Actions ทำที่เหลือให้) |
 
 ## License

@@ -11,12 +11,14 @@
     <!-- Lets the CLI run on Linux homelab servers (x64/arm64) without system libs. -->
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
     <PackageReference Include="Konscious.Security.Cryptography.Argon2" />
+    <PackageReference Include="NSec.Cryptography" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="SweetHide.Core.Tests" />
     <InternalsVisibleTo Include="SweetHide.Cli.Tests" />
     <InternalsVisibleTo Include="SweetHide.Presentation.Tests" />
+    <InternalsVisibleTo Include="SweetHide.Fuzz" />
   </ItemGroup>
 
 </Project>

@@ -23,3 +23,13 @@ jobs:
     uses: ./.github/workflows/package.yml
     with:
       version: dev
+
+  # Builds the server image for amd64 and arm64 and smoke-tests it; nothing is pushed from CI.
+  docker:
+    needs: test
+    uses: ./.github/workflows/docker.yml
+    permissions:
+      contents: read
+      packages: write # checked up front for the reusable workflow, only used when push is true
+    with:
+      version: dev

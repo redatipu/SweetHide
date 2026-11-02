@@ -8,6 +8,10 @@
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.154.0" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="4.154.0" />
     <PackageVersion Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1" />
+    <!-- X25519 for public-key mode; brings libsodium (native, ISC) for win/linux x64/arm64. -->
+    <PackageVersion Include="NSec.Cryptography" Version="26.4.0" />
+    <!-- Forensics -->
+    <PackageVersion Include="ZXing.Net" Version="0.16.11" />
     <!-- GUI -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.WinUI" Version="2.6.4" />
@@ -18,5 +22,8 @@
     <!-- Tests -->
     <PackageVersion Include="xunit.v3" Version="4.0.2" />
     <PackageVersion Include="FsCheck.Xunit.v3" Version="3.6.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.14" />
+    <!-- Local fuzzing harness only (tests/SweetHide.Fuzz), never shipped. -->
+    <PackageVersion Include="SharpFuzz" Version="2.3.0" />
   </ItemGroup>
 </Project>

@@ -45,9 +45,19 @@ jobs:
     with:
       version: ${{ needs.version.outputs.version }}
 
+  docker:
+    needs: [version, test]
+    uses: ./.github/workflows/docker.yml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      version: ${{ needs.version.outputs.version }}
+      push: true
+
   release:
     name: Publish GitHub Release
-    needs: [version, package]
+    needs: [version, package, docker]
     runs-on: ubuntu-latest
     permissions:
       contents: write
