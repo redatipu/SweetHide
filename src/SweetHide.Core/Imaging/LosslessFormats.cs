@@ -36,6 +36,9 @@ public static class LosslessFormats
         _ => null,
     };
 
+    /// <summary>Whether <see cref="ImageCodecExtensions.SaveImage(IImageCodec, PixelBuffer, string, bool, byte[])"/> can keep EXIF in this format.</summary>
+    public static bool SupportsExif(LosslessFormat format) => format == LosslessFormat.Png;
+
     public static void Encode(IImageCodec codec, PixelBuffer image, LosslessFormat format, Stream output)
     {
         ArgumentNullException.ThrowIfNull(codec);

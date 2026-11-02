@@ -20,11 +20,44 @@ public static class ImageCodecExtensions
         codec.SaveLossless(image, path, format, overwrite);
     }
 
+    /// <summary>
+    /// Like <see cref="SaveImage(IImageCodec, PixelBuffer, string, bool)"/>, and when <paramref name="exif"/> is
+    /// given (see <see cref="ExifMetadata.ForOutput"/>) it goes into the file as well. Only PNG carries EXIF here.
+    /// </summary>
+    /// <exception cref="ArgumentException">Not a lossless extension, or EXIF requested for a format other than PNG.</exception>
+    public static void SaveImage(this IImageCodec codec, PixelBuffer image, string path, bool overwrite, byte[]? exif)
+    {
+        if (exif is null)
+        {
+            codec.SaveImage(image, path, overwrite);
+            return;
+        }
+
+        ArgumentNullException.ThrowIfNull(codec);
+        ArgumentNullException.ThrowIfNull(image);
+        if (LosslessFormats.FromPath(path) is not { } format || !LosslessFormats.SupportsExif(format))
+        {
+            throw new ArgumentException("EXIF can only be kept in PNG output.", nameof(path));
+        }
+
+        using var png = new MemoryStream();
+        codec.EncodePng(image, png);
+        var bytes = ExifMetadata.AddToPng(png.GetBuffer().AsSpan(0, (int)png.Length), exif);
+        WriteAtomically(path, overwrite, stream => stream.Write(bytes));
+    }
+
     public static void SaveLossless(this IImageCodec codec, PixelBuffer image, string path, LosslessFormat format, bool overwrite)
     {
         ArgumentNullException.ThrowIfNull(codec);
         ArgumentNullException.ThrowIfNull(image);
+        WriteAtomically(path, overwrite, stream => LosslessFormats.Encode(codec, image, format, stream));
+    }
+
+    /// <summary>Writes to a temporary file next to <paramref name="path"/>, then moves it into place.</summary>
+    public static void WriteAtomically(string path, bool overwrite, Action<Stream> write)
+    {
         ArgumentException.ThrowIfNullOrEmpty(path);
+        ArgumentNullException.ThrowIfNull(write);
 
         var full = Path.GetFullPath(path);
         var directory = Path.GetDirectoryName(full) ?? throw new IOException($"Invalid output path: {path}");
@@ -34,7 +67,7 @@ public static class ImageCodecExtensions
         {
             using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write))
             {
-                LosslessFormats.Encode(codec, image, format, stream);
+                write(stream);
             }
 
             File.Move(temp, full, overwrite);
