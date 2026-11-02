@@ -111,6 +111,88 @@ public sealed class StegoEngine
         }
     }
 
+    /// <summary>Capacity of <em>each</em> part of a deniable image (each gets half of the data region).</summary>
+    public static CapacityInfo GetDeniableCapacity(PixelBuffer image, int bitsPerChannel = DefaultBitsPerChannel)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        ValidateBits(bitsPerChannel);
+        var options = EmbedOptions.Default with { BitsPerChannel = bitsPerChannel };
+        var carrier = new RgbLsbCarrier(image);
+        var layout = new V2Layout(carrier);
+        return Capacity(image, carrier, ContainerBytes(layout, V2Layout.PublicSlots, ContainerPlacement.FirstHalf, options), options);
+    }
+
+    /// <summary>
+    /// Deniable mode: two payloads, each revealed only by its own password, and neither password shows whether the
+    /// other payload exists.
+    /// </summary>
+    /// <remarks>
+    /// The data region is split into two halves and each part goes into a random half, padded until it fills that
+    /// half completely. Without <paramref name="second"/> the other half is filled with a container under a random
+    /// key, which looks exactly like a second payload; that is what makes "there is nothing else" believable.
+    /// The price: each payload gets at most half the capacity (see <see cref="GetDeniableCapacity"/>), and the whole
+    /// image is always used, so it is easier to tell that <em>something</em> is hidden than with a small normal embed.
+    /// Both parts share the salt, and therefore the KDF profile.
+    /// </remarks>
+    /// <exception cref="ArgumentException">Both parts would have the same key, or adaptive embedding was requested.</exception>
+    /// <exception cref="StegoException"><see cref="StegoError.InsufficientCapacity"/>.</exception>
+    public PixelBuffer EmbedDeniable(PixelBuffer cover, DeniablePart first, DeniablePart? second, EmbedOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(cover);
+        ArgumentNullException.ThrowIfNull(first);
+        options ??= EmbedOptions.Default;
+        options.Validate();
+        if (options.Adaptive)
+        {
+            throw new ArgumentException("Deniable mode fills the whole image, so adaptive embedding does not apply.", nameof(options));
+        }
+
+        RequirePassword(first.Password);
+        if (second is not null)
+        {
+            RequirePassword(second.Password);
+        }
+
+        var contents = new List<byte[]>(2);
+        var roots = new List<byte[]>(2);
+        try
+        {
+            contents.Add(PayloadSerializer.Serialize(first.Payload));
+            contents.Add(second is null ? [] : PayloadSerializer.Serialize(second.Payload));
+
+            var stego = cover.Clone();
+            var layout = new V2Layout(new RgbLsbCarrier(stego));
+            var capacity = ContainerBytes(layout, V2Layout.PublicSlots, ContainerPlacement.FirstHalf, options); // the smaller half
+            contents.ForEach(content => RequireCapacity(capacity, content.Length, options));
+
+            var publicBytes = NewPasswordPublicBytes(options.KdfProfile);
+            var salt = publicBytes.AsSpan(0, ProfileCode.SaltSize);
+            roots.Add(PasswordRoot(first.Password, first.KeyFile, salt, options.KdfProfile));
+            roots.Add(second is null ? RandomBytes(KeyDerivation.RootKeySize) : PasswordRoot(second.Password, second.KeyFile, salt, options.KdfProfile));
+            if (CryptographicOperations.FixedTimeEquals(roots[0], roots[1]))
+            {
+                throw new ArgumentException("The two parts need different passwords (or different key files).", nameof(second));
+            }
+
+            // Which half gets which part is random, so neither half means "decoy".
+            var firstHalf = (RandomBytes(1)[0] & 1) == 0 ? 0 : 1;
+            layout.WriteRanks(0, publicBytes, new RandomBits(_random));
+            for (var part = 0; part < 2; part++)
+            {
+                var placement = (part ^ firstHalf) == 0 ? ContainerPlacement.FirstHalf : ContainerPlacement.SecondHalf;
+                V2Container.Write(
+                    layout, V2Layout.PublicSlots, placement, roots[part], ContentKind.Payload, contents[part], options.BitsPerChannel, adaptive: false, fill: true, _random);
+            }
+
+            return stego;
+        }
+        finally
+        {
+            contents.ForEach(bytes => CryptographicOperations.ZeroMemory(bytes));
+            roots.ForEach(bytes => CryptographicOperations.ZeroMemory(bytes));
+        }
+    }
+
     /// <exception cref="StegoException">
     /// <see cref="StegoError.NotFoundOrWrongPassword"/>, <see cref="StegoError.Corrupted"/> or
     /// <see cref="StegoError.UnsupportedFormat"/>.
@@ -228,11 +310,8 @@ public sealed class StegoEngine
         var layout = new V2Layout(new RgbLsbCarrier(stego));
         RequireCapacity(ContainerBytes(layout, V2Layout.PublicSlots, ContainerPlacement.Whole, options), content.Length, options);
 
-        var publicBytes = new byte[V2Layout.PublicBytes];
-        ProfileCode.NewSalt(publicBytes, options.KdfProfile, _random);
-        _random.Fill(publicBytes.AsSpan(ProfileCode.SaltSize));
-        var master = KeyDerivation.Argon2Master(password, publicBytes.AsSpan(0, ProfileCode.SaltSize), _profiles[options.KdfProfile]);
-        var root = KeyDerivation.PasswordRoot(master, keyFile);
+        var publicBytes = NewPasswordPublicBytes(options.KdfProfile);
+        var root = PasswordRoot(password, keyFile, publicBytes.AsSpan(0, ProfileCode.SaltSize), options.KdfProfile);
         try
         {
             layout.WriteRanks(0, publicBytes, new RandomBits(_random));
@@ -242,9 +321,37 @@ public sealed class StegoEngine
         }
         finally
         {
-            CryptographicOperations.ZeroMemory(master);
             CryptographicOperations.ZeroMemory(root);
         }
+    }
+
+    /// <summary>A profile-selecting salt followed by 16 random filler bytes.</summary>
+    private byte[] NewPasswordPublicBytes(KdfProfile profile)
+    {
+        var publicBytes = new byte[V2Layout.PublicBytes];
+        ProfileCode.NewSalt(publicBytes, profile, _random);
+        _random.Fill(publicBytes.AsSpan(ProfileCode.SaltSize));
+        return publicBytes;
+    }
+
+    private byte[] PasswordRoot(ReadOnlySpan<char> password, KeyFile? keyFile, ReadOnlySpan<byte> salt, KdfProfile profile)
+    {
+        var master = KeyDerivation.Argon2Master(password, salt, _profiles[profile]);
+        try
+        {
+            return KeyDerivation.PasswordRoot(master, keyFile);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(master);
+        }
+    }
+
+    private byte[] RandomBytes(int count)
+    {
+        var bytes = new byte[count];
+        _random.Fill(bytes);
+        return bytes;
     }
 
     private static StegoException NotFound() =>

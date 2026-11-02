@@ -79,6 +79,18 @@ public class FormatCompatibilityTests
         Assert.Equal(KdfProfile.Normal, result.Info.KdfProfile);
     }
 
+    [Fact]
+    public void Reveals_both_parts_of_a_v2_deniable_image()
+    {
+        var engine = new StegoEngine(TestImages.FastKdf);
+        var image = Fixture("v2-deniable.png");
+        var decoy = engine.Reveal(image, "decoy");
+        var secret = engine.Reveal(image, "secret", KeyFile.FromBytes("deniable key file"u8));
+        AssertKnownPayload(decoy.Payload, "v2 deniable decoy");
+        AssertKnownPayload(secret.Payload, "v2 deniable secret");
+        Assert.Equal(new HiddenDataInfo(2, HidingMode.Deniable, 2, false, KdfProfile.Normal), secret.Info);
+    }
+
     internal static PixelBuffer Fixture(string name)
     {
         using var stream = typeof(FormatCompatibilityTests).Assembly.GetManifestResourceStream($"Fixtures/{name}")
