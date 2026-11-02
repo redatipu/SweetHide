@@ -10,6 +10,13 @@ public sealed class SkiaImageCodec : IImageCodec
     /// <summary>64 megapixels (e.g. 8000x8000). Guards against decompression bombs.</summary>
     public const long DefaultMaxPixels = 64L * 1024 * 1024;
 
+    /// <summary>
+    /// zlib's default. Stego images are noisy, so level 9 buys nothing on photos (a 3000x2000 test photo was
+    /// 7.48 MiB at both levels; level 9 took ~12% longer) and only a few KB on flat screenshots (~40% longer).
+    /// Level 1 would be twice as fast but ~12% larger.
+    /// </summary>
+    private const int PngCompressionLevel = 6;
+
     private readonly long _maxPixels;
 
     public SkiaImageCodec(long maxPixels = DefaultMaxPixels)
@@ -68,7 +75,7 @@ public sealed class SkiaImageCodec : IImageCodec
         try
         {
             using var pixmap = new SKPixmap(info, handle.AddrOfPinnedObject(), info.RowBytes);
-            using var encoded = pixmap.Encode(new SKPngEncoderOptions(SKPngEncoderFilterFlags.AllFilters, 9))
+            using var encoded = pixmap.Encode(new SKPngEncoderOptions(SKPngEncoderFilterFlags.AllFilters, PngCompressionLevel))
                 ?? throw new InvalidImageException("PNG encoding failed.");
             encoded.SaveTo(output);
         }
