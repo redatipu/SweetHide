@@ -26,6 +26,10 @@ internal sealed record HideOptions(
 
     public bool Adaptive { get; init; }
 
+    public bool TrueColor { get; init; }
+
+    public bool KeepExif { get; init; }
+
     public IReadOnlyList<string> Recipients { get; init; } = [];
 
     public IReadOnlyList<string> DecoyTexts { get; init; } = [];
@@ -39,105 +43,141 @@ internal sealed record HideOptions(
     public string? Robust { get; init; }
 }
 
+/// <summary>One decoded cover: its raw bytes (for EXIF), its pixels, and the palette image when palette mode applies.</summary>
+internal sealed record Cover(string Input, byte[] Bytes, PixelBuffer Pixels, IndexedImage? Indexed)
+{
+    public int Width => Indexed?.Width ?? Pixels.Width;
+
+    public int Height => Indexed?.Height ?? Pixels.Height;
+
+    public bool IsPalette => Indexed is not null;
+}
+
 internal sealed class HideCommand(CliContext context)
 {
     public int Execute(HideOptions options)
     {
         Validate(options);
+        var covers = DecodeCovers(options);
+        ValidatePalette(options, covers);
 
         if (options.Robust is not null)
         {
-            return ExecuteRobust(options);
+            return ExecuteRobust(options, covers);
         }
 
         if (options.Recipients.Count > 0)
         {
-            return ExecuteRecipients(options);
+            return ExecuteRecipients(options, covers);
         }
 
         if (options.Split is { } threshold)
         {
-            return ExecuteSplit(options, threshold);
+            return ExecuteSplit(options, covers, threshold);
         }
 
         if (IsDeniable(options))
         {
-            return ExecuteDeniable(options);
+            return ExecuteDeniable(options, covers);
         }
 
-        return ExecutePassword(options);
+        return ExecutePassword(options, covers);
     }
 
-    private int ExecutePassword(HideOptions options)
+    private int ExecutePassword(HideOptions options, IReadOnlyList<Cover> covers)
     {
         var payload = BuildPayload(options.Texts, options.TextFiles, options.Files);
         var embedOptions = EmbedOptionsFor(options);
         var containerSize = StegoEngine.GetContainerSize(payload);
-        var covers = DecodeCovers(options);
-        foreach (var (input, pixels) in covers)
+        foreach (var cover in covers)
         {
-            RequireFits(input, pixels, containerSize, embedOptions);
+            RequireFits(cover, containerSize, embedOptions);
         }
 
         var password = AskPassword(options, confirm: true);
         var keyFile = CryptoInputs.LoadKeyFile(options.KeyFile);
         var engine = Engine();
-        return WriteEach(options, covers, (pixels) => engine.Embed(pixels, payload, password, keyFile, embedOptions), (input, pixels, output, stego) =>
-            DataReport(input, output, payload, pixels, stego, embedOptions, HidingMode.Password.ToString(), options));
+        var reports = new List<HideReport>(covers.Count);
+        var toStdout = IsStdout(options);
+        var info = toStdout ? context.Error : context.Out;
+        foreach (var cover in covers)
+        {
+            var output = OutputPathFor(options, cover.Input);
+            HideReport report;
+            if (cover.Indexed is { } indexed)
+            {
+                var stego = engine.Embed(indexed, payload, password, keyFile, embedOptions);
+                SaveIndexed(options, stego, output, ExifFor(options, cover, stego.Width, stego.Height), toStdout);
+                report = DataReport(cover.Input, StdoutOr(output, toStdout), payload, indexed.ToPixels(), stego.ToPixels(), embedOptions, HidingMode.Password.ToString(), options, StegoEngine.GetCapacity(indexed).ContainerBytes) with { Palette = true };
+            }
+            else
+            {
+                var stego = engine.Embed(cover.Pixels, payload, password, keyFile, embedOptions);
+                SavePixels(options, stego, output, ExifFor(options, cover, stego.Width, stego.Height), toStdout);
+                report = DataReport(cover.Input, StdoutOr(output, toStdout), payload, cover.Pixels, stego, embedOptions, HidingMode.Password.ToString(), options);
+            }
+
+            reports.Add(report);
+            if (!context.Json)
+            {
+                PrintSummary(info, report);
+            }
+        }
+
+        Finish(options, reports);
+        return ExitCodes.Success;
     }
 
-    private int ExecuteRecipients(HideOptions options)
+    private int ExecuteRecipients(HideOptions options, IReadOnlyList<Cover> covers)
     {
         var payload = BuildPayload(options.Texts, options.TextFiles, options.Files);
         var recipients = CryptoInputs.ParseRecipients(options.Recipients);
         var embedOptions = EmbedOptionsFor(options);
         var containerSize = StegoEngine.GetContainerSize(payload);
-        var covers = DecodeCovers(options);
-        foreach (var (input, pixels) in covers)
+        foreach (var cover in covers)
         {
-            var capacity = StegoEngine.GetRecipientCapacity(pixels, recipients.Count, embedOptions).ContainerBytes;
+            var capacity = StegoEngine.GetRecipientCapacity(cover.Pixels, recipients.Count, embedOptions).ContainerBytes;
             if (containerSize > capacity)
             {
-                throw InsufficientCapacity(input, pixels, containerSize, capacity, embedOptions);
+                throw InsufficientCapacity(cover, containerSize, capacity, embedOptions);
             }
         }
 
         var engine = Engine();
-        return WriteEach(options, covers, (pixels) => engine.Embed(pixels, payload, recipients, embedOptions), (input, pixels, output, stego) =>
+        return WriteEach(options, covers, cover => engine.Embed(cover.Pixels, payload, recipients, embedOptions), (cover, output, stego) =>
         {
-            var capacity = StegoEngine.GetRecipientCapacity(pixels, recipients.Count, embedOptions).ContainerBytes;
-            return DataReport(input, output, payload, pixels, stego, embedOptions, HidingMode.Recipients.ToString(), options, capacity) with
+            var capacity = StegoEngine.GetRecipientCapacity(cover.Pixels, recipients.Count, embedOptions).ContainerBytes;
+            return DataReport(cover.Input, output, payload, cover.Pixels, stego, embedOptions, HidingMode.Recipients.ToString(), options, capacity) with
             {
                 Recipients = recipients.Count,
             };
         });
     }
 
-    private int ExecuteDeniable(HideOptions options)
+    private int ExecuteDeniable(HideOptions options, IReadOnlyList<Cover> covers)
     {
         var payload = BuildPayload(options.Texts, options.TextFiles, options.Files);
-        DeniablePart? decoy = null;
         var decoyPayload = options.DecoyRandom ? null : BuildPayload(options.DecoyTexts, options.DecoyFiles, []);
         var embedOptions = EmbedOptionsFor(options);
         var containerSize = StegoEngine.GetContainerSize(payload);
         var decoySize = decoyPayload is null ? 0 : StegoEngine.GetContainerSize(decoyPayload);
-        var covers = DecodeCovers(options);
-        foreach (var (input, pixels) in covers)
+        foreach (var cover in covers)
         {
-            var capacity = StegoEngine.GetDeniableCapacity(pixels, options.Bits).ContainerBytes;
+            var capacity = StegoEngine.GetDeniableCapacity(cover.Pixels, options.Bits).ContainerBytes;
             if (containerSize > capacity)
             {
-                throw InsufficientCapacity(input, pixels, containerSize, capacity, embedOptions, " (each deniable half)");
+                throw InsufficientCapacity(cover, containerSize, capacity, embedOptions, " (each deniable half)");
             }
 
             if (decoySize > capacity)
             {
-                throw InsufficientCapacity(input, pixels, decoySize, capacity, embedOptions, " (each deniable half, decoy)");
+                throw InsufficientCapacity(cover, decoySize, capacity, embedOptions, " (each deniable half, decoy)");
             }
         }
 
         var password = AskPassword(options, confirm: true);
         var keyFile = CryptoInputs.LoadKeyFile(options.KeyFile);
+        DeniablePart? decoy = null;
         if (decoyPayload is not null)
         {
             var decoyPassword = context.Passwords.GetPassword(new PasswordPrompt(
@@ -147,9 +187,9 @@ internal sealed class HideCommand(CliContext context)
 
         var first = new DeniablePart(payload, password, keyFile);
         var engine = Engine();
-        return WriteEach(options, covers, (pixels) => Deniable(engine, pixels, first, decoy, embedOptions), (input, pixels, output, stego) =>
-            DataReport(input, output, payload, pixels, stego, embedOptions, HidingMode.Deniable.ToString(), options,
-                StegoEngine.GetDeniableCapacity(pixels, options.Bits).ContainerBytes));
+        return WriteEach(options, covers, cover => Deniable(engine, cover.Pixels, first, decoy, embedOptions), (cover, output, stego) =>
+            DataReport(cover.Input, output, payload, cover.Pixels, stego, embedOptions, HidingMode.Deniable.ToString(), options,
+                StegoEngine.GetDeniableCapacity(cover.Pixels, options.Bits).ContainerBytes));
     }
 
     private static PixelBuffer Deniable(StegoEngine engine, PixelBuffer cover, DeniablePart first, DeniablePart? decoy, EmbedOptions embedOptions)
@@ -164,15 +204,14 @@ internal sealed class HideCommand(CliContext context)
         }
     }
 
-    private int ExecuteSplit(HideOptions options, int threshold)
+    private int ExecuteSplit(HideOptions options, IReadOnlyList<Cover> covers, int threshold)
     {
         var payload = BuildPayload(options.Texts, options.TextFiles, options.Files);
         var embedOptions = EmbedOptionsFor(options);
-        var covers = DecodeCovers(options);
         var shareSize = StegoEngine.GetShareContainerSize(payload);
-        foreach (var (input, pixels) in covers)
+        foreach (var cover in covers)
         {
-            RequireFits(input, pixels, shareSize, embedOptions);
+            RequireFits(cover, shareSize, embedOptions);
         }
 
         var password = AskPassword(options, confirm: true);
@@ -191,11 +230,11 @@ internal sealed class HideCommand(CliContext context)
         var reports = new List<HideReport>(covers.Count);
         for (var i = 0; i < covers.Count; i++)
         {
-            var (input, pixels) = covers[i];
-            var output = OutputPathFor(options, input);
-            context.Codec.SaveImage(shares[i], output, options.Force);
-            var capacity = StegoEngine.GetCapacity(pixels, options.Bits).ContainerBytes;
-            var report = DataReport(input, Path.GetFullPath(output), payload, pixels, shares[i], embedOptions, "Split", options, capacity) with
+            var cover = covers[i];
+            var output = OutputPathFor(options, cover.Input);
+            SavePixels(options, shares[i], output, ExifFor(options, cover, shares[i].Width, shares[i].Height), toStdout: false);
+            var capacity = StegoEngine.GetCapacity(cover.Pixels, options.Bits).ContainerBytes;
+            var report = DataReport(cover.Input, Path.GetFullPath(output), payload, cover.Pixels, shares[i], embedOptions, "Split", options, capacity) with
             {
                 Threshold = threshold,
                 ShareCount = covers.Count,
@@ -213,19 +252,18 @@ internal sealed class HideCommand(CliContext context)
         return ExitCodes.Success;
     }
 
-    private int ExecuteRobust(HideOptions options)
+    private int ExecuteRobust(HideOptions options, IReadOnlyList<Cover> covers)
     {
         var profile = RobustProfileFor(options.Robust!);
         var payload = BuildPayload(options.Texts, options.TextFiles, options.Files);
         var payloadSize = StegoEngine.GetRobustPayloadSize(payload);
-        var covers = DecodeCovers(options);
-        foreach (var (input, pixels) in covers)
+        foreach (var cover in covers)
         {
-            var capacity = StegoEngine.GetRobustCapacity(pixels.Width, pixels.Height, profile);
+            var capacity = StegoEngine.GetRobustCapacity(cover.Width, cover.Height, profile);
             if (payloadSize > capacity)
             {
                 throw new CliException(
-                    $"{Inputs.DisplayName(input)}: needs {Format.Bytes(payloadSize)} but this cover holds {Format.Bytes(capacity)} in {profile.Name} robust mode. " +
+                    $"{Inputs.DisplayName(cover.Input)}: needs {Format.Bytes(payloadSize)} but this cover holds {Format.Bytes(capacity)} in {profile.Name} robust mode. " +
                     "Use a shorter message or a larger cover; robust mode cannot carry files.",
                     ExitCodes.InsufficientCapacity);
             }
@@ -235,11 +273,11 @@ internal sealed class HideCommand(CliContext context)
         var keyFile = CryptoInputs.LoadKeyFile(options.KeyFile);
         var engine = Engine();
         var reports = new List<HideReport>(covers.Count);
-        var toStdout = options.Output is not null && Inputs.IsStandardStream(options.Output);
-        foreach (var (input, pixels) in covers)
+        var toStdout = IsStdout(options);
+        foreach (var cover in covers)
         {
-            var stego = engine.EmbedRobust(pixels, payload, password, profile, keyFile);
-            var output = OutputPathFor(options, input);
+            var stego = engine.EmbedRobust(cover.Pixels, payload, password, profile, keyFile);
+            var output = OutputPathFor(options, cover.Input);
             if (toStdout)
             {
                 var stdout = context.OpenStandardOutput();
@@ -248,13 +286,13 @@ internal sealed class HideCommand(CliContext context)
             }
             else
             {
-                WriteJpegFile(stego, output, profile, options.Force);
+                ImageCodecExtensions.WriteAtomically(output, options.Force, stream => RobustStego.WriteJpeg(stego, stream, profile));
             }
 
-            var capacity = StegoEngine.GetRobustCapacity(pixels.Width, pixels.Height, profile);
+            var capacity = StegoEngine.GetRobustCapacity(cover.Width, cover.Height, profile);
             var report = new HideReport(
-                Inputs.DisplayName(input),
-                toStdout ? "stdout" : Path.GetFullPath(output),
+                Inputs.DisplayName(cover.Input),
+                StdoutOr(output, toStdout),
                 "Robust",
                 payload.Entries.Count(e => e.Kind == PayloadEntryKind.Text),
                 payload.Entries.Count(e => e.Kind == PayloadEntryKind.File),
@@ -288,27 +326,17 @@ internal sealed class HideCommand(CliContext context)
         return ExitCodes.Success;
     }
 
-    private int WriteEach(HideOptions options, IReadOnlyList<(string Input, PixelBuffer Pixels)> covers, Func<PixelBuffer, PixelBuffer> embed, Func<string, PixelBuffer, string, PixelBuffer, HideReport> report)
+    private int WriteEach(HideOptions options, IReadOnlyList<Cover> covers, Func<Cover, PixelBuffer> embed, Func<Cover, string, PixelBuffer, HideReport> report)
     {
-        var toStdout = options.Output is not null && Inputs.IsStandardStream(options.Output);
+        var toStdout = IsStdout(options);
         var info = toStdout ? context.Error : context.Out;
         var reports = new List<HideReport>(covers.Count);
-        foreach (var (input, pixels) in covers)
+        foreach (var cover in covers)
         {
-            var stego = embed(pixels);
-            var output = OutputPathFor(options, input);
-            if (toStdout)
-            {
-                var stdout = context.OpenStandardOutput();
-                LosslessFormats.Encode(context.Codec, stego, options.Format, stdout);
-                stdout.Flush();
-            }
-            else
-            {
-                context.Codec.SaveImage(stego, output, options.Force);
-            }
-
-            var reported = report(input, pixels, toStdout ? "stdout" : Path.GetFullPath(output), stego);
+            var stego = embed(cover);
+            var output = OutputPathFor(options, cover.Input);
+            SavePixels(options, stego, output, ExifFor(options, cover, stego.Width, stego.Height), toStdout);
+            var reported = report(cover, StdoutOr(output, toStdout), stego);
             reports.Add(reported);
             if (!context.Json)
             {
@@ -318,6 +346,64 @@ internal sealed class HideCommand(CliContext context)
 
         Finish(options, reports);
         return ExitCodes.Success;
+    }
+
+    private void SavePixels(HideOptions options, PixelBuffer stego, string output, byte[]? exif, bool toStdout)
+    {
+        if (!toStdout)
+        {
+            context.Codec.SaveImage(stego, output, options.Force, exif);
+            return;
+        }
+
+        var stdout = context.OpenStandardOutput();
+        if (exif is not null && options.Format == LosslessFormat.Png)
+        {
+            using var png = new MemoryStream();
+            context.Codec.EncodePng(stego, png);
+            stdout.Write(ExifMetadata.AddToPng(png.GetBuffer().AsSpan(0, (int)png.Length), exif));
+        }
+        else
+        {
+            LosslessFormats.Encode(context.Codec, stego, options.Format, stdout);
+        }
+
+        stdout.Flush();
+    }
+
+    private void SaveIndexed(HideOptions options, IndexedImage stego, string output, byte[]? exif, bool toStdout)
+    {
+        using var png = new MemoryStream();
+        IndexedPng.Write(stego, png);
+        var bytes = exif is not null
+            ? ExifMetadata.AddToPng(png.GetBuffer().AsSpan(0, (int)png.Length), exif)
+            : png.ToArray();
+        if (toStdout)
+        {
+            var stdout = context.OpenStandardOutput();
+            stdout.Write(bytes);
+            stdout.Flush();
+        }
+        else
+        {
+            ImageCodecExtensions.WriteAtomically(output, options.Force, stream => stream.Write(bytes));
+        }
+    }
+
+    private byte[]? ExifFor(HideOptions options, Cover cover, int width, int height)
+    {
+        if (!options.KeepExif)
+        {
+            return null;
+        }
+
+        var exif = ExifMetadata.ForOutput(cover.Bytes, width, height);
+        if (exif is null)
+        {
+            context.Error.WriteLine($"note: {Inputs.DisplayName(cover.Input)} has no EXIF to keep.");
+        }
+
+        return exif;
     }
 
     private void Finish(HideOptions options, List<HideReport> reports)
@@ -368,7 +454,8 @@ internal sealed class HideCommand(CliContext context)
     private static void PrintSummary(TextWriter writer, HideReport report)
     {
         writer.WriteLine($"Hidden {report.Messages} message(s) and {report.Files} file(s): {Format.Bytes(report.ContentBytes)} → {Format.Bytes(report.StoredBytes)} stored.");
-        writer.WriteLine($"Used {Format.Percent(report.Usage)} of {Format.Bytes(report.CapacityBytes)} capacity at {report.BitsPerChannel} bit(s) per channel.");
+        var palette = report.Palette == true ? " (palette, 1 bit per pixel)" : string.Empty;
+        writer.WriteLine($"Used {Format.Percent(report.Usage)} of {Format.Bytes(report.CapacityBytes)} capacity at {report.BitsPerChannel} bit(s) per channel{palette}.");
         if (report.Psnr is { } psnr && report.ChangedRatio is { } changed && report.MaxDelta is { } delta)
         {
             writer.WriteLine($"Changed {Format.Percent(changed)} of colour values (max ±{delta}), PSNR {Format.Number(psnr, "0.0")} dB.");
@@ -385,26 +472,62 @@ internal sealed class HideCommand(CliContext context)
     private string AskPassword(HideOptions options, bool confirm) =>
         context.Passwords.GetPassword(new PasswordPrompt("Password: ", Confirm: confirm, FromStdin: options.PasswordFromStdin));
 
-    private List<(string Input, PixelBuffer Pixels)> DecodeCovers(HideOptions options) =>
-        options.Inputs.Select(input => (Input: input, Pixels: Inputs.ReadImage(context, input, applyOrientation: true))).ToList();
+    private static bool IsStdout(HideOptions options) => options.Output is not null && Inputs.IsStandardStream(options.Output);
 
-    private static void RequireFits(string input, PixelBuffer cover, long needed, EmbedOptions embedOptions)
+    private static string StdoutOr(string output, bool toStdout) => toStdout ? "stdout" : Path.GetFullPath(output);
+
+    private List<Cover> DecodeCovers(HideOptions options)
     {
-        var capacity = StegoEngine.GetCapacity(cover, embedOptions).ContainerBytes;
-        if (needed > capacity)
+        var covers = new List<Cover>(options.Inputs.Count);
+        foreach (var input in options.Inputs)
         {
-            throw new CliException($"{Inputs.DisplayName(input)}: {CapacityAdvice(cover, needed, embedOptions)}", ExitCodes.InsufficientCapacity);
+            var bytes = Inputs.ReadBytes(context, input);
+            if (!options.TrueColor && options.Robust is null && IndexedPng.IsIndexed(bytes))
+            {
+                var indexed = IndexedPng.Read(bytes, context.Codec is SkiaImageCodec ? SkiaImageCodec.DefaultMaxPixels : long.MaxValue);
+                covers.Add(new Cover(input, bytes, indexed.ToPixels(), indexed));
+            }
+            else
+            {
+                using var stream = new MemoryStream(bytes, writable: false);
+                covers.Add(new Cover(input, bytes, context.Codec.Decode(stream, applyOrientation: true), null));
+            }
+        }
+
+        return covers;
+    }
+
+    private static void RequireFits(Cover cover, long needed, EmbedOptions embedOptions)
+    {
+        if (cover.Indexed is { } indexed)
+        {
+            var capacity = StegoEngine.GetCapacity(indexed).ContainerBytes;
+            if (needed > capacity)
+            {
+                throw new CliException(
+                    $"{Inputs.DisplayName(cover.Input)}: needs {Format.Bytes(needed)} but this palette PNG holds {Format.Bytes(capacity)} (1 bit per pixel). " +
+                    "Hide less, or add --truecolor to use all colour channels (the output stops being a palette image).",
+                    ExitCodes.InsufficientCapacity);
+            }
+
+            return;
+        }
+
+        var pixelCapacity = StegoEngine.GetCapacity(cover.Pixels, embedOptions).ContainerBytes;
+        if (needed > pixelCapacity)
+        {
+            throw new CliException($"{Inputs.DisplayName(cover.Input)}: {CapacityAdvice(cover.Pixels, needed, embedOptions)}", ExitCodes.InsufficientCapacity);
         }
     }
 
-    private static CliException InsufficientCapacity(string input, PixelBuffer cover, long needed, long capacity, EmbedOptions embedOptions, string note = "")
+    private static CliException InsufficientCapacity(Cover cover, long needed, long capacity, EmbedOptions embedOptions, string note = "")
     {
         var advice = StegoEngine.SupportedBitsPerChannel
             .Where(b => b > embedOptions.BitsPerChannel)
-            .FirstOrDefault(b => StegoEngine.GetCapacity(cover, embedOptions with { BitsPerChannel = b }).ContainerBytes >= needed, 0);
+            .FirstOrDefault(b => StegoEngine.GetCapacity(cover.Pixels, embedOptions with { BitsPerChannel = b }).ContainerBytes >= needed, 0);
         var hint = advice > 0 ? $" It would fit with --bits {advice}, or use a larger image." : " Use a larger image (more pixels) or hide less.";
         return new CliException(
-            $"{Inputs.DisplayName(input)}: Needs {Format.Bytes(needed)} but {cover.Width}x{cover.Height} holds {Format.Bytes(Math.Max(0, capacity))} at {embedOptions.BitsPerChannel} bit(s) per channel{note}.{hint}",
+            $"{Inputs.DisplayName(cover.Input)}: Needs {Format.Bytes(needed)} but {cover.Width}x{cover.Height} holds {Format.Bytes(Math.Max(0, capacity))} at {embedOptions.BitsPerChannel} bit(s) per channel{note}.{hint}",
             ExitCodes.InsufficientCapacity);
     }
 
@@ -418,27 +541,6 @@ internal sealed class HideCommand(CliContext context)
         _ => throw new CliException($"Unknown robust profile '{name}'. Use line or telegram."),
     };
 
-    private void WriteJpegFile(PixelBuffer image, string path, RobustProfile profile, bool overwrite)
-    {
-        var full = Path.GetFullPath(path);
-        var directory = Path.GetDirectoryName(full) ?? throw new CliException($"Invalid output path: {path}");
-        Directory.CreateDirectory(directory);
-        var temp = Path.Combine(directory, $".{Path.GetFileName(full)}.{Guid.NewGuid():N}.tmp");
-        try
-        {
-            using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write))
-            {
-                RobustStego.WriteJpeg(image, stream, profile);
-            }
-
-            File.Move(temp, full, overwrite);
-        }
-        finally
-        {
-            File.Delete(temp);
-        }
-    }
-
     private void Validate(HideOptions options)
     {
         if (options.Inputs.Count == 0)
@@ -451,13 +553,11 @@ internal sealed class HideCommand(CliContext context)
         var split = options.Split is not null;
         var robust = options.Robust is not null;
 
-        var secretCount = options.Texts.Count + options.TextFiles.Count + options.Files.Count;
-        if (secretCount == 0)
+        if (options.Texts.Count + options.TextFiles.Count + options.Files.Count == 0)
         {
             throw new CliException("Nothing to hide: give --text, --text-file and/or --file.");
         }
 
-        // Mode exclusivity: recipients, split, deniable, robust don't mix with each other.
         var chosen = new List<string>();
         if (recipients)
         {
@@ -497,6 +597,16 @@ internal sealed class HideCommand(CliContext context)
             }
         }
 
+        if (robust && options.Files.Count > 0)
+        {
+            throw new CliException("Robust mode carries only text, not files; drop --file.");
+        }
+
+        if (robust && options.Adaptive)
+        {
+            throw new CliException("Robust mode does not use --adaptive.");
+        }
+
         if (deniable && options.Adaptive)
         {
             throw new CliException("Deniable mode fills the whole image, so --adaptive does not apply.");
@@ -507,8 +617,48 @@ internal sealed class HideCommand(CliContext context)
             throw new CliException("Use either --decoy-random or --decoy-text/--decoy-file, not both.");
         }
 
+        if (options.KeepExif && robust)
+        {
+            throw new CliException("Robust mode writes a JPEG, which does not carry EXIF here; drop --keep-exif.");
+        }
+
         ValidateOutputs(options, split, robust);
         ValidateStdin(options);
+    }
+
+    private void ValidatePalette(HideOptions options, IReadOnlyList<Cover> covers)
+    {
+        var palette = covers.Where(c => c.IsPalette).ToList();
+        if (palette.Count == 0)
+        {
+            return;
+        }
+
+        var names = string.Join(", ", palette.Select(c => Inputs.DisplayName(c.Input)));
+        if (options.Recipients.Count > 0 || options.Split is not null || IsDeniable(options))
+        {
+            throw new CliException($"{names}: palette PNGs support password mode only. Add --truecolor to expand to a true-colour image for this mode.");
+        }
+
+        if (options.Bits != 1)
+        {
+            throw new CliException($"{names}: palette PNGs carry one bit per pixel; drop --bits (or add --truecolor to use all channels).");
+        }
+
+        if (options.Adaptive)
+        {
+            throw new CliException($"{names}: palette PNGs do not support --adaptive. Add --truecolor to use it.");
+        }
+
+        if (options.Output is not null && !Inputs.IsStandardStream(options.Output) && LosslessFormats.FromPath(options.Output) != LosslessFormat.Png)
+        {
+            throw new CliException($"{names}: a palette cover writes a PNG; use a .png output (or --truecolor).");
+        }
+
+        if (options.OutputDirectory is not null && options.Format != LosslessFormat.Png)
+        {
+            throw new CliException($"{names}: a palette cover writes a PNG; use --format Png (or --truecolor).");
+        }
     }
 
     private void ValidateOutputs(HideOptions options, bool split, bool robust)
@@ -562,6 +712,17 @@ internal sealed class HideCommand(CliContext context)
         else if (options.Output is not null && !Inputs.IsStandardStream(options.Output) && LosslessFormats.FromPath(options.Output) is null)
         {
             throw new CliException("Output must be a lossless image: .png, .webp, .bmp or .tiff. Lossy formats such as JPEG destroy the hidden bits.");
+        }
+
+        if (options.KeepExif && !robust)
+        {
+            var format = options.Output is not null && !Inputs.IsStandardStream(options.Output)
+                ? LosslessFormats.FromPath(options.Output)
+                : options.Format;
+            if (format is not LosslessFormat.Png)
+            {
+                throw new CliException("--keep-exif only works with PNG output; use a .png output or --format Png.");
+            }
         }
 
         if (options.Output is not null && Inputs.IsStandardStream(options.Output) && context.Json)
