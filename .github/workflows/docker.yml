@@ -1,0 +1,168 @@
+name: Docker
+
+# Reusable: builds the web server image (Dockerfile, src/SweetHide.Server) for linux/amd64 and linux/arm64,
+# smoke-tests the amd64 image as a hardened container (read-only, no capabilities, access token) with a real
+# hide -> reveal round trip over HTTP, and with `push: true` publishes it to ghcr.io/<owner>/sweethide.
+#
+# GitHub checks nested permissions up front, so the calling job must allow packages: write even when push is false:
+#
+#   docker:
+#     uses: ./.github/workflows/docker.yml
+#     permissions:
+#       contents: read
+#       packages: write
+#     with:
+#       version: ${{ needs.version.outputs.version }}
+#       push: true
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: >-
+          Image tag and the version stamped into the binaries (e.g. 1.2.0). "dev" keeps the project version and can
+          only be built, not pushed. "latest" is also moved, except for pre-releases such as 1.3.0-beta.1.
+        type: string
+        default: dev
+      push:
+        description: Push the multi-arch image to ghcr.io/<owner>/sweethide.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  PLATFORMS: linux/amd64,linux/arm64
+  CACHE_SCOPE: sweethide-server
+
+jobs:
+  image:
+    name: Server image${{ inputs.push && ' (push)' || '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Image name and version
+        id: names
+        env:
+          OWNER: ${{ github.repository_owner }}
+          VERSION: ${{ inputs.version }}
+          PUSH: ${{ inputs.push }}
+        run: |
+          if [[ ! "$VERSION" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+            echo "::error::'$VERSION' is not a valid image tag"
+            exit 1
+          fi
+          if [[ "$PUSH" == "true" && "$VERSION" == "dev" ]]; then
+            echo "::error::Refusing to push a dev build; pass the release version"
+            exit 1
+          fi
+          # Registry paths must be lowercase.
+          echo "image=ghcr.io/${OWNER,,}/sweethide" >> "$GITHUB_OUTPUT"
+          # An empty VERSION build argument keeps the version from Directory.Build.props.
+          if [[ "$VERSION" == "dev" ]]; then
+            echo "build-version=" >> "$GITHUB_OUTPUT"
+          else
+            echo "build-version=$VERSION" >> "$GITHUB_OUTPUT"
+          fi
+          if [[ "$VERSION" == *-* ]]; then
+            echo "latest=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "latest=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the amd64 image for the smoke test
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: sweethide:smoke
+          build-args: VERSION=${{ steps.names.outputs.build-version }}
+          cache-from: type=gha,scope=${{ env.CACHE_SCOPE }}
+
+      - name: Smoke test (read-only container, access token, hide -> reveal over HTTP)
+        env:
+          TOKEN: smoke-test-token-not-a-secret
+        run: |
+          docker run -d --name sweethide \
+            --read-only --cap-drop ALL --security-opt no-new-privileges \
+            --health-interval 2s --health-start-period 5s \
+            -e SWEETHIDE__ACCESSTOKEN="$TOKEN" -p 8080:8080 sweethide:smoke
+
+          SWEETHIDE_TOKEN="$TOKEN" build/server-smoke-test.sh http://127.0.0.1:8080
+
+          # The image's own HEALTHCHECK (the app probing itself, there is no curl inside) must pass too.
+          status=starting
+          for _ in $(seq 1 30); do
+            status="$(docker inspect --format '{{.State.Health.Status}}' sweethide)"
+            [[ "$status" == healthy ]] && break
+            sleep 1
+          done
+          echo "Docker health status: $status"
+          [[ "$status" == healthy ]]
+
+          # The server keeps everything in memory: nothing may have been written inside the container.
+          changes="$(docker diff sweethide)"
+          if [[ -n "$changes" ]]; then
+            echo "::error::The container wrote to its filesystem:"
+            echo "$changes"
+            exit 1
+          fi
+
+      - name: Container logs
+        if: always()
+        run: docker logs sweethide 2>&1 || true
+
+      - name: Log in to GitHub Container Registry
+        if: inputs.push
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.names.outputs.image }}
+          tags: |
+            type=raw,value=${{ inputs.version }}
+            type=raw,value=latest,enable=${{ steps.names.outputs.latest }}
+          labels: |
+            org.opencontainers.image.title=SweetHide
+            org.opencontainers.image.description=Hide encrypted text and files in images from your browser. Meant for trusted home networks.
+
+      # arm64 is cross-compiled by the SDK stage and the final stage only copies files, so no QEMU is needed.
+      - name: Build ${{ env.PLATFORMS }}${{ inputs.push && ' and push' || '' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ env.PLATFORMS }}
+          push: ${{ inputs.push }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          build-args: VERSION=${{ steps.names.outputs.build-version }}
+          cache-from: type=gha,scope=${{ env.CACHE_SCOPE }}
+          cache-to: type=gha,scope=${{ env.CACHE_SCOPE }},mode=max
+
+      - name: Summary
+        if: inputs.push
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          {
+            echo "### Published server image"
+            echo
+            echo '```'
+            echo "$TAGS"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
