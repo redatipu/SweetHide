@@ -66,7 +66,7 @@
 - Adaptive embedding ขั้นกว่า (HUGO/S-UNIWARD ร่วมกับ syndrome-trellis codes) แทนการเลือกด้วย threshold ที่มีใน v2
 - Elligator 2 สำหรับ ephemeral key ในโหมด public key เพื่อปิดหลักฐาน 1 บิตที่เหลืออยู่
 - เมนูคลิกขวาใน Explorer ("Reveal with SweetHide"), batch mode
-- เพิ่ม analyzer แบบ RS analysis และ SPA เพื่อแข่งกันซ่อนและตรวจจับในกลุ่ม
+- ~~เพิ่ม analyzer แบบ RS analysis และ SPA เพื่อแข่งกันซ่อนและตรวจจับในกลุ่ม~~ มีแล้วใน `SweetHide.Forensics` พร้อมเครื่องมือหาของที่เครื่องมืออื่นซ่อนไว้ (ดู [FORENSICS.md](FORENSICS.md)) เหลือต่อเข้ากับ CLI และแอป
 
 ## ความเสี่ยง
 

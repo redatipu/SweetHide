@@ -173,6 +173,7 @@ dotnet build src/SweetHide.App -p:Platform=x64
 |---|---|
 | `src/SweetHide.Core` | Engine: ซ่อนและถอดข้อมูล, crypto, payload format, codec ภาพ (SkiaSharp), steganalysis |
 | `src/SweetHide.Cli` | คำสั่ง `sweethide` |
+| `src/SweetHide.Forensics` | Stego Finder: หาข้อมูลที่เครื่องมืออื่นซ่อนไว้ในรูปและไฟล์ WAV (อ่านอย่างเดียว) ยังไม่ได้ต่อเข้ากับ CLI และแอป |
 | `src/SweetHide.Presentation` | ViewModel (MVVM), ข้อความ UI ภาษาไทย/อังกฤษ (`Resources/Strings*.resx`), interface ของ service ทั้งหมดอยู่ที่นี่ ไม่ผูกกับ WinUI จึงเทสต์บน Linux ได้ |
 | `src/SweetHide.App` | แอป WinUI 3: XAML, file picker, clipboard, drag & drop |
 | `src/SweetHide.Server` | เว็บเซิร์ฟเวอร์ (ASP.NET Core minimal API) และหน้าเว็บที่ฝังอยู่ในโปรแกรม (`web/`) |
@@ -182,6 +183,7 @@ dotnet build src/SweetHide.App -p:Platform=x64
 | `.github/workflows/` | `test.yml`, `package.yml` และ `docker.yml` (เรียกใช้ซ้ำได้), `ci.yml` (PR), `release.yml` (tag `v*`) |
 | `docs/FORMAT.md` | สเปกรูปแบบข้อมูลในภาพ (v2 และ v1 ที่ยังถอดได้) พร้อมหมายเหตุด้านความปลอดภัย |
 | `docs/SERVER.md` | วิธีรันเว็บเซิร์ฟเวอร์, การตั้งค่า, HTTPS และ API |
+| `docs/FORENSICS.md` | Stego Finder ตรวจอะไรได้บ้าง และข้อจำกัด |
 | `docs/RELEASING.md` | วิธีออก release (push tag แล้ว GitHub Actions ทำที่เหลือให้) |
 
 ## License
