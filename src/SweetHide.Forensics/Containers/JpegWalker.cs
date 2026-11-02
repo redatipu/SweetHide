@@ -12,7 +12,7 @@ internal static class JpegWalker
 
     public static WalkResult Walk(ReadOnlySpan<byte> data, ContainerInspectorOptions options)
     {
-        var result = new WalkResult(options.MaxStructureItems);
+        var result = new WalkResult(options.MaxStructureItems, data.Length);
         if (data.Length < 2 || data[0] != 0xFF || data[1] != 0xD8)
         {
             result.Warn("Missing JPEG SOI marker.");

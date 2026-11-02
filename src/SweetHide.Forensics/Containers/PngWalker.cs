@@ -22,7 +22,7 @@ internal static class PngWalker
 
     public static WalkResult Walk(ReadOnlySpan<byte> data, ContainerInspectorOptions options)
     {
-        var result = new WalkResult(options.MaxStructureItems);
+        var result = new WalkResult(options.MaxStructureItems, data.Length);
         if (!data.StartsWith(Signature))
         {
             result.Warn("Missing PNG signature.");

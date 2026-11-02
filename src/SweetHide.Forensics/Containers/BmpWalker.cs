@@ -15,7 +15,7 @@ internal static class BmpWalker
 
     public static WalkResult Walk(ReadOnlySpan<byte> data, ContainerInspectorOptions options)
     {
-        var result = new WalkResult(options.MaxStructureItems);
+        var result = new WalkResult(options.MaxStructureItems, data.Length);
         if (data.Length < FileHeaderSize + 4 || data[0] != 'B' || data[1] != 'M')
         {
             result.Warn("Missing BMP header.");

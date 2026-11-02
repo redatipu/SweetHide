@@ -1,7 +1,9 @@
 namespace SweetHide.Forensics.Containers;
 
 /// <summary>What a format walker found: structure items, where the container logically ends, and any problems.</summary>
-internal sealed class WalkResult(int maxItems)
+/// <param name="maxItems">Items recorded before the list is capped.</param>
+/// <param name="fileLength">Every recorded item is clamped to this length, whatever the file claims.</param>
+internal sealed class WalkResult(int maxItems, long fileLength)
 {
     private bool _capped;
 
@@ -14,19 +16,39 @@ internal sealed class WalkResult(int maxItems)
 
     public CorrectedDimensions? CorrectedDimensions { get; set; }
 
-    public static WalkResult Empty { get; } = new(0);
+    public static WalkResult Empty { get; } = new(0, 0);
 
     public void Add(StructureItem item)
     {
-        if (Items.Count < maxItems)
+        if (Items.Count >= maxItems)
         {
-            Items.Add(item);
+            if (!_capped)
+            {
+                _capped = true;
+                Warnings.Add($"More than {maxItems} structure items; the rest are not listed.");
+            }
+
+            return;
         }
-        else if (!_capped)
+
+        // Consumers slice the file with these ranges, so they must never point outside it.
+        var offset = Math.Clamp(item.Offset, 0, fileLength);
+        var dataOffset = Math.Clamp(item.DataOffset, 0, fileLength);
+        var length = Math.Clamp(item.Length, 0, fileLength - offset);
+        var dataLength = Math.Clamp(item.DataLength, 0, fileLength - dataOffset);
+        if (length != item.Length || dataLength != item.DataLength || offset != item.Offset || dataOffset != item.DataOffset)
         {
-            _capped = true;
-            Warnings.Add($"More than {maxItems:N0} structure items; the rest are not listed.");
+            item = item with
+            {
+                Offset = offset,
+                Length = length,
+                DataOffset = dataOffset,
+                DataLength = dataLength,
+                Traits = item.Traits | StructureTraits.Truncated | StructureTraits.Suspicious,
+            };
         }
+
+        Items.Add(item);
     }
 
     public void Warn(string message)

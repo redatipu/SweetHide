@@ -10,7 +10,7 @@ internal static class GifWalker
 {
     public static WalkResult Walk(ReadOnlySpan<byte> data, ContainerInspectorOptions options)
     {
-        var result = new WalkResult(options.MaxStructureItems);
+        var result = new WalkResult(options.MaxStructureItems, data.Length);
         if (data.Length < 13 || !(data.StartsWith("GIF87a"u8) || data.StartsWith("GIF89a"u8)))
         {
             result.Warn("Missing GIF header.");

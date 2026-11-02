@@ -114,7 +114,7 @@ public class HostileInputTests
         Prop.ForAll(gen.ToArbitrary(), file =>
         {
             var report = ContainerInspector.Inspect(file, cancellationToken: Ct);
-            return report.FileLength == file.Length;
+            return report.FileLength == file.Length && report.Structure.All(s => WithinFile(s, file.Length));
         }).QuickCheckThrowOnFailure();
     }
 
@@ -123,11 +123,16 @@ public class HostileInputTests
     {
         Prop.ForAll<byte[]>(bytes =>
         {
-            ContainerInspector.Inspect(bytes, cancellationToken: Ct);
+            var report = ContainerInspector.Inspect(bytes, cancellationToken: Ct);
             SignatureScanner.Scan(bytes, cancellationToken: Ct);
-            return true;
+            return report.Structure.All(s => WithinFile(s, bytes.Length));
         }).QuickCheckThrowOnFailure();
     }
+
+    /// <summary>Callers slice the file with these ranges, so they must always be inside it.</summary>
+    internal static bool WithinFile(StructureItem item, long fileLength) =>
+        item.Offset >= 0 && item.Length >= 0 && item.Offset + item.Length <= fileLength
+        && item.DataOffset >= 0 && item.DataLength >= 0 && item.DataOffset + item.DataLength <= fileLength;
 
     internal static byte[] Mutate(byte[] seed, IEnumerable<(int Offset, int Value)> flips, int cut)
     {

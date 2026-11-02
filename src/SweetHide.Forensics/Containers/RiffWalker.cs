@@ -17,7 +17,7 @@ internal static class RiffWalker
 
     public static WalkResult Walk(ReadOnlySpan<byte> data, ContainerInspectorOptions options)
     {
-        var result = new WalkResult(options.MaxStructureItems);
+        var result = new WalkResult(options.MaxStructureItems, data.Length);
         if (data.Length < 12 || !data.StartsWith("RIFF"u8))
         {
             result.Warn("Missing RIFF header.");
