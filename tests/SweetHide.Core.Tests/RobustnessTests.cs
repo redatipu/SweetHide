@@ -69,7 +69,7 @@ public class RobustnessTests
 
     [Theory]
     [MemberData(nameof(Modes))]
-    public void Cropped_or_resized_images_report_not_found(string mode)
+    public void Cropped_images_are_reported_as_not_found_or_damaged(string mode)
     {
         var stego = Stegos.Value[mode];
         foreach (var (width, height) in new[] { (stego.Width, stego.Height - 1), (stego.Width - 1, stego.Height), (stego.Width / 2, stego.Height / 2), (1, 1) })
@@ -80,7 +80,19 @@ public class RobustnessTests
                 stego.Pixels.Slice(y * stego.Width * 4, width * 4).CopyTo(cropped.AsSpan(y * width * 4));
             }
 
-            Assert.Equal(nameof(StegoError.NotFoundOrWrongPassword), RevealOutcome(new PixelBuffer(width, height, cropped), mode));
+            var outcome = RevealOutcome(new PixelBuffer(width, height, cropped), mode);
+            if (width == stego.Width)
+            {
+                // Slots are chosen by cycle-walking a permutation over the slot count, so dropping only the bottom
+                // row leaves most slots where they were. Now and then (it depends on the random salt; about one
+                // time in eight for v1, far less for v2's larger public region and header) the salt and header
+                // survive while the body doesn't, which is rightly reported as damaged rather than not found.
+                Assert.Contains(outcome, new[] { nameof(StegoError.NotFoundOrWrongPassword), nameof(StegoError.Corrupted) });
+            }
+            else
+            {
+                Assert.Equal(nameof(StegoError.NotFoundOrWrongPassword), outcome);
+            }
         }
     }
 
