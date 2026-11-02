@@ -37,7 +37,9 @@ if [[ -n "$token" ]]; then
   echo "ok - token required"
 fi
 
-curl -fsS "${auth[@]}" -H 'Accept-Language: th-TH,th;q=0.9' "$base/" | grep -q '<html lang="th"' || fail "UI not served in Thai"
+# Responses are captured before grepping: grep -q stops reading early, which would break the pipe under pipefail.
+page="$(curl -fsS "${auth[@]}" -H 'Accept-Language: th-TH,th;q=0.9' "$base/")"
+grep -q '<html lang="th"' <<<"$page" || fail "UI not served in Thai"
 headers="$(curl -fsS "${auth[@]}" -D - -o /dev/null "$base/app.js")"
 grep -qi "^content-security-policy: default-src 'none'" <<<"$headers" || fail "no CSP header"
 grep -qi '^x-content-type-options: nosniff' <<<"$headers" || fail "no nosniff header"
@@ -80,8 +82,9 @@ jq -r '.files[0].data' "$work/reveal.json" | base64 -d | cmp -s - "$work/secret.
 echo "ok - reveal"
 
 curl -fsS "${auth[@]}" -o "$work/revealed.zip" -F "image=@$work/stego.png" --form-string "password=$password" "$base/api/reveal?format=zip"
-python3 -m zipfile -l "$work/revealed.zip" | grep -q 'secret.txt' || fail "zip has no secret.txt"
-python3 -m zipfile -l "$work/revealed.zip" | grep -q 'messages.txt' || fail "zip has no messages.txt"
+listing="$(python3 -m zipfile -l "$work/revealed.zip")"
+grep -q 'secret.txt' <<<"$listing" || fail "zip has no secret.txt"
+grep -q 'messages.txt' <<<"$listing" || fail "zip has no messages.txt"
 echo "ok - reveal as zip"
 
 status="$(curl -sS "${auth[@]}" -o "$work/wrong.json" -w '%{http_code}' -F "image=@$work/stego.png" --form-string "password=not it" "$base/api/reveal")"
