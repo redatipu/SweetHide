@@ -51,11 +51,12 @@ public sealed class StegoEngine
     {
         ArgumentNullException.ThrowIfNull(image);
         ValidateBits(bitsPerChannel);
-        var layout = new SlotLayout(image);
+        var carrier = new RgbLsbCarrier(image);
+        var layout = new SlotLayout(carrier);
         return new CapacityInfo(
             image.Width,
             image.Height,
-            layout.Map.UsablePixels,
+            carrier.UsablePixels,
             bitsPerChannel,
             layout.DataSlotCount * bitsPerChannel / 8);
     }
@@ -76,7 +77,7 @@ public sealed class StegoEngine
         ValidateBits(bitsPerChannel);
         RequirePassword(password);
 
-        var layout = new SlotLayout(cover);
+        var layout = new SlotLayout(new RgbLsbCarrier(cover));
         var body = PayloadSerializer.Serialize(payload);
         var containerSize = (long)ContainerOverhead + body.Length;
         var available = layout.DataSlotCount * bitsPerChannel / 8;
@@ -113,9 +114,10 @@ public sealed class StegoEngine
                     AssociatedData("body", bitsPerChannel));
 
                 var stego = cover.Clone();
+                var carrier = new RgbLsbCarrier(stego);
                 var random = new RandomBits();
-                SlotWriter.Write(stego.Data, layout.Map, layout.SaltSource(), salt, 1, random);
-                SlotWriter.Write(stego.Data, layout.Map, layout.DataSource(keys.PermutationKey), container, bitsPerChannel, random);
+                SlotWriter.Write(carrier, layout.SaltSource(), salt, 1, random);
+                SlotWriter.Write(carrier, layout.DataSource(keys.PermutationKey), container, bitsPerChannel, random);
                 return stego;
             }
         }
@@ -133,14 +135,15 @@ public sealed class StegoEngine
         ArgumentNullException.ThrowIfNull(image);
         RequirePassword(password);
 
-        var layout = new SlotLayout(image);
+        var carrier = new RgbLsbCarrier(image);
+        var layout = new SlotLayout(carrier);
         if (!layout.HasRoom)
         {
             throw NotFound();
         }
 
         var salt = new byte[SaltSize];
-        new SlotReader(image.Data, layout.Map, layout.SaltSource(), 1).ReadBytes(salt);
+        new SlotReader(carrier, layout.SaltSource(), 1).ReadBytes(salt);
 
         using var keys = KeyDerivation.Derive(password, salt, _kdf);
         using var aes = new AesGcm(keys.AeadKey, TagSize);
@@ -155,7 +158,7 @@ public sealed class StegoEngine
                 continue;
             }
 
-            var reader = new SlotReader(image.Data, layout.Map, layout.DataSource(keys.PermutationKey), bits);
+            var reader = new SlotReader(carrier, layout.DataSource(keys.PermutationKey), bits);
             reader.ReadBytes(header);
             try
             {

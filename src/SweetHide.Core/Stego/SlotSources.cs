@@ -1,7 +1,5 @@
 using System.Security.Cryptography;
 
-using SweetHide.Core.Imaging;
-
 namespace SweetHide.Core.Stego;
 
 /// <summary>A sequence of slot indices to read or write, in order.</summary>
@@ -11,8 +9,8 @@ internal interface ISlotSource
 }
 
 /// <summary>
-/// Splits an image's slots into the 128 salt slots (positions fixed by a public key, so they can be found before
-/// any password-derived key exists) and the data slots (positions from the password-derived permutation).
+/// Format v1: splits a carrier's slots into the 128 salt slots (positions fixed by a public key, so they can be found
+/// before any password-derived key exists) and the data slots (positions from the password-derived permutation).
 /// </summary>
 internal sealed class SlotLayout
 {
@@ -22,12 +20,12 @@ internal sealed class SlotLayout
 
     private readonly HashSet<long> _saltSet;
 
-    public SlotLayout(PixelBuffer image)
+    public SlotLayout(IStegoCarrier carrier)
     {
-        Map = new SlotMap(image);
-        if (Map.Count > SaltBits)
+        SlotCount = carrier.SlotCount;
+        if (SlotCount > SaltBits)
         {
-            var permutation = new FeistelPermutation(Map.Count, SaltPermutationKey);
+            var permutation = new FeistelPermutation(SlotCount, SaltPermutationKey);
             var saltSlots = new long[SaltBits];
             for (var i = 0; i < SaltBits; i++)
             {
@@ -44,19 +42,19 @@ internal sealed class SlotLayout
         _saltSet = [.. SaltSlots];
     }
 
-    public SlotMap Map { get; }
+    public long SlotCount { get; }
 
     public IReadOnlyList<long> SaltSlots { get; }
 
     /// <summary>True when the image has room for at least the salt plus one data slot.</summary>
     public bool HasRoom => SaltSlots.Count == SaltBits;
 
-    public long DataSlotCount => HasRoom ? Map.Count - SaltBits : 0;
+    public long DataSlotCount => HasRoom ? SlotCount - SaltBits : 0;
 
     public ISlotSource SaltSource() => new ListSlotSource(SaltSlots);
 
     public ISlotSource DataSource(ReadOnlySpan<byte> permutationKey) =>
-        new PermutedSlotSource(new FeistelPermutation(Map.Count, permutationKey), _saltSet);
+        new PermutedSlotSource(new FeistelPermutation(SlotCount, permutationKey), _saltSet);
 
     private sealed class ListSlotSource(IReadOnlyList<long> slots) : ISlotSource
     {
