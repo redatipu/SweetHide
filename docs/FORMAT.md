@@ -1,6 +1,6 @@
-# รูปแบบข้อมูลในภาพ (Magi format v1)
+# รูปแบบข้อมูลในภาพ (SweetHide format v1)
 
-เอกสารนี้อธิบายว่า Magi เก็บข้อมูลไว้ในภาพอย่างไร ใครอยากเขียนตัวถอดเอง หรือลองหาจุดอ่อนในระบบ ใช้เอกสารนี้อ้างอิงได้
+เอกสารนี้อธิบายว่า SweetHide เก็บข้อมูลไว้ในภาพอย่างไร ใครอยากเขียนตัวถอดเอง หรือลองหาจุดอ่อนในระบบ ใช้เอกสารนี้อ้างอิงได้
 ความปลอดภัยของระบบขึ้นอยู่กับ **รหัสผ่าน** อย่างเดียว ไม่ได้อาศัยการปกปิดวิธีการ (ตามหลักของ Kerckhoffs)
 
 ## 1. Slot
@@ -25,15 +25,15 @@ F(r, R)       = splitmix64_finalizer(R XOR k[r]) & mask(h)
 ## 3. Salt
 
 - `salt` = 16 ไบต์สุ่มใหม่ทุกครั้งที่ซ่อน
-- เก็บไว้ใน slot `P_pub(0), P_pub(1), …, P_pub(127)` โดย `P_pub` ใช้ key = `SHA-512("magi/v1/salt-slots")` ซึ่งเป็นค่าคงที่ที่เปิดเผย
+- เก็บไว้ใน slot `P_pub(0), P_pub(1), …, P_pub(127)` โดย `P_pub` ใช้ key = `SHA-512("sweethide/v1/salt-slots")` ซึ่งเป็นค่าคงที่ที่เปิดเผย
 - เก็บ 1 บิตต่อ slot เรียงจาก MSB ไป LSB ของแต่ละไบต์
 
 ## 4. กุญแจ
 
 ```
 master  = Argon2id(password = UTF-8(NFC(password)), salt, m = 64 MiB, t = 3, p = 4, len = 32)
-aeadKey = HKDF-SHA256-Expand(master, info = "magi/v1/aead-key",        len = 32)
-permKey = HKDF-SHA256-Expand(master, info = "magi/v1/slot-permutation", len = 64)
+aeadKey = HKDF-SHA256-Expand(master, info = "sweethide/v1/aead-key",        len = 32)
+permKey = HKDF-SHA256-Expand(master, info = "sweethide/v1/slot-permutation", len = 64)
 ```
 
 ## 5. Container
@@ -44,8 +44,8 @@ data slot คือลำดับ `P_permKey(0), P_permKey(1), …` โดย�
 ```
 [ header ciphertext (4) | header tag (16) | body ciphertext (n) | body tag (16) ]
 
-header = AES-256-GCM(aeadKey, nonce = 00…01, aad = "magi/v1/header" ‖ b, plaintext = uint32 LE n)
-body   = AES-256-GCM(aeadKey, nonce = 00…02, aad = "magi/v1/body"   ‖ b, plaintext = payload)
+header = AES-256-GCM(aeadKey, nonce = 00…01, aad = "sweethide/v1/header" ‖ b, plaintext = uint32 LE n)
+body   = AES-256-GCM(aeadKey, nonce = 00…02, aad = "sweethide/v1/body"   ‖ b, plaintext = payload)
 ```
 
 - nonce เป็นค่าคงที่ได้ เพราะ salt ใหม่ทุกครั้งทำให้ `aeadKey` ไม่ซ้ำกันเลยในแต่ละภาพ

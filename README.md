@@ -1,4 +1,4 @@
-# Magi
+# SweetHide
 
 ซ่อน **ข้อความและไฟล์** ไว้ในรูปภาพ พร้อมเข้ารหัสด้วยรหัสผ่าน ผลลัพธ์เป็นไฟล์ PNG ที่ดูด้วยตาแล้วเหมือนรูปเดิมทุกอย่าง
 ทำขึ้นเพื่อใช้กันเองและทดลองกับเพื่อนใน homelab
@@ -12,10 +12,10 @@
 
 ## เริ่มใช้งาน
 
-ดาวน์โหลด `magi` / `magi.exe` ได้จาก artifact ของ GitHub Actions หรือ build เองด้วยคำสั่งนี้ (ต้องมี .NET 10 SDK):
+ดาวน์โหลด `sweethide` / `sweethide.exe` ได้จาก artifact ของ GitHub Actions หรือ build เองด้วยคำสั่งนี้ (ต้องมี .NET 10 SDK):
 
 ```bash
-dotnet publish src/Magi.Cli -c Release -r win-x64 -o publish
+dotnet publish src/SweetHide.Cli -c Release -r win-x64 -o publish
 ```
 
 เปลี่ยน `win-x64` เป็น `linux-x64` หรือ `linux-arm64` ได้ตามเครื่อง ผลลัพธ์เป็นไฟล์เดียวที่รันได้ทันทีโดยไม่ต้องติดตั้ง .NET
@@ -23,7 +23,7 @@ dotnet publish src/Magi.Cli -c Release -r win-x64 -o publish
 ### ซ่อน
 
 ```bash
-magi hide -i photo.jpg -o secret.png -t "พบกันที่ร้านเดิม 2 ทุ่ม" -f plan.pdf -f keys.txt
+sweethide hide -i photo.jpg -o secret.png -t "พบกันที่ร้านเดิม 2 ทุ่ม" -f plan.pdf -f keys.txt
 ```
 
 - `-t` ใส่ข้อความตรง ๆ, `--text-file` อ่านข้อความจากไฟล์ UTF-8, `-f` แนบไฟล์ (ทุก option ใช้ซ้ำได้)
@@ -33,7 +33,7 @@ magi hide -i photo.jpg -o secret.png -t "พบกันที่ร้านเ
 ### ถอด
 
 ```bash
-magi reveal -i secret.png -o ./revealed
+sweethide reveal -i secret.png -o ./revealed
 ```
 
 ข้อความจะพิมพ์ออกทาง stdout ส่วนไฟล์จะถูกเขียนลง `./revealed` โดยไม่ทับไฟล์เดิม (ถ้าชื่อซ้ำจะตั้งชื่อใหม่เป็น `name (1).ext`) ใช้ `--list` ถ้าต้องการดูรายการอย่างเดียวโดยไม่เขียนไฟล์
@@ -43,11 +43,11 @@ magi reveal -i secret.png -o ./revealed
 ถ้าไม่ระบุอะไร โปรแกรมจะถามรหัสผ่านแบบซ่อนตัวอักษร เวลาซ่อนจะถามสองครั้ง ถ้าใช้ในสคริปต์ให้ส่งรหัสผ่านทางใดทางหนึ่งต่อไปนี้:
 
 ```bash
-export MAGI_PASSWORD='...'
+export SWEETHIDE_PASSWORD='...'
 ```
 
 ```bash
-echo '...' | magi reveal -i secret.png --password-stdin
+echo '...' | sweethide reveal -i secret.png --password-stdin
 ```
 
 ไม่มี option `--password` เพราะรหัสผ่านจะไปค้างใน shell history และโผล่ในรายการ process
@@ -55,11 +55,11 @@ echo '...' | magi reveal -i secret.png --password-stdin
 ### เครื่องมืออื่น
 
 ```bash
-magi capacity -i photo.jpg
+sweethide capacity -i photo.jpg
 ```
 
 ```bash
-magi analyze -i suspect.png --bit-plane plane.png
+sweethide analyze -i suspect.png --bit-plane plane.png
 ```
 
 `capacity` บอกว่ารูปนี้จุข้อมูลได้เท่าไรในแต่ละระดับบิต ส่วน `analyze` ทำ steganalysis คือคำนวณสถิติ LSB, chi-square attack และสร้างภาพ bit plane เอาไว้ลองตรวจรูปที่เพื่อนส่งมา
@@ -88,8 +88,8 @@ dotnet format --verify-no-changes
 
 | Path | หน้าที่ |
 |---|---|
-| `src/Magi.Core` | Engine: ซ่อนและถอดข้อมูล, crypto, payload format, codec ภาพ (SkiaSharp), steganalysis |
-| `src/Magi.Cli` | คำสั่ง `magi` |
+| `src/SweetHide.Core` | Engine: ซ่อนและถอดข้อมูล, crypto, payload format, codec ภาพ (SkiaSharp), steganalysis |
+| `src/SweetHide.Cli` | คำสั่ง `sweethide` |
 | `tests/` | xUnit v3 + FsCheck (property-based) |
 | `docs/PLAN.md` | แผนงานและ tech stack |
 | `docs/FORMAT.md` | สเปกรูปแบบข้อมูลในภาพ (เวอร์ชัน v1) |

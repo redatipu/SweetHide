@@ -1,4 +1,4 @@
-# Magi: แผนงานและ Tech Stack
+# SweetHide: แผนงานและ Tech Stack
 
 ## ขอบเขต (ยืนยันกับเจ้าของโปรเจกต์แล้ว)
 
@@ -22,7 +22,7 @@
 ## Phase
 
 ### ✅ Phase 0: Setup
-- solution (`Magi.slnx`), `Directory.Build.props`, `Directory.Packages.props` (Central Package Management)
+- solution (`SweetHide.slnx`), `Directory.Build.props`, `Directory.Packages.props` (Central Package Management)
 - เปิด analyzer ระดับ Recommended และให้ warning นับเป็น error, `.editorconfig`, CI, Dependabot
 
 ### ✅ Phase 1: Core + CLI
@@ -40,14 +40,14 @@
 - ต้อง build บน Windows (CI `windows-latest` ทำได้)
 
 ### ⏭️ Phase 3: Release สำหรับใช้กับเพื่อน
-- push tag `v*` แล้ว GitHub Actions จะสร้าง GitHub Release ที่มี `magi.exe`, GUI แบบ portable zip และ SHA-256
+- push tag `v*` แล้ว GitHub Actions จะสร้าง GitHub Release ที่มี `sweethide.exe`, GUI แบบ portable zip และ SHA-256
 - **ไม่ซื้อ code signing** เพราะใช้กันเอง ครั้งแรกที่เปิด Windows SmartScreen จะเตือน ให้กด More info → Run anyway และแจก checksum ให้เพื่อนตรวจสอบไฟล์
 - GUI เลือกแบบ unpackaged + self-contained (`WindowsAppSDKSelfContained`) แทน MSIX เพราะ MSIX ต้องใช้ cert ที่เครื่องเพื่อนเชื่อถือ
 
 ### 💡 Phase 4: ทำเพิ่มถ้าสนใจ
 - **Robust mode** ให้ข้อมูลรอดการส่งผ่าน LINE หรือ Facebook: ฝังใน DCT coefficient ร่วมกับ Reed–Solomon ECC แต่จะเก็บข้อมูลได้น้อยลงมาก
 - Adaptive embedding (เช่น HUGO/S-UNIWARD) ให้ฝังเฉพาะบริเวณที่มี texture เพื่อให้ตรวจจับยากขึ้น
-- เมนูคลิกขวาใน Explorer ("Reveal with Magi"), batch mode
+- เมนูคลิกขวาใน Explorer ("Reveal with SweetHide"), batch mode
 - เพิ่ม analyzer แบบ RS analysis และ SPA เพื่อแข่งกันซ่อนและตรวจจับในกลุ่ม
 
 ## ความเสี่ยง
