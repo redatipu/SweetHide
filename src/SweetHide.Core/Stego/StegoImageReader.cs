@@ -69,6 +69,61 @@ internal sealed class StegoImageReader
 
     public bool CanHoldPasswordData => _salt is not null;
 
+    /// <summary>Public-key mode: finds this identity's entry in the recipient table and opens the container.</summary>
+    /// <returns>The container, or null when the image holds nothing for this identity.</returns>
+    /// <exception cref="StegoException">An entry unwrapped but the data behind it is damaged.</exception>
+    public OpenedContainer? TryIdentity(Identity identity)
+    {
+        if (PublicBytes is null)
+        {
+            return null;
+        }
+
+        var ephemeral = (byte[])PublicBytes.Clone();
+        ephemeral[^1] &= 0x7F; // the writer randomises the top bit; X25519 ignores it
+        var unwrapKey = RecipientStanza.UnwrapKey(identity, ephemeral);
+        if (unwrapKey is null)
+        {
+            return null;
+        }
+
+        var stanza = new byte[RecipientStanza.Size];
+        var fileKey = new byte[RecipientStanza.FileKeySize];
+        try
+        {
+            for (var entry = 0; entry < RecipientStanza.MaxRecipients; entry++)
+            {
+                var firstRank = V2Layout.PublicSlots + ((long)entry * RecipientStanza.Slots);
+                if (firstRank + RecipientStanza.Slots > V2.SlotCount)
+                {
+                    break;
+                }
+
+                V2.ReadRanks(firstRank, stanza);
+                if (!RecipientStanza.TryUnwrap(unwrapKey, stanza, fileKey, out var count))
+                {
+                    continue;
+                }
+
+                if (count <= entry || count > RecipientStanza.MaxRecipients)
+                {
+                    throw new StegoException(StegoError.Corrupted, "Hidden data is damaged: the recipient table is inconsistent.");
+                }
+
+                var dataStart = V2Layout.PublicSlots + ((long)count * RecipientStanza.Slots);
+                return V2Container.TryOpen(V2, dataStart, fileKey)
+                    ?? throw new StegoException(StegoError.Corrupted, "Hidden data is damaged: the header was modified.");
+            }
+
+            return null;
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(unwrapKey);
+            CryptographicOperations.ZeroMemory(fileKey);
+        }
+    }
+
     /// <returns>What the password opened, or null.</returns>
     /// <exception cref="StegoException">The password is right but the data is damaged or from a newer version.</exception>
     public PasswordMatch? TryPassword(ReadOnlySpan<char> password, KeyFile? keyFile)

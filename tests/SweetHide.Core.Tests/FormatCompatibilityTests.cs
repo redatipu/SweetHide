@@ -91,6 +91,24 @@ public class FormatCompatibilityTests
         Assert.Equal(new HiddenDataInfo(2, HidingMode.Deniable, 2, false, KdfProfile.Normal), secret.Info);
     }
 
+    [Fact]
+    public void Imports_the_identity_file_and_reveals_the_v2_recipients_image()
+    {
+        using var identity = Identity.Import(FixtureText("identity-fixture.txt"), "fixture passphrase");
+        Assert.Equal("sweethide1euce7lq9n40f0vwzewc8kdmakdjtjy8pxl846k5xjc7y5wc62ejqxym453", identity.Recipient.ToString());
+
+        var result = new StegoEngine(TestImages.FastKdf).Reveal(Fixture("v2-recipients.png"), identity);
+        AssertKnownPayload(result.Payload, "v2 for my friends");
+        Assert.Equal(new HiddenDataInfo(2, HidingMode.Recipients, 2, false, null), result.Info);
+    }
+
+    internal static string FixtureText(string name)
+    {
+        using var stream = typeof(FormatCompatibilityTests).Assembly.GetManifestResourceStream($"Fixtures/{name}")
+            ?? throw new InvalidOperationException($"Missing fixture {name}.");
+        return new StreamReader(stream).ReadToEnd();
+    }
+
     internal static PixelBuffer Fixture(string name)
     {
         using var stream = typeof(FormatCompatibilityTests).Assembly.GetManifestResourceStream($"Fixtures/{name}")

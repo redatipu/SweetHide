@@ -5,6 +5,8 @@ Published builds also carry the longer notices in a "licenses" folder:
   licenses/dotnet-THIRD-PARTY-NOTICES.txt          (.NET runtime)
   licenses/SkiaSharp-native-THIRD-PARTY-NOTICES.txt (Skia, libpng, libjpeg-turbo,
                                                     libwebp, zlib, FreeType, ...)
+  licenses/NSec-NOTICE.txt                         (libsodium, RFC 6234 code, .NET)
+  licenses/libsodium-LICENSE.txt                   (libsodium)
   licenses/WindowsAppSDK-LICENSE.txt               (desktop app only)
   licenses/WindowsAppSDK-NOTICE.txt                (desktop app only)
 
@@ -24,6 +26,26 @@ SkiaSharp
 Konscious.Security.Cryptography (Argon2 and Blake2)
   MIT License. Copyright (c) 2024 Keef Aragon.
   https://github.com/kmaragon/Konscious.Security.Cryptography
+
+NSec.Cryptography (X25519 for public-key mode)
+  MIT License. Copyright (c) Klaus Hartke.
+  https://github.com/ektrah/nsec
+
+libsodium (native library used by NSec.Cryptography)
+  ISC License. Copyright (c) 2013-2026 Frank Denis <j at pureftpd dot org>.
+  https://github.com/jedisct1/libsodium
+
+  Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted, provided that the above
+  copyright notice and this permission notice appear in all copies.
+
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 CommunityToolkit.Mvvm (desktop app only)
   MIT License. Copyright (c) .NET Foundation and Contributors.

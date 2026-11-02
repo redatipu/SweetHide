@@ -2,11 +2,18 @@
   <!--
     Ships the licenses with every `dotnet publish`: SweetHide's own LICENSE and THIRD-PARTY-NOTICES.txt next to the
     executable, plus the upstream notice files that MIT/BSD components require us to pass on, in licenses/.
-    Projects importing this reference the native asset packages with GeneratePathProperty="true".
+    Projects importing this reference the native asset packages with GeneratePathProperty="true". Packages that come in
+    only through SweetHide.Core (NSec, libsodium) are found from the NuGet metadata of the files being published.
   -->
   <Target Name="PublishLicenses" AfterTargets="Publish">
+    <ItemGroup>
+      <_NSecAsset Include="@(RuntimeCopyLocalItems)" Condition="'%(RuntimeCopyLocalItems.NuGetPackageId)' == 'NSec.Cryptography'" />
+      <_LibsodiumAsset Include="@(NativeCopyLocalItems)" Condition="'%(NativeCopyLocalItems.NuGetPackageId)' == 'libsodium'" />
+    </ItemGroup>
     <PropertyGroup>
       <_RuntimePackDir>$(NuGetPackageRoot)microsoft.netcore.app.runtime.$(RuntimeIdentifier.ToLowerInvariant())/$(BundledNETCoreAppPackageVersion)/</_RuntimePackDir>
+      <_NSecDir Condition="'@(_NSecAsset)' != ''">$(NuGetPackageRoot)nsec.cryptography/%(_NSecAsset.NuGetPackageVersion)/</_NSecDir>
+      <_LibsodiumDir Condition="'@(_LibsodiumAsset)' != ''">$(NuGetPackageRoot)libsodium/%(_LibsodiumAsset.NuGetPackageVersion)/</_LibsodiumDir>
     </PropertyGroup>
     <ItemGroup>
       <_OwnLicense Include="$(MSBuildThisFileDirectory)../LICENSE;$(MSBuildThisFileDirectory)../THIRD-PARTY-NOTICES.txt" />
@@ -17,6 +24,10 @@
                Condition="$(RuntimeIdentifier.StartsWith('win')) and '$(PkgSkiaSharp_NativeAssets_Win32)' != ''" />
       <_Notice Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)/THIRD-PARTY-NOTICES.txt" TargetName="SkiaSharp-native-THIRD-PARTY-NOTICES.txt"
                Condition="$(RuntimeIdentifier.StartsWith('linux')) and '$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)' != ''" />
+      <_Notice Include="$(_NSecDir)NOTICE" TargetName="NSec-NOTICE.txt"
+               Condition="'$(_NSecDir)' != '' and Exists('$(_NSecDir)NOTICE')" />
+      <_Notice Include="$(_LibsodiumDir)LICENSE" TargetName="libsodium-LICENSE.txt"
+               Condition="'$(_LibsodiumDir)' != '' and Exists('$(_LibsodiumDir)LICENSE')" />
       <_Notice Include="$(PkgMicrosoft_WindowsAppSDK_WinUI)/license.txt" TargetName="WindowsAppSDK-LICENSE.txt"
                Condition="'$(PkgMicrosoft_WindowsAppSDK_WinUI)' != ''" />
       <_Notice Include="$(PkgMicrosoft_WindowsAppSDK_WinUI)/NOTICE.txt" TargetName="WindowsAppSDK-NOTICE.txt"

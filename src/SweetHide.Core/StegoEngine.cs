@@ -54,6 +54,9 @@ public sealed class StegoEngine
         _random = random;
     }
 
+    /// <summary>Most recipients one image can be hidden for.</summary>
+    public const int MaxRecipients = RecipientStanza.MaxRecipients;
+
     /// <summary>Bits per channel values the engine can write.</summary>
     public static IReadOnlyList<int> SupportedBitsPerChannel { get; } = [1, 2, 3, 4];
 
@@ -193,6 +196,100 @@ public sealed class StegoEngine
         }
     }
 
+    /// <summary>Capacity of a public-key embed for <paramref name="recipientCount"/> recipients.</summary>
+    public static CapacityInfo GetRecipientCapacity(PixelBuffer image, int recipientCount, EmbedOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        ArgumentOutOfRangeException.ThrowIfLessThan(recipientCount, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(recipientCount, MaxRecipients);
+        options ??= EmbedOptions.Default;
+        options.Validate();
+        var carrier = new RgbLsbCarrier(image);
+        var layout = new V2Layout(carrier);
+        return Capacity(image, carrier, ContainerBytes(layout, RecipientDataStart(recipientCount), ContainerPlacement.Whole, options), options);
+    }
+
+    /// <summary>
+    /// Public-key mode: anyone holding the <see cref="Identity"/> of one of <paramref name="recipients"/> can reveal it,
+    /// no password needed. Recipients are not listed anywhere in the image.
+    /// </summary>
+    /// <remarks>
+    /// The image stores one ephemeral X25519 public key. Its top bit is randomised (X25519 ignores it), but a curve
+    /// point is still not uniformly random: about half of all 255-bit strings are valid points, so an observer who
+    /// suspects this mode gains at most one bit of evidence. See docs/FORMAT.md.
+    /// </remarks>
+    /// <exception cref="ArgumentException">No recipients, or more than <see cref="MaxRecipients"/>.</exception>
+    /// <exception cref="StegoException"><see cref="StegoError.InsufficientCapacity"/>.</exception>
+    public PixelBuffer Embed(PixelBuffer cover, Payload payload, IReadOnlyCollection<Recipient> recipients, EmbedOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(cover);
+        ArgumentNullException.ThrowIfNull(payload);
+        ArgumentNullException.ThrowIfNull(recipients);
+        options ??= EmbedOptions.Default;
+        options.Validate();
+        var distinct = recipients.Select(r => r ?? throw new ArgumentException("Recipients must not be null.", nameof(recipients))).Distinct().ToList();
+        if (distinct.Count is 0 or > MaxRecipients)
+        {
+            throw new ArgumentException($"Hide for 1 to {MaxRecipients} recipients.", nameof(recipients));
+        }
+
+        var content = PayloadSerializer.Serialize(payload);
+        var fileKey = RandomBytes(RecipientStanza.FileKeySize);
+        var ephemeralSecret = RandomBytes(32);
+        try
+        {
+            var stego = cover.Clone();
+            var layout = new V2Layout(new RgbLsbCarrier(stego));
+            var dataStart = RecipientDataStart(distinct.Count);
+            RequireCapacity(ContainerBytes(layout, dataStart, ContainerPlacement.Whole, options), content.Length, options);
+
+            // Table order is random too, so an entry's position says nothing about who was listed first.
+            for (var i = distinct.Count - 1; i > 0; i--)
+            {
+                var j = (int)(BitConverter.ToUInt32(RandomBytes(4)) % (uint)(i + 1));
+                (distinct[i], distinct[j]) = (distinct[j], distinct[i]);
+            }
+
+            using var ephemeral = NSec.Cryptography.Key.Import(
+                NSec.Cryptography.KeyAgreementAlgorithm.X25519, ephemeralSecret, NSec.Cryptography.KeyBlobFormat.RawPrivateKey);
+            var ephemeralPublic = ephemeral.PublicKey.Export(NSec.Cryptography.KeyBlobFormat.RawPublicKey);
+            var stanzas = distinct.Select(r => RecipientStanza.Wrap(ephemeral, ephemeralPublic, r, fileKey, distinct.Count)).ToList();
+
+            var publicBytes = (byte[])ephemeralPublic.Clone();
+            publicBytes[^1] |= (byte)(RandomBytes(1)[0] & 0x80);
+            var randomBits = new RandomBits(_random);
+            layout.WriteRanks(0, publicBytes, randomBits);
+            for (var i = 0; i < stanzas.Count; i++)
+            {
+                layout.WriteRanks(V2Layout.PublicSlots + ((long)i * RecipientStanza.Slots), stanzas[i], randomBits);
+            }
+
+            V2Container.Write(
+                layout, dataStart, ContainerPlacement.Whole, fileKey, ContentKind.Payload, content, options.BitsPerChannel, options.Adaptive, fill: false, _random);
+            return stego;
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(content);
+            CryptographicOperations.ZeroMemory(fileKey);
+            CryptographicOperations.ZeroMemory(ephemeralSecret);
+        }
+    }
+
+    /// <summary>Reveals data hidden for <paramref name="identity"/>'s public key.</summary>
+    /// <inheritdoc cref="Extract(PixelBuffer, ReadOnlySpan{char})"/>
+    public Payload Extract(PixelBuffer image, Identity identity) => Reveal(image, identity).Payload;
+
+    /// <inheritdoc cref="Extract(PixelBuffer, Identity)"/>
+    public RevealResult Reveal(PixelBuffer image, Identity identity)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        ArgumentNullException.ThrowIfNull(identity);
+        var reader = new StegoImageReader(new RgbLsbCarrier(image), _profiles);
+        using var container = reader.TryIdentity(identity) ?? throw NotFound();
+        return FromContainer(reader.Carrier, container, HidingMode.Recipients, profile: null);
+    }
+
     /// <exception cref="StegoException">
     /// <see cref="StegoError.NotFoundOrWrongPassword"/>, <see cref="StegoError.Corrupted"/> or
     /// <see cref="StegoError.UnsupportedFormat"/>.
@@ -241,6 +338,8 @@ public sealed class StegoEngine
             : layout.PlacementLength(dataStart, placement) - ContainerSlots.HeaderSlotCount;
         return V2Container.ContainerBytes(bodySlots, options.BitsPerChannel);
     }
+
+    private static long RecipientDataStart(int recipientCount) => V2Layout.PublicSlots + ((long)recipientCount * RecipientStanza.Slots);
 
     private static long TexturedDataSlots(V2Layout layout, long dataStart)
     {

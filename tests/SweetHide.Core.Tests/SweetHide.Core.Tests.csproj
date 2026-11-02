@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <!-- Images made by released versions; they must keep revealing (see FormatCompatibilityTests). -->
-    <EmbeddedResource Include="Fixtures\*.png" LogicalName="Fixtures/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Fixtures\*.png;Fixtures\*.txt" LogicalName="Fixtures/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
