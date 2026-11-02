@@ -1,15 +1,19 @@
 name: Release
 
-# Push a tag like v1.2.0 (or v1.3.0-beta.1 for a pre-release) to publish a GitHub Release.
+# Publish a release either way:
+#   - push a tag like v1.2.0 (or v1.3.0-beta.1 for a pre-release), or
+#   - press "Publish release" on GitHub with a new vX.Y.Z tag; the files get attached to that release.
 on:
   push:
     tags: ['v*.*.*']
+  release:
+    types: [published]
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -47,6 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v5
 
@@ -59,7 +65,22 @@ jobs:
         working-directory: release
         run: sha256sum --check SHA256SUMS.txt
 
-      - name: Create release
+      - name: winget manifests
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          bash packaging/winget/make-manifests.sh "$VERSION" "$TAG" "$REPO" release/SHA256SUMS.txt winget
+          (cd winget && zip -qr "../release/winget-manifests-$VERSION.zip" .)
+
+      - name: Build provenance (public repositories)
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: release/*
+
+      - name: Create or update the release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
@@ -67,11 +88,19 @@ jobs:
           PRERELEASE: ${{ needs.version.outputs.prerelease }}
         run: |
           sed "s/{version}/$VERSION/g" .github/RELEASE_NOTES.md > notes.md
-          flags=()
-          [[ "$PRERELEASE" == "true" ]] && flags+=(--prerelease)
-          gh release create "$TAG" release/* \
-            --title "SweetHide $VERSION" \
-            --notes-file notes.md \
-            --generate-notes \
-            --verify-tag \
-            "${flags[@]}"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            # Published from the GitHub website (or a re-run): attach the files, keep any notes already written.
+            gh release upload "$TAG" release/* --clobber
+            if [[ -z "$(gh release view "$TAG" --json body --jq .body)" ]]; then
+              gh release edit "$TAG" --notes-file notes.md
+            fi
+          else
+            flags=()
+            [[ "$PRERELEASE" == "true" ]] && flags+=(--prerelease)
+            gh release create "$TAG" release/* \
+              --title "SweetHide $VERSION" \
+              --notes-file notes.md \
+              --generate-notes \
+              --verify-tag \
+              "${flags[@]}"
+          fi

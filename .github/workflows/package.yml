@@ -131,6 +131,26 @@ jobs:
           merge-multiple: true
           path: release
 
+      - uses: anchore/sbom-action/download-syft@v0
+        id: syft
+
+      - name: SBOM per download (CycloneDX)
+        working-directory: release
+        env:
+          SYFT: ${{ steps.syft.outputs.cmd }}
+        run: |
+          for f in *.zip *.tar.gz; do
+            name="${f%.zip}"; name="${name%.tar.gz}"
+            tmp="$(mktemp -d)"
+            case "$f" in
+              *.zip) unzip -q "$f" -d "$tmp" ;;
+              *) tar -xzf "$f" -C "$tmp" ;;
+            esac
+            "$SYFT" "dir:$tmp" -q -o "cyclonedx-json=$name.sbom.cdx.json"
+            rm -rf "$tmp"
+          done
+          ls -l
+
       - name: SHA256SUMS.txt
         working-directory: release
         run: |
