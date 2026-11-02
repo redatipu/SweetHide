@@ -19,6 +19,7 @@ env:
 
 jobs:
   build-test:
+    # Core, CLI and view models (SweetHide.Portable.slnf) build and test on both platforms.
     name: Build & test (${{ matrix.os }})
     strategy:
       fail-fast: false
@@ -33,17 +34,48 @@ jobs:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore SweetHide.Portable.slnf
 
       - name: Check formatting
         if: runner.os == 'Linux'
-        run: dotnet format --verify-no-changes --no-restore
+        run: |
+          dotnet format SweetHide.Portable.slnf --verify-no-changes --no-restore
+          dotnet format whitespace --folder --verify-no-changes --include src/SweetHide.App
 
       - name: Build
-        run: dotnet build -c Release --no-restore
+        run: dotnet build SweetHide.Portable.slnf -c Release --no-restore
 
       - name: Test
-        run: dotnet test -c Release --no-build
+        run: dotnet test --solution SweetHide.Portable.slnf -c Release --no-build
+
+  windows-app:
+    # The WinUI 3 app needs the Windows-only XAML compiler.
+    name: Windows app (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            platform: x64
+          - arch: arm64
+            platform: ARM64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Publish (self-contained, unpackaged)
+        run: dotnet publish src/SweetHide.App -c Release -r win-${{ matrix.arch }} -p:Platform=${{ matrix.platform }} -o publish/SweetHide-win-${{ matrix.arch }}
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: SweetHide-win-${{ matrix.arch }}
+          path: publish/SweetHide-win-${{ matrix.arch }}
+          if-no-files-found: error
+          retention-days: 14
 
   publish-cli:
     name: Publish CLI (${{ matrix.rid }})
@@ -64,7 +96,7 @@ jobs:
 
       - uses: actions/upload-artifact@v5
         with:
-          name: sweethide-${{ matrix.rid }}
+          name: sweethide-cli-${{ matrix.rid }}
           path: publish/${{ matrix.rid }}
           if-no-files-found: error
           retention-days: 14

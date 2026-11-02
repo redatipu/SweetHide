@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>SweetHide</value></data>
+  <data name="AppSubtitle" xml:space="preserve"><value>Hide text and files in images</value></data>
+  <data name="NavHide" xml:space="preserve"><value>Hide</value></data>
+  <data name="NavReveal" xml:space="preserve"><value>Reveal</value></data>
+  <data name="NavAnalyze" xml:space="preserve"><value>Analyze</value></data>
+  <data name="NavSettings" xml:space="preserve"><value>Settings</value></data>
+  <data name="DropZoneTitle" xml:space="preserve"><value>Drop an image here</value></data>
+  <data name="DropZoneHint" xml:space="preserve"><value>PNG, JPEG, BMP, GIF or WebP · or paste with Ctrl+V</value></data>
+  <data name="BrowseImage" xml:space="preserve"><value>Choose image…</value></data>
+  <data name="PasteImage" xml:space="preserve"><value>Paste</value></data>
+  <data name="ChangeImage" xml:space="preserve"><value>Change</value></data>
+  <data name="ImageInfoFormat" xml:space="preserve"><value>{0} × {1} · {2}</value></data>
+  <data name="DropToUse" xml:space="preserve"><value>Use this image</value></data>
+  <data name="DropToAttach" xml:space="preserve"><value>Attach</value></data>
+  <data name="ClipboardImageName" xml:space="preserve"><value>clipboard.png</value></data>
+  <data name="HideHeader" xml:space="preserve"><value>Hide a secret</value></data>
+  <data name="CoverSection" xml:space="preserve"><value>Cover image</value></data>
+  <data name="MessageSection" xml:space="preserve"><value>Message</value></data>
+  <data name="MessagePlaceholder" xml:space="preserve"><value>Type a secret message (optional if you attach files)</value></data>
+  <data name="AttachmentsSection" xml:space="preserve"><value>Files</value></data>
+  <data name="AddFiles" xml:space="preserve"><value>Add files…</value></data>
+  <data name="RemoveAttachment" xml:space="preserve"><value>Remove</value></data>
+  <data name="NoAttachments" xml:space="preserve"><value>No files attached. Drop files here or choose Add files.</value></data>
+  <data name="CapacitySection" xml:space="preserve"><value>Capacity</value></data>
+  <data name="CapacityNoImage" xml:space="preserve"><value>Choose a cover image to see how much it can hold.</value></data>
+  <data name="CapacityMeasuring" xml:space="preserve"><value>Measuring…</value></data>
+  <data name="CapacityFormat" xml:space="preserve"><value>{0} of {1} ({2})</value></data>
+  <data name="CapacityWarning" xml:space="preserve"><value>More than half full: easier to detect statistically. A larger or more detailed photo helps.</value></data>
+  <data name="CapacityOver" xml:space="preserve"><value>Doesn't fit. Use a larger image, hide less, or raise bits per channel under Advanced.</value></data>
+  <data name="PasswordSection" xml:space="preserve"><value>Password</value></data>
+  <data name="PasswordPlaceholder" xml:space="preserve"><value>Password</value></data>
+  <data name="ConfirmPasswordPlaceholder" xml:space="preserve"><value>Confirm password</value></data>
+  <data name="PasswordMismatch" xml:space="preserve"><value>Passwords don't match.</value></data>
+  <data name="PasswordHint" xml:space="preserve"><value>A forgotten password cannot be recovered. A long passphrase is best.</value></data>
+  <data name="StrengthFormat" xml:space="preserve"><value>Strength: {0}</value></data>
+  <data name="StrengthWeak" xml:space="preserve"><value>weak</value></data>
+  <data name="StrengthFair" xml:space="preserve"><value>fair</value></data>
+  <data name="StrengthGood" xml:space="preserve"><value>good</value></data>
+  <data name="StrengthStrong" xml:space="preserve"><value>strong</value></data>
+  <data name="AdvancedSection" xml:space="preserve"><value>Advanced</value></data>
+  <data name="BitsLabel" xml:space="preserve"><value>Bits per colour channel</value></data>
+  <data name="Bits1" xml:space="preserve"><value>1 — invisible (recommended)</value></data>
+  <data name="Bits2" xml:space="preserve"><value>2 — twice the room, still invisible to the eye</value></data>
+  <data name="Bits3" xml:space="preserve"><value>3 — may show in smooth areas such as sky</value></data>
+  <data name="Bits4" xml:space="preserve"><value>4 — visible noise</value></data>
+  <data name="HideButton" xml:space="preserve"><value>Hide and save…</value></data>
+  <data name="SendAsFileTitle" xml:space="preserve"><value>Send as a file</value></data>
+  <data name="SendAsFileMessage" xml:space="preserve"><value>Chat apps re-compress photos, which destroys the hidden data. Send the PNG as a file or document.</value></data>
+  <data name="HideSuccessTitle" xml:space="preserve"><value>Saved</value></data>
+  <data name="HideSuccessMessage" xml:space="preserve"><value>{0} · changed {1} of colour values · PSNR {2} dB</value></data>
+  <data name="ShowInFolder" xml:space="preserve"><value>Show in folder</value></data>
+  <data name="ErrorTitle" xml:space="preserve"><value>Something went wrong</value></data>
+  <data name="ImageLoadFailed" xml:space="preserve"><value>Couldn't open this image: {0}</value></data>
+  <data name="FileTooLarge" xml:space="preserve"><value>{0} is larger than {1}.</value></data>
+  <data name="ClipboardNoImage" xml:space="preserve"><value>The clipboard doesn't contain an image.</value></data>
+  <data name="InvalidText" xml:space="preserve"><value>The message contains characters that can't be saved.</value></data>
+  <data name="RevealHeader" xml:space="preserve"><value>Reveal a secret</value></data>
+  <data name="ImageSection" xml:space="preserve"><value>Image</value></data>
+  <data name="RevealButton" xml:space="preserve"><value>Reveal</value></data>
+  <data name="RevealNotFoundTitle" xml:space="preserve"><value>Nothing found</value></data>
+  <data name="RevealNotFound" xml:space="preserve"><value>Nothing found, or the password is wrong.</value></data>
+  <data name="RevealCorrupted" xml:space="preserve"><value>The password is right, but the hidden data is damaged (the image was edited or re-compressed).</value></data>
+  <data name="RevealSuccessTitle" xml:space="preserve"><value>Found {0} item(s)</value></data>
+  <data name="ResultsSection" xml:space="preserve"><value>Results</value></data>
+  <data name="MessageItemFormat" xml:space="preserve"><value>Message {0}</value></data>
+  <data name="CopyText" xml:space="preserve"><value>Copy</value></data>
+  <data name="Copied" xml:space="preserve"><value>Copied to the clipboard.</value></data>
+  <data name="SaveFile" xml:space="preserve"><value>Save…</value></data>
+  <data name="SaveAllFiles" xml:space="preserve"><value>Save all files…</value></data>
+  <data name="SavedFileMessage" xml:space="preserve"><value>Saved {0}</value></data>
+  <data name="SavedFilesMessage" xml:space="preserve"><value>Saved {0} file(s) to {1}</value></data>
+  <data name="FileSafetyNote" xml:space="preserve"><value>Files come from whoever made the image and are never opened automatically.</value></data>
+  <data name="AnalyzeHeader" xml:space="preserve"><value>Analyze an image</value></data>
+  <data name="AnalyzeIntro" xml:space="preserve"><value>Simple steganalysis: LSB statistics and the chi-square attack. Use it on images from friends.</value></data>
+  <data name="ColumnChannel" xml:space="preserve"><value>Channel</value></data>
+  <data name="ColumnOnes" xml:space="preserve"><value>LSB = 1</value></data>
+  <data name="ColumnChiSquare" xml:space="preserve"><value>Chi-square</value></data>
+  <data name="ColumnProbability" xml:space="preserve"><value>p (LSB replacement)</value></data>
+  <data name="AnalyzeExplanation" xml:space="preserve"><value>p close to 1 on every channel suggests heavy LSB replacement. SweetHide uses LSB matching, which this test is not designed to catch.</value></data>
+  <data name="BitPlaneLabel" xml:space="preserve"><value>Bit plane</value></data>
+  <data name="BitPlaneHint" xml:space="preserve"><value>0 = least significant bit</value></data>
+  <data name="SettingsHeader" xml:space="preserve"><value>Settings</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>Language</value></data>
+  <data name="LanguageDefault" xml:space="preserve"><value>Use Windows setting</value></data>
+  <data name="LanguageThai" xml:space="preserve"><value>ไทย</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageRestart" xml:space="preserve"><value>Restart SweetHide to change the language.</value></data>
+  <data name="ThemeLabel" xml:space="preserve"><value>Theme</value></data>
+  <data name="ThemeDefault" xml:space="preserve"><value>Use Windows setting</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="AboutLabel" xml:space="preserve"><value>About</value></data>
+  <data name="AboutVersion" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="AboutText" xml:space="preserve"><value>Encryption: AES-256-GCM with Argon2id. Embedding: LSB matching spread over the image by a password-derived permutation. Everything stays on this computer.</value></data>
+</root>

@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    WinUI 3 desktop app for Windows 10 1809+ / Windows 11. Builds on Windows only (the XAML compiler is
+    Windows-only); everything testable lives in SweetHide.Presentation.
+    Unpackaged + self-contained: copy the publish folder anywhere and run SweetHide.exe, no installer needed.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>SweetHide.App</RootNamespace>
+    <AssemblyName>SweetHide</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\SweetHide.ico</ApplicationIcon>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+    <Description>SweetHide: hide encrypted text and files in images.</Description>
+  </PropertyGroup>
+
+  <!-- SkiaSharp's Windows package ships a ~90 MB native .pdb; users don't need it. -->
+  <Target Name="DropDebugSymbolsFromPublish" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb' and '%(Filename)' == 'libSkiaSharp'" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <Content Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SweetHide.Presentation\SweetHide.Presentation.csproj" />
+  </ItemGroup>
+
+</Project>

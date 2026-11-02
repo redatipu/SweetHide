@@ -1,10 +1,15 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/SweetHide.App/SweetHide.App.csproj">
+      <Platform Project="x64" />
+    </Project>
     <Project Path="src/SweetHide.Cli/SweetHide.Cli.csproj" />
     <Project Path="src/SweetHide.Core/SweetHide.Core.csproj" />
+    <Project Path="src/SweetHide.Presentation/SweetHide.Presentation.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SweetHide.Cli.Tests/SweetHide.Cli.Tests.csproj" />
     <Project Path="tests/SweetHide.Core.Tests/SweetHide.Core.Tests.csproj" />
+    <Project Path="tests/SweetHide.Presentation.Tests/SweetHide.Presentation.Tests.csproj" />
   </Folder>
 </Solution>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>SweetHide.Presentation</RootNamespace>
+    <Description>View models and UI text for the SweetHide desktop app. UI-framework independent so it can be tested anywhere.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SweetHide.Core\SweetHide.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SweetHide.Presentation.Tests" />
+  </ItemGroup>
+
+</Project>

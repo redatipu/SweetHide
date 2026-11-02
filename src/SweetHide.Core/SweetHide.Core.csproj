@@ -16,6 +16,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SweetHide.Core.Tests" />
     <InternalsVisibleTo Include="SweetHide.Cli.Tests" />
+    <InternalsVisibleTo Include="SweetHide.Presentation.Tests" />
   </ItemGroup>
 
 </Project>

@@ -54,7 +54,7 @@ internal sealed class HideCommand(CliContext context)
         var password = context.Passwords.GetPassword(confirm: true, options.PasswordFromStdin);
         var stego = new StegoEngine(context.Kdf).Embed(cover, payload, password, options.Bits);
 
-        WriteAtomically(options.Output, stego, options.Force);
+        context.Codec.SavePng(stego, options.Output.FullName, options.Force);
 
         var diff = ImageMetrics.Compare(cover, stego);
         var usage = (double)containerSize / capacity.ContainerBytes;
@@ -118,25 +118,5 @@ internal sealed class HideCommand(CliContext context)
             ? $" It would fit with --bits {options[0]}, or use a larger image."
             : " Use a larger image (more pixels) or hide less.";
         return $"Needs {Format.Bytes(needed)} but {cover.Width}x{cover.Height} holds {Format.Bytes(StegoEngine.GetCapacity(cover, bits).ContainerBytes)} at {bits} bit(s) per channel.{advice}";
-    }
-
-    private void WriteAtomically(FileInfo output, PixelBuffer image, bool overwrite)
-    {
-        var directory = output.Directory ?? throw new CliException("Invalid output path.");
-        directory.Create();
-        var temp = Path.Combine(directory.FullName, $".{output.Name}.{Guid.NewGuid():N}.tmp");
-        try
-        {
-            using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write))
-            {
-                context.Codec.EncodePng(image, stream);
-            }
-
-            File.Move(temp, output.FullName, overwrite);
-        }
-        finally
-        {
-            File.Delete(temp);
-        }
     }
 }

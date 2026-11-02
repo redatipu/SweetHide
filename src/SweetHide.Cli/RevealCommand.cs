@@ -44,42 +44,10 @@ internal sealed class RevealCommand(CliContext context)
                 continue;
             }
 
-            var path = WriteFile(options.OutputDirectory, safeName, entry.Content.Span, options.Force);
+            var path = SafeFileWriter.Write(options.OutputDirectory.FullName, entry.Name, entry.Content.Span, options.Force);
             context.Error.WriteLine($"Saved {path} ({Format.Bytes(entry.Length)})");
         }
 
         return ExitCodes.Success;
-    }
-
-    /// <summary>Writes inside <paramref name="directory"/> only, never following the stored name anywhere else.</summary>
-    internal static string WriteFile(DirectoryInfo directory, string safeName, ReadOnlySpan<byte> content, bool overwrite)
-    {
-        directory.Create();
-        var root = Path.GetFullPath(directory.FullName);
-
-        for (var attempt = 0; attempt < 1000; attempt++)
-        {
-            var name = attempt == 0
-                ? safeName
-                : $"{Path.GetFileNameWithoutExtension(safeName)} ({attempt}){Path.GetExtension(safeName)}";
-            var path = Path.GetFullPath(Path.Combine(root, name));
-            if (!string.Equals(Path.GetDirectoryName(path), Path.TrimEndingDirectorySeparator(root), StringComparison.Ordinal))
-            {
-                throw new CliException($"Refusing to write outside the output folder: {name}");
-            }
-
-            try
-            {
-                using var stream = new FileStream(path, overwrite ? FileMode.Create : FileMode.CreateNew, FileAccess.Write);
-                stream.Write(content);
-                return path;
-            }
-            catch (IOException) when (!overwrite && File.Exists(path))
-            {
-                // Name taken: try "name (1).ext", "name (2).ext", ...
-            }
-        }
-
-        throw new CliException($"Could not find a free file name for {safeName}.");
     }
 }
