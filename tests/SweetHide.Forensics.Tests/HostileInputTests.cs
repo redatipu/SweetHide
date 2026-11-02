@@ -121,8 +121,9 @@ public class HostileInputTests
         var watch = System.Diagnostics.Stopwatch.StartNew();
         var found = SignatureScanner.Scan(file, cancellationToken: Ct);
 
+        // Unbounded this took ~30 s in a Debug build; bounded it takes ~1 s, so 10 s leaves room for loaded CI runners.
         Assert.Equal(256, found.Count);
-        Assert.True(watch.Elapsed < TimeSpan.FromSeconds(3), $"took {watch.Elapsed}");
+        Assert.True(watch.Elapsed < TimeSpan.FromSeconds(10), $"took {watch.Elapsed}");
     }
 
     [Fact]
