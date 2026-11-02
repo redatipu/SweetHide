@@ -33,7 +33,7 @@ jobs:
     env:
       NAME: SweetHide-${{ inputs.version }}-win-${{ matrix.arch }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-dotnet@v5
         with:
@@ -93,7 +93,7 @@ jobs:
     env:
       NAME: sweethide-${{ inputs.version }}-${{ matrix.rid }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-dotnet@v5
         with:
