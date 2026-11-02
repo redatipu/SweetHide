@@ -33,6 +33,10 @@ System.CommandLine (CLI only)
   MIT License. Copyright (c) Microsoft Corporation.
   https://github.com/dotnet/command-line-api
 
+Microsoft.AspNetCore.Mvc.Testing (server tests only, not shipped)
+  MIT License. Copyright (c) .NET Foundation and Contributors.
+  https://github.com/dotnet/aspnetcore
+
 Windows App SDK / WinUI 3 (desktop app only)
   Microsoft Software License Terms; files placed in the app by the Windows App
   SDK NuGet packages may be redistributed with it.
