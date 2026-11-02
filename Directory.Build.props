@@ -13,6 +13,8 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <Deterministic>true</Deterministic>
     <Authors>redatipu</Authors>
+    <Copyright>Copyright (c) 2026 redatipu</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Product>SweetHide</Product>
     <Version>0.1.0</Version>
   </PropertyGroup>

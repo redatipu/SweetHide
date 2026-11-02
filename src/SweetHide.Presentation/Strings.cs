@@ -203,6 +203,8 @@ public static class Strings
 
     public static string AboutVersion => Get();
 
+    public static string AboutLicense => Get();
+
     public static string AboutText => Get();
 
     /// <summary>Selects the UI language for the rest of the process (takes effect for pages created afterwards).</summary>

@@ -97,5 +97,6 @@
   <data name="ThemeDark" xml:space="preserve"><value>มืด</value></data>
   <data name="AboutLabel" xml:space="preserve"><value>เกี่ยวกับ</value></data>
   <data name="AboutVersion" xml:space="preserve"><value>เวอร์ชัน {0}</value></data>
+  <data name="AboutLicense" xml:space="preserve"><value>เผยแพร่ภายใต้ MIT License ส่วนข้อความลิขสิทธิ์ของซอฟต์แวร์อื่นที่ใช้ อยู่ในไฟล์ THIRD-PARTY-NOTICES.txt ข้าง ๆ SweetHide.exe</value></data>
   <data name="AboutText" xml:space="preserve"><value>เข้ารหัสด้วย AES-256-GCM และ Argon2id ฝังข้อมูลแบบ LSB matching กระจายตำแหน่งตามรหัสผ่าน ทุกอย่างทำงานในเครื่องนี้เท่านั้น</value></data>
 </root>

@@ -42,9 +42,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <!-- Already transitive via Core; referenced here only to locate its notice file (build/Licenses.targets). -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" GeneratePathProperty="true" />
   </ItemGroup>
+
+  <Import Project="..\..\build\Licenses.targets" />
 
   <ItemGroup>
     <ProjectReference Include="..\SweetHide.Presentation\SweetHide.Presentation.csproj" />

@@ -1,0 +1,57 @@
+SweetHide is built on the following open-source and redistributable software.
+Thanks to everyone who made it.
+
+Published builds also carry the longer notices in a "licenses" folder:
+  licenses/dotnet-THIRD-PARTY-NOTICES.txt          (.NET runtime)
+  licenses/SkiaSharp-native-THIRD-PARTY-NOTICES.txt (Skia, libpng, libjpeg-turbo,
+                                                    libwebp, zlib, FreeType, ...)
+  licenses/WindowsAppSDK-LICENSE.txt               (desktop app only)
+  licenses/WindowsAppSDK-NOTICE.txt                (desktop app only)
+
+
+.NET runtime and libraries
+  MIT License. Copyright (c) .NET Foundation and Contributors.
+  https://github.com/dotnet/runtime
+
+SkiaSharp
+  MIT License. Copyright (c) Microsoft Corporation.
+  https://github.com/mono/SkiaSharp
+
+Konscious.Security.Cryptography (Argon2 and Blake2)
+  MIT License. Copyright (c) 2024 Keef Aragon.
+  https://github.com/kmaragon/Konscious.Security.Cryptography
+
+CommunityToolkit.Mvvm (desktop app only)
+  MIT License. Copyright (c) .NET Foundation and Contributors.
+  https://github.com/CommunityToolkit/dotnet
+
+System.CommandLine (CLI only)
+  MIT License. Copyright (c) Microsoft Corporation.
+  https://github.com/dotnet/command-line-api
+
+Windows App SDK / WinUI 3 (desktop app only)
+  Microsoft Software License Terms; files placed in the app by the Windows App
+  SDK NuGet packages may be redistributed with it.
+  Copyright (c) Microsoft Corporation.
+  https://github.com/microsoft/WindowsAppSDK
+
+
+The MIT License text that applies to the MIT-licensed components above:
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  IN THE SOFTWARE.

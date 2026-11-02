@@ -100,16 +100,16 @@ jobs:
           global-json-file: global.json
 
       - name: Publish self-contained single file
-        run: dotnet publish src/SweetHide.Cli -c Release -r ${{ matrix.rid }} ${{ env.VERSION_PROPERTY }} -o publish
+        run: dotnet publish src/SweetHide.Cli -c Release -r ${{ matrix.rid }} ${{ env.VERSION_PROPERTY }} -o "publish/$NAME"
 
-      - name: Archive
+      - name: Archive (executable + LICENSE + notices, one top-level folder)
         run: |
           mkdir -p dist
           if [[ "${{ matrix.rid }}" == win-* ]]; then
-            (cd publish && zip -9 "../dist/$NAME.zip" sweethide.exe)
+            (cd publish && zip -9 -r "../dist/$NAME.zip" "$NAME")
           else
-            ./publish/sweethide --help > /dev/null 2>&1 || [[ "${{ matrix.rid }}" == *arm64 ]] # runs on x64 only
-            tar -czf "dist/$NAME.tar.gz" -C publish sweethide
+            if [[ "${{ matrix.rid }}" == linux-x64 ]]; then "publish/$NAME/sweethide" --help > /dev/null; fi
+            tar -czf "dist/$NAME.tar.gz" -C publish "$NAME"
           fi
           ls -l dist
 

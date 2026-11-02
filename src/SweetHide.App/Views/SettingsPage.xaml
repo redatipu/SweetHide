@@ -48,6 +48,10 @@
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="{x:Bind p:Strings.AboutText}"
                         TextWrapping="Wrap" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind p:Strings.AboutLicense}"
+                        TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
         </StackPanel>

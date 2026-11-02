@@ -97,5 +97,6 @@
   <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
   <data name="AboutLabel" xml:space="preserve"><value>About</value></data>
   <data name="AboutVersion" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="AboutLicense" xml:space="preserve"><value>Released under the MIT License. Notices for the third-party software it uses are in THIRD-PARTY-NOTICES.txt next to SweetHide.exe.</value></data>
   <data name="AboutText" xml:space="preserve"><value>Encryption: AES-256-GCM with Argon2id. Embedding: LSB matching spread over the image by a password-derived permutation. Everything stays on this computer.</value></data>
 </root>

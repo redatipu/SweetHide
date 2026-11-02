@@ -28,7 +28,12 @@
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />
+    <!-- Already transitive via Core; referenced here only to locate their notice files (build/Licenses.targets). -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" GeneratePathProperty="true" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" GeneratePathProperty="true" />
   </ItemGroup>
+
+  <Import Project="..\..\build\Licenses.targets" />
 
   <ItemGroup>
     <ProjectReference Include="..\SweetHide.Core\SweetHide.Core.csproj" />
