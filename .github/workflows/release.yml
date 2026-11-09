@@ -76,7 +76,7 @@ jobs:
 
       - name: Build provenance (public repositories)
         if: github.event.repository.visibility == 'public'
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: release/*
 
